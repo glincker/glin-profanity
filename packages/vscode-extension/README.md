@@ -44,6 +44,12 @@ ext install glincker.glin-profanity-vscode
 
 <!-- TODO: add screenshots after first Marketplace publish -->
 
+## Community
+
+Join the [GLINR Discord](https://discord.gg/Ar5pcaZB99) and drop by the `#glin-profanity` forum for questions and discussion.
+
+<a href="https://discord.gg/Ar5pcaZB99"><img src="https://discord.com/api/guilds/829168897080557579/widget.png?style=banner2" alt="Join the GLINR Discord" /></a>
+
 ## License
 
 MIT — same as the core glin-profanity library.
