@@ -26,6 +26,7 @@
   <a href="https://github.com/GLINCKER/glin-profanity/network/members"><img src="https://img.shields.io/github/forks/GLINCKER/glin-profanity?style=flat-square&logo=github&label=forks" alt="GitHub Forks" /></a>
   <a href="https://github.com/GLINCKER/glin-profanity/issues"><img src="https://img.shields.io/github/issues/GLINCKER/glin-profanity?style=flat-square&logo=github&label=issues" alt="GitHub Issues" /></a>
   <a href="https://github.com/GLINCKER/glin-profanity/graphs/contributors"><img src="https://img.shields.io/github/contributors/GLINCKER/glin-profanity?style=flat-square&logo=github&label=contributors" alt="Contributors" /></a>
+  <a href="https://discord.gg/Ar5pcaZB99"><img src="https://img.shields.io/discord/829168897080557579?style=flat-square&logo=discord&logoColor=white&label=discord&color=5865F2" alt="Discord" /></a>
 </p>
 
 <!-- Hero Image -->
@@ -427,6 +428,14 @@ See [ROADMAP.md](./ROADMAP.md) for the full issue backlog and contribution oppor
 MIT License - free for personal and commercial use.
 
 Enterprise licensing with SLA and support available from [GLINCKER](https://glincker.com).
+
+---
+
+## Community
+
+Join the [GLINR Discord](https://discord.gg/Ar5pcaZB99) to ask questions, share feedback, or talk with other users of Glin Profanity. This project has its own forum channel there, `#glin-profanity`.
+
+<a href="https://discord.gg/Ar5pcaZB99"><img src="https://discord.com/api/guilds/829168897080557579/widget.png?style=banner2" alt="Join the GLINR Discord" /></a>
 
 ---
 
