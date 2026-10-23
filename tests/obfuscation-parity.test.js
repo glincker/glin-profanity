@@ -144,6 +144,21 @@ suite('obfuscation parity between JS and Python', () => {
     });
   });
 
+  test('context-aware mode masks and flags like the plain path in both languages', () => {
+    const inputs = ['what the f.u.c.k was that', 'fuuuuuck you', 'f*ck this', 'Moby Dick, you dick', 'hello'];
+    const jobs = inputs.map((text) => ({
+      text,
+      config: { ...BASE, languages: ['english'], enableContextAware: true, replaceWith: '*' },
+    }));
+    const py = runPython(jobs);
+    const f = jsFor(jobs[0].config);
+    inputs.forEach((text, i) => {
+      const result = f.checkProfanity(text);
+      expect({ text, flag: result.containsProfanity }).toEqual({ text, flag: py[i].contains });
+      expect({ text, processed: result.processedText }).toEqual({ text, processed: py[i].processed });
+    });
+  });
+
   test('fine-grained options and extra safe words agree', () => {
     const configs = [
       { ...BASE, languages: ['english'], obfuscation: { separators: false } },

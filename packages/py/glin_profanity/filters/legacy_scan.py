@@ -81,15 +81,31 @@ def legacy_scan(ctx: LegacyScanContext, text: str) -> LegacyScanResult:
 
 
 def legacy_context_hits(ctx: LegacyScanContext, text: str) -> list[LegacyContextHit]:
-    """Occurrence list (normalized view) used by the context-aware path."""
-    normalized = ctx.normalize_text(text, False).lower()
+    """Occurrence list for the context-aware path.
+
+    It covers the same views as `legacy_scan` (original, normalized, aggressive),
+    so it never finds less.
+    """
+    views = [
+        text.lower(),
+        ctx.normalize_text(text, False).lower(),
+        ctx.normalize_text(text, True).lower(),
+    ]
     hits: list[LegacyContextHit] = []
     for dict_word in ctx.words:
         if dict_word.lower() in ctx.ignore_words:
             continue
-        severity = ctx.matcher.evaluate_severity(dict_word, normalized)
-        if severity is None:
-            continue
-        for match in ctx.matcher.get_regex(dict_word).finditer(normalized):
-            hits.append(LegacyContextHit(match.group(0), match.start(), severity))
+        found = False
+        for number, view in enumerate(views):
+            severity = ctx.matcher.evaluate_severity(dict_word, view)
+            if severity is None:
+                continue
+            for match in ctx.matcher.get_regex(dict_word).finditer(view):
+                hits.append(LegacyContextHit(match.group(0), match.start(), severity))
+                found = True
+            # Fuzzy matches have no regex occurrence; the aggressive view reports them.
+            if not found and number == len(views) - 1:
+                hits.append(LegacyContextHit(dict_word, 0, severity))
+            if found:
+                break
     return hits

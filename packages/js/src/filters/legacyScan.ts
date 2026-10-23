@@ -79,18 +79,31 @@ export function legacyScan(ctx: LegacyScanContext, text: string): LegacyScanResu
   return { profaneWords, severityMap };
 }
 
-/** Occurrence list (normalized view) used by the context-aware path. */
+/**
+ * Occurrence list for the context-aware path. It covers the same views as
+ * `legacyScan` (original, normalized, aggressive), so it never finds less.
+ */
 export function legacyContextHits(ctx: LegacyScanContext, text: string): LegacyContextHit[] {
-  const input = ctx.normalizeText(text).toLowerCase();
+  const views = [
+    text.toLowerCase(),
+    ctx.normalizeText(text).toLowerCase(),
+    ctx.normalizeText(text, true).toLowerCase(),
+  ];
   const hits: LegacyContextHit[] = [];
   for (const dictWord of ctx.words.keys()) {
     if (ctx.ignoreWords.has(dictWord.toLowerCase())) continue;
-    const severity = ctx.matcher.evaluateSeverity(dictWord, input);
-    if (severity === undefined) continue;
-    const regex = ctx.matcher.getRegex(dictWord);
-    let match;
-    while ((match = regex.exec(input)) !== null) {
-      hits.push({ word: match[0], index: match.index, severity });
+    let found = false;
+    for (let v = 0; v < views.length && !found; v++) {
+      const severity = ctx.matcher.evaluateSeverity(dictWord, views[v]);
+      if (severity === undefined) continue;
+      const regex = ctx.matcher.getRegex(dictWord);
+      let match;
+      while ((match = regex.exec(views[v])) !== null) {
+        hits.push({ word: match[0], index: match.index, severity });
+        found = true;
+      }
+      // Fuzzy matches have no regex occurrence; the aggressive view reports them.
+      if (!found && v === views.length - 1) hits.push({ word: dictWord, index: 0, severity });
     }
   }
   return hits;

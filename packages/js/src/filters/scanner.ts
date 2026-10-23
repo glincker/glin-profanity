@@ -103,15 +103,14 @@ export class Scanner {
       enhanced.some((view) => this.hasCandidate(view.text));
     if (!candidate) return false;
     if (!this.whitelist.mightMatch([text, norm, aggr, ...enhanced.map((v) => v.text)])) return true;
-    return this.scan(text, 'full').length > 0;
+    return this.scan(text).length > 0;
   }
 
   /**
    * Returns hits in dictionary order, views in order orig, norm, aggr, enhanced.
-   * `context` mode skips the original and aggressive views, as the
-   * context-aware path always did.
+   * Every path (plain and context-aware) scans the same views.
    */
-  scan(text: string, mode: 'full' | 'context'): ScanHit[] {
+  scan(text: string): ScanHit[] {
     const enhanced = this.views.enhancedViews(text);
     const quick = [
       text.toLowerCase(),
@@ -128,9 +127,9 @@ export class Scanner {
       const lowered = view.text.toLowerCase();
       views.push({ kind, view, lower: lowered.length === view.text.length ? lowered : view.text });
     };
-    if (mode === 'full') add('orig', legacy.orig);
+    add('orig', legacy.orig);
     add('norm', legacy.norm);
-    if (mode === 'full') add('aggr', legacy.aggr);
+    add('aggr', legacy.aggr);
     for (const view of enhanced) add('enhanced', view);
 
     const live = views.filter((v) => this.hasCandidate(v.lower));
@@ -147,7 +146,6 @@ export class Scanner {
           }
           const [start, end] = toOriginalSpan(view, match.index, match.index + match[0].length);
           const key = `${word}|${start}|${end}`;
-          if (kind !== 'orig' && mode === 'context' && seen.has(key)) continue;
           if (kind === 'enhanced' && seen.has(key)) continue;
           seen.add(key);
           hits.push({
@@ -161,18 +159,17 @@ export class Scanner {
         }
       }
     }
-    return this.dropWhitelisted(hits, legacy, enhanced, mode);
+    return this.dropWhitelisted(hits, legacy, enhanced);
   }
 
   private dropWhitelisted(
     hits: ScanHit[],
     legacy: LegacyViews,
     enhanced: MappedText[],
-    mode: 'full' | 'context',
   ): ScanHit[] {
     if (hits.length === 0 || this.whitelist.isEmpty) return hits;
     const safe: Interval[] = [];
-    const sources = [legacy.orig, legacy.norm, ...(mode === 'full' ? [legacy.aggr] : []), ...enhanced];
+    const sources = [legacy.orig, legacy.norm, legacy.aggr, ...enhanced];
     for (const view of sources) safe.push(...this.whitelist.intervals(view));
     if (safe.length === 0) return hits;
     return hits.filter((hit) => !safe.some((span) => within([hit.start, hit.end], span)));

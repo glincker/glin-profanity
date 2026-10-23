@@ -28,6 +28,18 @@ from .word_matcher import WordMatcher
 LeetspeakLevel = Literal["basic", "moderate", "aggressive"]
 
 
+def _unique_spans(hits: list[ScanHit]) -> list[ScanHit]:
+    """Drop repeat hits of the same word and span (original view wins)."""
+    seen: set[tuple[str, int, int]] = set()
+    unique: list[ScanHit] = []
+    for hit in hits:
+        key = (hit.word, hit.start, hit.end)
+        if key not in seen:
+            seen.add(key)
+            unique.append(hit)
+    return unique
+
+
 class Filter:
     """
     Main profanity filter class.
@@ -261,17 +273,20 @@ class Filter:
     def _redact(
         self, text: str, profane_words: list[str], hits: list[ScanHit] | None = None
     ) -> str:
-        """Mask obfuscated spans by offset, then plain dictionary words by pattern."""
-        if not profane_words or not self.replace_with:
+        """Mask by scan hit offsets so whitelisted spans stay intact.
+
+        Without hits (legacy scan, fuzzy matching) every occurrence of each word is masked.
+        """
+        if not self.replace_with:
             return text
-        spans = [
-            (h.start, h.end)
-            for h in hits or []
-            if h.view != "orig" and text[h.start : h.end].lower() != h.word
-        ]
-        spanned = replace_spans(text, spans, self.replace_with)
+        if hits is not None:
+            return replace_spans(
+                text, [(h.start, h.end) for h in hits], self.replace_with
+            )
+        if not profane_words:
+            return text
         return replace_words(
-            spanned, profane_words, self.replace_with, self.word_boundaries
+            text, profane_words, self.replace_with, self.word_boundaries
         )
 
     def is_profane(self, value: str) -> bool:
@@ -335,35 +350,31 @@ class Filter:
         severity_map: dict[str, SeverityLevel] = {}
         matches: list[Match] = []
 
-        if self.enable_context_aware:
-            if self._scanner is not None:
-                for hit in self._scanner.scan(text, "context"):
-                    matches.append(
-                        {"word": hit.text, "index": hit.start, "severity": hit.severity}
-                    )
-            else:
-                for ctx_hit in legacy_context_hits(self._legacy_context(), text):
-                    matches.append(
-                        {
-                            "word": ctx_hit.word,
-                            "index": ctx_hit.index,
-                            "severity": ctx_hit.severity,
-                        }
-                    )
-            for match in matches:
-                profane_words.append(match["word"])
-                severity_map.setdefault(match["word"], match["severity"])
-        elif self._scanner is not None:
-            hits = self._scanner.scan(text, "full")
+        if self._scanner is not None:
+            hits = self._scanner.scan(text)
+            if self.enable_context_aware:
+                # Same views as the plain path; one hit per word and span.
+                hits = _unique_spans(hits)
             for hit in hits:
                 # Original view: matched text; derived views: dictionary word.
                 key = hit.text if hit.view == "orig" else hit.word
-                if hit.view == "orig" or key not in profane_words:
+                if self.enable_context_aware or hit.view == "orig" or key not in profane_words:
                     profane_words.append(key)
                     severity_map.setdefault(key, hit.severity)
                     matches.append(
                         {"word": key, "index": hit.start, "severity": hit.severity}
                     )
+        elif self.enable_context_aware:
+            for ctx_hit in legacy_context_hits(self._legacy_context(), text):
+                matches.append(
+                    {
+                        "word": ctx_hit.word,
+                        "index": ctx_hit.index,
+                        "severity": ctx_hit.severity,
+                    }
+                )
+                profane_words.append(ctx_hit.word)
+                severity_map.setdefault(ctx_hit.word, ctx_hit.severity)
         else:
             legacy = legacy_scan(self._legacy_context(), text)
             profane_words = legacy.profane_words

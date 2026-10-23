@@ -295,14 +295,18 @@ class Filter {
     return this.cache.get(key);
   }
 
-  /** Masks obfuscated spans by offset, then plain dictionary words by pattern. */
+  /**
+   * Masks by scan hit offsets, so whitelisted spans stay intact. Without hits
+   * (legacy scan, fuzzy matching) every occurrence of each word is masked.
+   */
   private redact(text: string, profaneWords: string[], hits?: ScanHit[]): string {
-    if (profaneWords.length === 0 || !this.replaceWith) return text;
-    const spans = (hits ?? [])
-      .filter((h) => h.view !== 'orig' && text.slice(h.start, h.end).toLowerCase() !== h.word)
-      .map((h): [number, number] => [h.start, h.end]);
-    const spanned = replaceSpans(text, spans, this.replaceWith);
-    return replaceWords(spanned, profaneWords, this.replaceWith, this.wordBoundaries);
+    if (!this.replaceWith) return text;
+    if (hits) {
+      const spans = hits.map((h): [number, number] => [h.start, h.end]);
+      return replaceSpans(text, spans, this.replaceWith);
+    }
+    if (profaneWords.length === 0) return text;
+    return replaceWords(text, profaneWords, this.replaceWith, this.wordBoundaries);
   }
 
   private legacyContext(): LegacyScanContext {
@@ -374,7 +378,7 @@ class Filter {
 
     // Backward compatibility: if not context-aware, run old logic
     if (!this.enableContextAware) {
-      const hits = this.scanner ? this.scanner.scan(text, 'full') : undefined;
+      const hits = this.scanner ? this.scanner.scan(text) : undefined;
       const { profaneWords, severityMap } = hits
         ? summarizeHits(hits)
         : legacyScan(this.legacyContext(), text);
@@ -397,9 +401,18 @@ class Filter {
     const severityMap: Record<string, SeverityLevel> = {};
     const matches: Match[] = [];
 
-    const contextHits = this.scanner
-      ? this.scanner.scan(text, 'context').map((h) => ({ word: h.text, index: h.start, severity: h.severity }))
-      : legacyContextHits(this.legacyContext(), text);
+    // Same views as the plain path; the original-view hit and a derived-view hit
+    // of one span are reported once.
+    const scanHits = this.scanner ? uniqueSpans(this.scanner.scan(text)) : undefined;
+    const contextHits = scanHits
+      ? scanHits.map((h) => ({
+          word: h.view === 'orig' ? h.text : h.word,
+          index: h.start,
+          severity: h.severity,
+          scan: h,
+        }))
+      : legacyContextHits(this.legacyContext(), text).map((h) => ({ ...h, scan: undefined }));
+    const keptHits: ScanHit[] = [];
     for (const hit of contextHits) {
       const matchObj: Match = { word: hit.word, index: hit.index, severity: hit.severity };
       if (this.contextAnalyzer) {
@@ -416,13 +429,14 @@ class Filter {
         }
       }
       profaneWords.push(hit.word);
+      if (hit.scan) keptHits.push(hit.scan);
       if (severityMap[hit.word] === undefined) severityMap[hit.word] = hit.severity;
       matches.push(matchObj);
     }
     if (profaneWords.length > 0) {
       this.debugLog('Detected:', profaneWords);
     }
-    const processedText = this.redact(text, profaneWords);
+    const processedText = this.redact(text, profaneWords, scanHits ? keptHits : undefined);
     let contextScore: number | undefined;
     if (this.enableContextAware && matches.length > 0) {
       const totalScore = matches.reduce((sum, match) =>
@@ -468,6 +482,17 @@ class Filter {
 
     return { filteredWords, result };
   }
+}
+
+/** Drops repeat hits of the same word and span (original view wins). */
+function uniqueSpans(hits: ScanHit[]): ScanHit[] {
+  const seen = new Set<string>();
+  return hits.filter((h) => {
+    const key = `${h.word}|${h.start}|${h.end}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /** Folds scanner hits into the legacy words and severity map shape. */

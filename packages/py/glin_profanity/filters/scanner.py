@@ -16,7 +16,6 @@ from .whitelist import Interval, Whitelist, within
 from .word_matcher import WordMatcher, is_token_word, word_pattern
 
 ViewKind = Literal["orig", "norm", "aggr", "enhanced"]
-ScanMode = Literal["full", "context"]
 
 _ASCII_TOKEN = re.compile(r"[A-Za-z0-9_]+")
 _UNICODE_TOKEN = re.compile(r"\w+")
@@ -121,13 +120,12 @@ class Scanner:
             return False
         if not self._whitelist.might_match(texts):
             return True
-        return len(self.scan(text, "full")) > 0
+        return len(self.scan(text)) > 0
 
-    def scan(self, text: str, mode: ScanMode) -> list[ScanHit]:
+    def scan(self, text: str) -> list[ScanHit]:
         """Hits in dictionary order, views in order orig, norm, aggr, enhanced.
 
-        `context` mode skips the original and aggressive views, as the
-        context-aware path always did.
+        Every path (plain and context-aware) scans the same views.
         """
         enhanced = self._views.enhanced_views(text)
         quick = [
@@ -141,12 +139,11 @@ class Scanner:
             return []
         legacy = self._views.legacy_views(text)
 
-        candidates: list[tuple[ViewKind, MappedText]] = []
-        if mode == "full":
-            candidates.append(("orig", legacy.orig))
-        candidates.append(("norm", legacy.norm))
-        if mode == "full":
-            candidates.append(("aggr", legacy.aggr))
+        candidates: list[tuple[ViewKind, MappedText]] = [
+            ("orig", legacy.orig),
+            ("norm", legacy.norm),
+            ("aggr", legacy.aggr),
+        ]
         candidates.extend(("enhanced", view) for view in enhanced)
 
         live: list[_LiveView] = []
@@ -176,8 +173,6 @@ class Scanner:
                         continue
                     start, end = to_original_span(item.view, match.start(), match.end())
                     key = (word, start, end)
-                    if item.kind != "orig" and mode == "context" and key in seen:
-                        continue
                     if item.kind == "enhanced" and key in seen:
                         continue
                     seen.add(key)
@@ -191,21 +186,17 @@ class Scanner:
                             SeverityLevel.EXACT,
                         )
                     )
-        return self._drop_whitelisted(hits, legacy, enhanced, mode)
+        return self._drop_whitelisted(hits, legacy, enhanced)
 
     def _drop_whitelisted(
         self,
         hits: list[ScanHit],
         legacy: LegacyViews,
         enhanced: list[MappedText],
-        mode: ScanMode,
     ) -> list[ScanHit]:
         if not hits or self._whitelist.is_empty:
             return hits
-        sources = [legacy.orig, legacy.norm]
-        if mode == "full":
-            sources.append(legacy.aggr)
-        sources.extend(enhanced)
+        sources = [legacy.orig, legacy.norm, legacy.aggr, *enhanced]
         safe: list[Interval] = []
         for view in sources:
             safe.extend(self._whitelist.intervals(view))
