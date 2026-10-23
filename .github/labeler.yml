@@ -1,6 +1,6 @@
 # Path to label map, consumed by workflows/labeler.yml (actions/labeler).
 
-js:
+javascript:
   - changed-files:
       - any-glob-to-any-file:
           - "packages/js/**"
@@ -26,7 +26,7 @@ dictionaries:
       - any-glob-to-any-file:
           - "shared/dictionaries/**"
 
-docs:
+documentation:
   - changed-files:
       - any-glob-to-any-file:
           - "**/*.md"
