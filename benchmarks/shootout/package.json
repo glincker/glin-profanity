@@ -6,13 +6,16 @@
   "scripts": {
     "build-glin": "cd ../../packages/js && npm run build",
     "bench": "node harness.mjs",
+    "generate": "node generate-torture.mjs",
+    "ops-claim": "node ops-claim.mjs",
     "run": "npm run build-glin && node harness.mjs"
   },
   "dependencies": {
-    "obscenity": "^0.4.0",
+    "@2toad/profanity": "^2.2.0",
+    "allprofanity": "^2.4.0",
     "bad-words": "^3.0.4",
     "leo-profanity": "^1.6.0",
-    "@2toad/profanity": "^2.2.0",
+    "obscenity": "^0.4.0",
     "tinybench": "^3.1.1"
   }
 }
