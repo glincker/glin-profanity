@@ -3,6 +3,9 @@ import { Language, CheckProfanityResult, SeverityLevel, Match, FilterConfig, Lee
 import { ContextAnalyzer } from '../nlp/contextAnalyzer';
 import { normalizeLeetspeak } from '../utils/leetspeak';
 import { normalizeUnicode } from '../utils/unicode';
+import { WordMatcher } from './wordMatcher';
+import { replaceWords } from './replacement';
+import { legacyIsProfane, legacyScan, legacyContextHits, LegacyScanContext } from './legacyScan';
 
 export type { FilterConfig };
 
@@ -47,7 +50,7 @@ class Filter {
   private cacheResults: boolean;
   private maxCacheSize: number;
   private cache: Map<string, CheckProfanityResult>;
-  private regexCache: Map<string, RegExp>;
+  private matcher: WordMatcher;
 
   /**
    * Creates a new Filter instance with the specified configuration.
@@ -114,7 +117,11 @@ class Filter {
     this.cacheResults = config?.cacheResults ?? false;
     this.maxCacheSize = config?.maxCacheSize ?? 1000;
     this.cache = new Map();
-    this.regexCache = new Map();
+    this.matcher = new WordMatcher({
+      caseSensitive: this.caseSensitive,
+      wordBoundaries: this.wordBoundaries,
+      fuzzyToleranceLevel: this.fuzzyToleranceLevel,
+    });
 
     // Build word dictionary
     let words: string[] = [];
@@ -204,7 +211,7 @@ class Filter {
    */
   public clearCache(): void {
     this.cache.clear();
-    this.regexCache.clear();
+    this.matcher.clear();
   }
 
   /**
@@ -294,52 +301,13 @@ class Filter {
     return this.cache.get(key);
   }
 
-  private getRegex(word: string): RegExp {
-    if (this.regexCache.has(word)) {
-      const regex = this.regexCache.get(word)!;
-      regex.lastIndex = 0;
-      return regex;
-    }
-    const flags = this.caseSensitive ? 'g' : 'gi';
-    const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const boundary = this.wordBoundaries ? '\\b' : '';
-    const regex = new RegExp(`${boundary}${escapedWord}${boundary}`, flags);
-    this.regexCache.set(word, regex);
-    return regex;
-  }
-
-  private isFuzzyToleranceMatch(word: string, text: string): boolean {
-    const simplifiedText = text.toLowerCase().replace(/[^a-z]/g, '');
-    const simplifiedWord = word.toLowerCase();
-    let matchCount = 0;
-    let index = 0;
-
-    for (let i = 0; i < simplifiedText.length; i++) {
-      if (simplifiedText[i] === simplifiedWord[index]) {
-        matchCount++;
-        index++;
-        if (index === simplifiedWord.length) break;
-      }
-    }
-
-    const score = matchCount / simplifiedWord.length;
-    return score >= this.fuzzyToleranceLevel;
-  }
-
-  private evaluateSeverity(
-    word: string,
-    text: string,
-  ): SeverityLevel | undefined {
-    // Check for exact word match (with or without word boundaries)
-    if (this.getRegex(word).test(text)) {
-      return SeverityLevel.EXACT;
-    }
-    // Only use fuzzy matching when word boundaries are disabled
-    // This prevents the Scunthorpe problem (matching "cunt" in "scunthorpe")
-    if (!this.wordBoundaries && this.isFuzzyToleranceMatch(word, text)) {
-      return SeverityLevel.FUZZY;
-    }
-    return undefined;
+  private legacyContext(): LegacyScanContext {
+    return {
+      words: this.words,
+      ignoreWords: this.ignoreWords,
+      matcher: this.matcher,
+      normalizeText: (text, aggressive) => this.normalizeText(text, aggressive),
+    };
   }
 
   /**
@@ -359,29 +327,7 @@ class Filter {
    * ```
    */
   isProfane(value: string): boolean {
-    // Check against original, normalized, and aggressively normalized text
-    const originalInput = value;
-    const normalizedInput = this.normalizeText(value);
-    const aggressiveInput = this.normalizeText(value, true);
-
-    for (const word of this.words.keys()) {
-      if (this.ignoreWords.has(word.toLowerCase())) {
-        continue;
-      }
-      // Check against original text first (for raw leetspeak matches like f4ck)
-      if (this.evaluateSeverity(word, originalInput) !== undefined) {
-        return true;
-      }
-      // Check against normalized text (for @ss → ass)
-      if (this.evaluateSeverity(word, normalizedInput) !== undefined) {
-        return true;
-      }
-      // Check against aggressive normalization (for fuuuuck → fuck)
-      if (this.evaluateSeverity(word, aggressiveInput) !== undefined) {
-        return true;
-      }
-    }
-    return false;
+    return legacyIsProfane(this.legacyContext(), value);
   }
 
   matches(word: string): boolean {
@@ -423,148 +369,55 @@ class Filter {
 
     // Backward compatibility: if not context-aware, run old logic
     if (!this.enableContextAware) {
-      // Check original, normalized, and aggressively normalized text
-      const originalInput = text.toLowerCase();
-      const normalizedInput = this.normalizeText(text).toLowerCase();
-      const aggressiveInput = this.normalizeText(text, true).toLowerCase();
-
-      const profaneWords: string[] = [];
-      const severityMap: Record<string, SeverityLevel> = {};
-
-      for (const dictWord of this.words.keys()) {
-        if (this.ignoreWords.has(dictWord.toLowerCase())) continue;
-
-        // Check against original text first (for raw leetspeak matches like f4ck)
-        let severity = this.evaluateSeverity(dictWord, originalInput);
-        if (severity !== undefined) {
-          const regex = this.getRegex(dictWord);
-          let match;
-          while ((match = regex.exec(originalInput)) !== null) {
-            profaneWords.push(match[0]);
-            if (severityMap[match[0]] === undefined) {
-              severityMap[match[0]] = severity;
-            }
-          }
-        }
-
-        // Check against normalized text (for @ss → ass)
-        severity = this.evaluateSeverity(dictWord, normalizedInput);
-        if (severity !== undefined) {
-          const regex = this.getRegex(dictWord);
-          let match;
-          while ((match = regex.exec(normalizedInput)) !== null) {
-            if (!profaneWords.includes(dictWord)) {
-              profaneWords.push(dictWord);
-              if (severityMap[dictWord] === undefined) {
-                severityMap[dictWord] = severity;
-              }
-            }
-          }
-        }
-
-        // Check against aggressive normalization (for fuuuuck → fuck)
-        severity = this.evaluateSeverity(dictWord, aggressiveInput);
-        if (severity !== undefined) {
-          if (!profaneWords.includes(dictWord)) {
-            profaneWords.push(dictWord);
-            if (severityMap[dictWord] === undefined) {
-              severityMap[dictWord] = severity;
-            }
-          }
-        }
-      }
-
-      let processedText = text;
-      if (this.replaceWith && profaneWords.length > 0) {
-        const uniqueWords = Array.from(new Set(profaneWords));
-        for (const word of uniqueWords) {
-          const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          const replacementRegex = this.wordBoundaries
-            ? new RegExp(`\\b${escaped}\\b`, 'gi')
-            : new RegExp(escaped, 'gi');
-          processedText = processedText.replace(
-            replacementRegex,
-            this.replaceWith,
-          );
-        }
-      }
-
+      const { profaneWords, severityMap } = legacyScan(this.legacyContext(), text);
       const result: CheckProfanityResult = {
         containsProfanity: profaneWords.length > 0,
         profaneWords: Array.from(new Set(profaneWords)),
-        processedText: this.replaceWith ? processedText : undefined,
+        processedText:
+          this.replaceWith && profaneWords.length > 0
+            ? replaceWords(text, profaneWords, this.replaceWith, this.wordBoundaries)
+            : this.replaceWith ? text : undefined,
         severityMap:
           this.severityLevels && Object.keys(severityMap).length > 0
             ? severityMap
             : undefined,
       };
-
-      // Cache the result
       this.addToCache(cacheKey, result);
       return result;
     }
 
     // Context-aware path
-    // Apply all normalizations
-    let input = this.normalizeText(text);
-    input = input.toLowerCase();
     const originalText = text;
     const profaneWords: string[] = [];
     const severityMap: Record<string, SeverityLevel> = {};
     const matches: Match[] = [];
 
-    for (const dictWord of this.words.keys()) {
-      if (this.ignoreWords.has(dictWord.toLowerCase())) continue;
-      const severity = this.evaluateSeverity(dictWord, input);
-      if (severity !== undefined) {
-        const regex = this.getRegex(dictWord);
-        let match;
-        while ((match = regex.exec(input)) !== null) {
-          const matchedWord = match[0];
-          const matchIndex = match.index;
-          const matchObj: Match = {
-            word: matchedWord,
-            index: matchIndex,
-            severity: severity
-          };
-          if (this.enableContextAware && this.contextAnalyzer) {
-            const contextResult = this.contextAnalyzer.analyzeContext(
-              originalText,
-              matchedWord,
-              matchIndex
-            );
-            matchObj.contextScore = contextResult.contextScore;
-            matchObj.reason = contextResult.reason;
-            matchObj.isWhitelisted = contextResult.isWhitelisted;
-            if (contextResult.isWhitelisted || (contextResult.contextScore > this.confidenceThreshold)) {
-              continue;
-            }
-          }
-          profaneWords.push(matchedWord);
-          if (severityMap[matchedWord] === undefined) {
-            severityMap[matchedWord] = severity;
-          }
-          matches.push(matchObj);
+    for (const hit of legacyContextHits(this.legacyContext(), text)) {
+      const matchObj: Match = { word: hit.word, index: hit.index, severity: hit.severity };
+      if (this.contextAnalyzer) {
+        const contextResult = this.contextAnalyzer.analyzeContext(
+          originalText,
+          hit.word,
+          hit.index,
+        );
+        matchObj.contextScore = contextResult.contextScore;
+        matchObj.reason = contextResult.reason;
+        matchObj.isWhitelisted = contextResult.isWhitelisted;
+        if (contextResult.isWhitelisted || contextResult.contextScore > this.confidenceThreshold) {
+          continue;
         }
       }
+      profaneWords.push(hit.word);
+      if (severityMap[hit.word] === undefined) severityMap[hit.word] = hit.severity;
+      matches.push(matchObj);
     }
     if (profaneWords.length > 0) {
       this.debugLog('Detected:', profaneWords);
     }
-    let processedText = text;
-    if (this.replaceWith && profaneWords.length > 0) {
-      const uniqueWords = Array.from(new Set(profaneWords));
-      for (const word of uniqueWords) {
-        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const replacementRegex = this.wordBoundaries
-          ? new RegExp(`\\b${escaped}\\b`, 'gi')
-          : new RegExp(escaped, 'gi');
-        processedText = processedText.replace(
-          replacementRegex,
-          this.replaceWith,
-        );
-      }
-    }
+    const processedText =
+      this.replaceWith && profaneWords.length > 0
+        ? replaceWords(text, profaneWords, this.replaceWith, this.wordBoundaries)
+        : text;
     let contextScore: number | undefined;
     if (this.enableContextAware && matches.length > 0) {
       const totalScore = matches.reduce((sum, match) =>
