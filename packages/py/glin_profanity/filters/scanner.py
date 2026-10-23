@@ -203,7 +203,5 @@ class Scanner:
         if not safe:
             return hits
         return [
-            h
-            for h in hits
-            if not any(within((h.start, h.end), span) for span in safe)
+            h for h in hits if not any(within((h.start, h.end), span) for span in safe)
         ]

@@ -124,7 +124,14 @@ class TestWordEndBoundary:
 
     @pytest.mark.parametrize(
         "text",
-        ["f.u.c.k", "s h i t", "f.u.c.k.s.h.i.t", "you a s s", "f u c k e d", "f.u.c.k.you"],
+        [
+            "f.u.c.k",
+            "s h i t",
+            "f.u.c.k.s.h.i.t",
+            "you a s s",
+            "f u c k e d",
+            "f.u.c.k.you",
+        ],
     )
     def test_real_chains_still_flagged(self, text: str) -> None:
         assert make_filter(replace_with="*").is_profane(text)

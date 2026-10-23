@@ -23,7 +23,8 @@ INPUTS = [
 @pytest.mark.parametrize("text", INPUTS)
 def test_same_masking_as_plain_path(text: str) -> None:
     plain = make_filter(replace_with="*").check_profanity(text)
-    aware = make_filter(replace_with="*", enable_context_aware=True).check_profanity(text)
+    aware_filter = make_filter(replace_with="*", enable_context_aware=True)
+    aware = aware_filter.check_profanity(text)
     assert aware["contains_profanity"] == plain["contains_profanity"]
     assert aware.get("processed_text") == plain.get("processed_text")
 
@@ -66,7 +67,8 @@ def test_redaction_skips_whitelisted_name() -> None:
 
 def test_masks_every_occurrence() -> None:
     f = make_filter(replace_with="*")
-    assert f.check_profanity("shit and Shit and SHIT").get("processed_text") == "* and * and *"
+    result = f.check_profanity("shit and Shit and SHIT")
+    assert result.get("processed_text") == "* and * and *"
 
 
 def test_legacy_word_masking_without_boundaries() -> None:

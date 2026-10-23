@@ -113,7 +113,11 @@ class TestProtectedRange:
     @pytest.mark.parametrize(
         "text",
         [
-            "Moby Dick", "Dick Van Dyke", "Twatt, Orkney", "cum laude", "pussy willow",
+            "Moby Dick",
+            "Dick Van Dyke",
+            "Twatt, Orkney",
+            "cum laude",
+            "pussy willow",
             "cock the hammer back",
         ],
     )
@@ -121,9 +125,18 @@ class TestProtectedRange:
         assert not make_filter().is_profane(text)
 
     SAMPLES = (
-        "class", "assistant", "summa cum laude", "pussy willow", "great tit",
-        "bastard file", "jackass penguin", "cock the hammer", "anal fissure",
-        "Twatt, Orkney", "Moby Dick", "Dick Van Dyke",
+        "class",
+        "assistant",
+        "summa cum laude",
+        "pussy willow",
+        "great tit",
+        "bastard file",
+        "jackass penguin",
+        "cock the hammer",
+        "anal fissure",
+        "Twatt, Orkney",
+        "Moby Dick",
+        "Dick Van Dyke",
     )
 
     def test_every_entry_has_a_sample(self) -> None:

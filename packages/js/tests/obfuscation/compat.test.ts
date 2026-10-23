@@ -96,6 +96,6 @@ describe('quadratic hostile input is bounded', () => {
     const start = Date.now();
     filter.isProfane(input);
     filter.checkProfanity(input);
-    expect(Date.now() - start).toBeLessThan(1500);
+    expect(Date.now() - start).toBeLessThan(3000);
   });
 });

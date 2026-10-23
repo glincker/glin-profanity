@@ -1,4 +1,4 @@
-"""Interval whitelist: protected spans that let dictionary hits inside them be dropped."""
+"""Interval whitelist: protected spans that let hits fully inside them be dropped."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def within(hit: Interval, span: Interval) -> bool:
 
 
 def _edge(char: str, length: int, head: bool) -> str:
-    """Lookaround for one end of a user entry; symbols like "+" use the native rule."""
+    """Lookaround for one end of a user entry; symbols like "+" go native."""
     kind = edge_kind(char, length)
     if kind == "ascii":
         if char.isascii() and (char.isalnum() or char == "_"):
@@ -59,7 +59,7 @@ def _compile_user(entry: str) -> _Compiled:
 
 
 class Whitelist:
-    """Each entry is its own regex: context before, the protected word, context after."""
+    """Each entry is its own regex: context before, protected word, context after."""
 
     def __init__(self, user_entries: list[str], use_builtin: bool) -> None:
         compiled: list[_Compiled] = []

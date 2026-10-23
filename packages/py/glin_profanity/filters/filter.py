@@ -275,7 +275,8 @@ class Filter:
     ) -> str:
         """Mask by scan hit offsets so whitelisted spans stay intact.
 
-        Without hits (legacy scan, fuzzy matching) every occurrence of each word is masked.
+        Without hits (legacy scan, fuzzy matching) every occurrence of each word
+        is masked.
         """
         if not self.replace_with:
             return text
@@ -358,7 +359,8 @@ class Filter:
             for hit in hits:
                 # Original view: matched text; derived views: dictionary word.
                 key = hit.text if hit.view == "orig" else hit.word
-                if self.enable_context_aware or hit.view == "orig" or key not in profane_words:
+                first = self.enable_context_aware or hit.view == "orig"
+                if first or key not in profane_words:
                     profane_words.append(key)
                     severity_map.setdefault(key, hit.severity)
                     matches.append(
