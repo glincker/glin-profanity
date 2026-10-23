@@ -78,17 +78,43 @@ def _collect_joins(
     taken: set[int],
 ) -> None:
     i = 0
+    max_len = index.max_word_length
+    min_others = 1 if allow_space else 2
     while i < len(pieces):
         joined_to = -1
         candidate = ""
+        # Separator counters over pieces[i..j-1], kept incrementally for O(1) steps.
+        spaces = others = 0
+        has_single = False
+        all_single = True
         for j in range(i, len(pieces)):
-            candidate += pieces[j].text
-            if len(candidate) > index.max_word_length:
+            piece = pieces[j]
+            candidate += piece.text
+            if len(candidate) > max_len:
                 break
-            if j > i and _accepts_join(
-                pieces, i, j, candidate, index, allow_space, min_two_piece_length
+            if len(piece.text) == 1:
+                has_single = True
+            else:
+                all_single = False
+            if (
+                j > i
+                and has_single
+                and _span_allowed(
+                    j - i + 1,
+                    len(candidate),
+                    spaces,
+                    others,
+                    all_single,
+                    min_two_piece_length,
+                    min_others,
+                )
             ):
-                joined_to = j
+                if index.is_word(candidate):
+                    joined_to = j
+            if piece.sep == " ":
+                spaces += 1
+            else:
+                others += 1
         if joined_to < 0:
             i += 1
             continue
@@ -96,31 +122,24 @@ def _collect_joins(
         i = joined_to + 1
 
 
-def _accepts_join(
-    pieces: list[_Piece],
-    start: int,
-    end: int,
-    candidate: str,
-    index: DictionaryIndex,
-    allow_space: bool,
+def _span_allowed(
+    span_len: int,
+    candidate_len: int,
+    spaces: int,
+    others: int,
+    all_single: bool,
     min_two_piece_length: int,
+    min_others: int,
 ) -> bool:
-    span = pieces[start : end + 1]
-    if not any(len(p.text) == 1 for p in span):
+    """Separator and length rules for joining a span of pieces."""
+    if span_len == 2 and candidate_len < min_two_piece_length:
         return False
-    if len(span) == 2 and len(candidate) < min_two_piece_length:
-        return False
-    inner = [p.sep for p in span[:-1]]
-    spaces = sum(1 for s in inner if s == " ")
     if spaces > 0:
-        others = len(inner) - spaces
         # Plain "s h i t": at least three single letters, nothing else.
-        spelled_out = (
-            others == 0 and len(span) >= 3 and all(len(p.text) == 1 for p in span)
-        )
-        if not spelled_out and others < (1 if allow_space else 2):
+        spelled_out = others == 0 and span_len >= 3 and all_single
+        if not spelled_out and others < min_others:
             return False
-    return index.is_word(candidate)
+    return True
 
 
 def _add_edits(

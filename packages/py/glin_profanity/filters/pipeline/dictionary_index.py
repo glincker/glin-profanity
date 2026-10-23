@@ -10,6 +10,8 @@ from glin_profanity.utils.leetspeak import LeetspeakLevel, normalize_leetspeak
 _NEEDS_NORMALIZING = re.compile(r"[^a-z]|ph|vv|(.)\1\1")
 _REPEAT = re.compile(r"(.)\1+")
 _WHITESPACE = re.compile(r"\s")
+# Bounds the is_word memo so hostile input cannot grow it without limit.
+_WORD_CACHE_LIMIT = 50_000
 
 _LEET_READINGS: dict[str, str] = {
     "0": "o", "1": "il", "3": "e", "4": "a", "5": "s", "7": "t", "8": "b", "9": "g",
@@ -34,6 +36,7 @@ class DictionaryIndex:
         self._by_length: dict[int, list[str]] = {}
         self._squeezed: dict[str, list[str]] = {}
         self._stretch_patterns: dict[str, re.Pattern[str]] = {}
+        self._word_cache: dict[str, bool] = {}
         longest = 0
         for raw in words:
             word = raw.lower()
@@ -72,13 +75,20 @@ class DictionaryIndex:
 
     def is_word(self, fragment: str) -> bool:
         """True when the fragment is a dictionary word, also after leet decoding."""
+        cached = self._word_cache.get(fragment)
+        if cached is not None:
+            return cached
         lower = fragment.lower()
         if lower in self._exact:
-            return True
+            found = True
         # Plain letters without ph, vv or triple repeats normalize to themselves.
-        if not _NEEDS_NORMALIZING.search(lower):
-            return False
-        return self._normalize(lower) in self._normalized
+        elif not _NEEDS_NORMALIZING.search(lower):
+            found = False
+        else:
+            found = self._normalize(lower) in self._normalized
+        if len(self._word_cache) < _WORD_CACHE_LIMIT:
+            self._word_cache[fragment] = found
+        return found
 
     def resolve_masked(
         self, token: str, masks: frozenset[str], min_visible: int

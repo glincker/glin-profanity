@@ -17,7 +17,7 @@ def replace_words(
             word_pattern(word) if word_boundaries else f"(?ai:{re.escape(word)})"
         )
         lowered = processed.lower()
-        # Search the lowercased copy when offsets line up, so non-ASCII capitals match too.
+        # Search the lowercased copy when offsets line up, so non-ASCII capitals match.
         haystack = lowered if len(lowered) == len(processed) else processed
         out: list[str] = []
         cursor = 0
