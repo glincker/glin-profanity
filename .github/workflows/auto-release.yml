@@ -50,7 +50,7 @@ jobs:
     
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
           
@@ -105,13 +105,13 @@ jobs:
       
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           
@@ -172,12 +172,12 @@ jobs:
     
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           
@@ -212,7 +212,7 @@ jobs:
           hatch build
           
       - name: 💾 Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: packages-${{ github.sha }}
           path: |
@@ -230,13 +230,13 @@ jobs:
     
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           
       # Node 24 ships an npm new enough for OIDC trusted publishing, so no global npm upgrade.
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
@@ -249,7 +249,7 @@ jobs:
           node scripts/sync-versions.js release ${{ needs.detect-release.outputs.release_type }} ${{ needs.detect-release.outputs.channel }} > /dev/null
           
       - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: packages-${{ github.sha }}
           path: ./artifacts/
@@ -299,12 +299,12 @@ jobs:
     
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           
@@ -321,7 +321,7 @@ jobs:
           node scripts/sync-versions.js release ${{ needs.detect-release.outputs.release_type }} ${{ needs.detect-release.outputs.channel }} > /dev/null
           
       - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: packages-${{ github.sha }}
           path: ./artifacts/
@@ -359,13 +359,13 @@ jobs:
     
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
           
       - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: packages-${{ github.sha }}
           path: ./artifacts/
@@ -441,7 +441,7 @@ jobs:
           EOF
           
       - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.bump-version.outputs.new_version }}
           name: v${{ needs.bump-version.outputs.new_version }}
