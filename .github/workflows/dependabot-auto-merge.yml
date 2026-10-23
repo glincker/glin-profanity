@@ -5,8 +5,9 @@ name: Dependabot auto-merge
 #
 # Auto-merged: patch, minor, any dev-only dependency and GitHub Actions bumps.
 # Held for a human: production majors, and majors of release tooling or the
-# compiler (semantic-release, commitlint, husky, lerna, typescript), because
-# CI does not exercise the release pipeline.
+# compiler or bundler (semantic-release, commitlint, husky, lerna, typescript,
+# tsup), because CI does not exercise the release pipeline and a bundler major
+# can raise the minimum Node version.
 
 on:
   pull_request:
@@ -38,7 +39,7 @@ jobs:
           hold=false
           if [ "$UPDATE" = "version-update:semver-major" ]; then
             if [ "$DEP_TYPE" = "direct:production" ]; then hold=true; fi
-            if printf '%s' "$DEPS" | grep -Eq '(^|[ ,])(semantic-release|@semantic-release/[^ ,]+|@commitlint/[^ ,]+|commitlint|husky|lerna|typescript)([ ,]|$)'; then hold=true; fi
+            if printf '%s' "$DEPS" | grep -Eq '(^|[ ,])(semantic-release|@semantic-release/[^ ,]+|@commitlint/[^ ,]+|commitlint|husky|lerna|typescript|tsup)([ ,]|$)'; then hold=true; fi
           fi
           echo "hold=$hold" >> "$GITHUB_OUTPUT"
 
