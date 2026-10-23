@@ -1,0 +1,27 @@
+name: Actionlint
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: actionlint-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: Validate workflow files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@48e36f54d8da326b83ab061aee2cc5e01b5ca46f # v1.80.6
+        with:
+          reporter: local
+          fail_level: error
