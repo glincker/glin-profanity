@@ -19,24 +19,29 @@ Optimize glin-profanity for maximum throughput and minimal latency.
 
 ### Baseline Performance
 
-Tested on **Node.js 20, M1 MacBook Pro, single-threaded**:
+Measured with `benchmarks/shootout/ops-claim.mjs` on **Node 22, Apple Silicon, single-threaded**. One op is one `isProfane()` call on a short string with the default obfuscation level (`standard`). Your numbers will differ by machine and text length.
 
 | Operation | Performance | Use Case |
 |-----------|-------------|----------|
-| Simple check | **21M ops/sec** | Basic profanity detection |
-| With leetspeak (moderate) | **8.5M ops/sec** | Real-world scenarios |
-| With Unicode normalization | **15M ops/sec** | International content |
-| Multi-language (3 langs) | **18M ops/sec** | Multilingual platforms |
-| With caching (hit) | **200M+ ops/sec** | Repeated content |
+| Simple check, clean text (uncached) | ~300,000 ops/sec | Basic profanity detection |
+| Simple check, profane text (uncached) | ~330,000 ops/sec | Basic profanity detection |
+| With leetspeak (moderate) | ~180,000 ops/sec | Real-world scenarios |
+| With leetspeak (aggressive) | ~140,000 ops/sec | Strictest matching |
+| With Unicode normalization | ~300,000 ops/sec | International content |
+| Multi-language (3 langs) | ~300,000 ops/sec | Multilingual platforms |
+| All 24 languages | ~140,000 ops/sec | Unknown input language |
+| `checkProfanity()` result-cache hit | ~25M ops/sec | Repeated identical strings (cache path only) |
 | ML toxicity check | **50-200ms** | Advanced detection |
+
+Profane or obfuscated text through `checkProfanity()` (full result object) runs about 17,000 to 24,000 ops/sec. The 25M figure applies only to `checkProfanity()` with `cacheResults: true` on a string it has already seen; `isProfane()` does not use the cache. glin-profanity is not the fastest option in the comparison harness (see [Comparison](#performance-comparison)); it trades throughput for detection quality.
 
 ### Latency Targets
 
 | Environment | Target | Typical |
 |-------------|--------|---------|
-| **Synchronous API** | < 0.1ms | 0.05ms |
-| **With caching** | < 0.001ms | 0.0005ms |
-| **Batch (100 items)** | < 10ms | 5ms |
+| **Synchronous API** | < 0.1ms | 0.003ms |
+| **With caching (hit)** | < 0.001ms | 0.00004ms |
+| **Batch (100 items)** | < 10ms | depends on text, measure it |
 | **ML detection** | < 200ms | 100ms |
 | **Serverless cold start** | < 100ms | 50ms |
 
@@ -53,12 +58,11 @@ npm run benchmark
 
 **Output:**
 ```
-Simple profanity check: 21,000,000 ops/sec
-Leetspeak detection: 8,500,000 ops/sec
-Unicode normalization: 15,000,000 ops/sec
-Multi-language (3): 18,000,000 ops/sec
-Batch processing (100): 2,100,000 ops/sec total
-Cache hit: 200,000,000+ ops/sec
+Run node benchmarks/shootout/ops-claim.mjs for the reproducible single-call figures.
+Typical Apple Silicon, Node 22 output:
+  default, clean text            ~295,000 ops/sec
+  leetspeak aggressive, clean    ~137,000 ops/sec
+  checkProfanity, cache hit     ~24,600,000 ops/sec
 ```
 
 ### Custom Benchmarks
@@ -132,10 +136,10 @@ const filter = new Filter({
   cacheSize: 5000  // Adjust based on memory
 });
 
-// First check (uncached): ~0.05ms
+// First check (uncached): ~0.004ms
 filter.checkProfanity('test message');
 
-// Second check (cached): ~0.0001ms
+// Second check (cached): ~0.00004ms
 filter.checkProfanity('test message');
 ```
 
@@ -147,7 +151,7 @@ filter.checkProfanity('test message');
 
 ### 2. Minimize Language Set
 
-**Impact:** 40-50% faster with 1 language vs 24
+**Impact:** about 2x faster with a few languages than with all 24 (about 300,000 vs 140,000 ops/sec)
 
 ```typescript
 // Slower (all languages)
@@ -157,26 +161,26 @@ const filter = new Filter({
 
 // Faster (only needed languages)
 const filter = new Filter({
-  languages: ['english']  // 21M ops/sec
+  languages: ['english']  // ~300,000 ops/sec
 });
 ```
 
 ### 3. Optimize Leetspeak Level
 
-**Impact:** 3x faster with basic vs aggressive
+**Impact:** about 2x faster with moderate vs aggressive
 
 ```typescript
-// Fastest
+// Fastest leetspeak level (not separately measured)
 const filter = new Filter({
   detectLeetspeak: true,
-  leetspeakLevel: 'basic'  // ~15M ops/sec
+  leetspeakLevel: 'basic'
 });
 
 // Balanced
-filter.leetspeakLevel = 'moderate';  // ~8.5M ops/sec
+filter.leetspeakLevel = 'moderate';  // ~180,000 ops/sec
 
 // Most thorough (slowest)
-filter.leetspeakLevel = 'aggressive';  // ~5M ops/sec
+filter.leetspeakLevel = 'aggressive';  // ~140,000 ops/sec
 ```
 
 **Recommendation:** Start with `moderate`, only use `aggressive` if needed.
@@ -211,7 +215,7 @@ const filter = new Filter({
   cacheResults: false          // No cache overhead
 });
 
-// Fastest possible (basic detection only): ~30M ops/sec
+// Plain detection with no obfuscation handling: set obfuscation: 'off' and measure on your own text
 ```
 
 ---
@@ -594,21 +598,29 @@ function checkWithAPM(text: string) {
 
 ### vs Competitors
 
-| Library | Simple Check | With Leetspeak | Multi-Language |
-|---------|-------------|----------------|----------------|
-| **glin-profanity** | **21M ops/sec** | **8.5M ops/sec** | **18M ops/sec** |
-| bad-words | 890K ops/sec | N/A | N/A |
-| leo-profanity | 1.2M ops/sec | N/A | 400K ops/sec |
-| obscenity | 650K ops/sec | Partial | N/A |
+Harness numbers (20 inputs per iteration, Node 22, from `benchmarks/shootout/results.md`, reproducible with `benchmarks/shootout/harness.mjs`):
+
+| Library | ops/sec | F1 (English) |
+|---------|---------|--------------|
+| @2toad/profanity | ~884,000 | 29.4% |
+| leo-profanity | ~396,000 | 16.1% |
+| allprofanity | ~41,000 | 78.6% |
+| glin-profanity | ~7,400 | 99.0% |
+| obscenity | ~6,400 | 60.7% |
+| bad-words | ~260 | 28.9% |
+
+The thin filters are faster because they do far less work (no obfuscation handling). glin-profanity is not the fastest library; it is the most accurate on this set.
 
 ### Language Performance
 
-| Languages | Performance | Overhead |
-|-----------|-------------|----------|
-| 1 language | 21M ops/sec | Baseline |
-| 3 languages | 18M ops/sec | 14% |
-| 5 languages | 17M ops/sec | 19% |
-| 24 languages | 15M ops/sec | 29% |
+Uncached `isProfane()`, short clean string, Node 22:
+
+| Languages | Performance |
+|-----------|-------------|
+| 1 language | ~290,000 ops/sec |
+| 3 languages | ~295,000 ops/sec |
+| 5 languages | ~297,000 ops/sec |
+| All 24 languages | ~142,000 ops/sec |
 
 ---
 
