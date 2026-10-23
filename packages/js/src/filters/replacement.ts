@@ -5,6 +5,11 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/** Escapes text for use inside a [...] class, including backslash and hyphen, valid under the u flag. */
+export function escapeCharClass(value: string): string {
+  return value.replace(/[\\\][^-]/g, '\\$&');
+}
+
 /**
  * Replaces every occurrence of the given words in the text.
  * Whole-word replacement when wordBoundaries is set.

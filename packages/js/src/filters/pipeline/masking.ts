@@ -1,4 +1,4 @@
-import { escapeRegExp } from '../replacement';
+import { escapeCharClass, escapeRegExp } from '../replacement';
 import { DictionaryIndex } from './dictionaryIndex';
 import { Edit, Transformer, applyEdits } from './mapped';
 
@@ -48,7 +48,7 @@ function isEmphasis(raw: string, text: string, tokenStart: number, masks: Readon
  */
 export function maskingTransformer(index: DictionaryIndex, options: MaskingOptions): Transformer {
   const masks = new Set(Array.from(options.chars));
-  const maskClass = escapeRegExp(options.chars).replace(/-/g, '\\-');
+  const maskClass = escapeCharClass(options.chars);
   const quick = new RegExp(`[${maskClass}]`);
   const token = new RegExp(`[\\p{L}\\p{N}${maskClass}]+`, 'gu');
 

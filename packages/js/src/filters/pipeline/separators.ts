@@ -1,4 +1,4 @@
-import { escapeRegExp } from '../replacement';
+import { escapeCharClass } from '../replacement';
 import { DictionaryIndex } from './dictionaryIndex';
 import { Edit, Transformer, applyEdits } from './mapped';
 
@@ -31,7 +31,7 @@ export function separatorTransformer(
   index: DictionaryIndex,
   options: SeparatorOptions,
 ): Transformer {
-  const sepClass = escapeRegExp(options.chars).replace(/-/g, '\\-');
+  const sepClass = escapeCharClass(options.chars);
   const chain = new RegExp(
     `[\\p{L}\\p{N}]+(?:[${sepClass} ][\\p{L}\\p{N}]+)+`,
     'gu',

@@ -99,3 +99,18 @@ describe('quadratic hostile input is bounded', () => {
     expect(Date.now() - start).toBeLessThan(3000);
   });
 });
+
+describe('custom character sets are escaped inside regex classes', () => {
+  it.each(['\\', ']', '^', '-', '\\]-^'])('accepts %j among separator and mask chars without throwing', (extra) => {
+    const filter = makeFilter({
+      obfuscation: {
+        level: 'standard',
+        separators: { chars: `.${extra}`, allowSpace: true, minTwoPieceLength: 4 },
+        masking: { chars: `*${extra}`, minVisible: 1 },
+      },
+    });
+    expect(() => filter.checkProfanity('f.u.c.k and f*ck')).not.toThrow();
+    expect(filter.isProfane('f.u.c.k')).toBe(true);
+    expect(filter.isProfane('f*ck')).toBe(true);
+  });
+});
