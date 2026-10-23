@@ -288,9 +288,40 @@ jobs:
           fi
 
           echo "Publishing to npm with tag: $NPM_TAG"
-          # Using OIDC trusted publisher - no token needed
-          # --provenance adds verified build attestation
-          npm publish --tag $NPM_TAG --provenance --access public
+          # Using OIDC trusted publisher — no NPM_TOKEN required.
+          # --provenance attaches a verified build attestation to the tarball.
+          #
+          # If this step 404s, npm has not registered this repo+workflow as a
+          # trusted publisher. Fix path (one-time):
+          #   https://www.npmjs.com/package/glin-profanity/access
+          #   → Publishing access → Add trusted publisher → GitHub Actions:
+          #       Organization: glincker
+          #       Repository:   glin-profanity
+          #       Workflow:     auto-release.yml
+          #       Environment:  npm-publish
+          # See docs/RELEASING.md for the full walkthrough.
+          if ! npm publish --tag "$NPM_TAG" --provenance --access public; then
+            cat >&2 <<'EOF'
+
+=============================================================
+npm publish failed. This is almost always because the npm
+trusted-publisher registration on this package does not match
+the workflow that just ran.
+
+Fix:
+  1. Visit https://www.npmjs.com/package/glin-profanity/access
+  2. Add a GitHub Actions trusted publisher with exactly:
+       Organization: glincker
+       Repository:   glin-profanity
+       Workflow:     auto-release.yml
+       Environment:  npm-publish
+  3. Re-run this workflow (gh run rerun <id> --failed).
+
+See docs/RELEASING.md for the full one-time setup.
+=============================================================
+EOF
+            exit 1
+          fi
 
   # Publish to PyPI
   publish-pypi:
