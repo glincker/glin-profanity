@@ -45,7 +45,7 @@ function normalizeConfigForKey(config: FilterConfig): FilterConfig {
   if (normalized.domainWhitelists) {
     const source = normalized.domainWhitelists;
     normalized.domainWhitelists = Object.keys(source)
-      .sort()
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
       .reduce(
         (acc, lang) => {
           acc[lang as Language] = [...(source[lang as Language] ?? [])].sort();

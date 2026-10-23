@@ -574,7 +574,7 @@ _INFRA_PATTERNS: list[SecretPattern] = [
         id="SEC-SUPABASE-002",
         name="Supabase Connection String",
         pattern=re.compile(
-            r"postgresql://postgres:[A-Za-z0-9!@#$%^&*()_+\-=]{8,512}@[a-z0-9.]+\.supabase\.co",
+            r"postgresql://postgres:[A-Za-z0-9!@#$%^&*()_+\-=]{8,512}@[a-z0-9.]+\.supabase\.co",  # NOSONAR detection pattern, not a credential
             re.IGNORECASE,
         ),
         severity="critical",
