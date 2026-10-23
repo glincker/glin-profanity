@@ -234,10 +234,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
           
+      # Node 24 ships an npm new enough for OIDC trusted publishing, so no global npm upgrade.
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           
       - name: 📈 Re-apply version bump
@@ -253,9 +254,6 @@ jobs:
           name: packages-${{ github.sha }}
           path: ./artifacts/
           
-      - name: 🔧 Upgrade npm for OIDC support
-        run: npm install -g npm@latest
-
       - name: 🔧 Install root dependencies
         run: |
           # Install root dependencies to get husky and other tools
