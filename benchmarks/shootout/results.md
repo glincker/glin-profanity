@@ -196,18 +196,18 @@ Only libraries with non-English dictionaries are scored; the rest are English-on
 
 | Library | ops/sec | avg latency |
 |---------|---------|-------------|
-| glin-profanity | 7,463 | 134.6 us |
-| allprofanity | 38,767 | 26.2 us |
-| obscenity | 6,253 | 160.5 us |
-| bad-words | 258 | 3887.6 us |
-| leo-profanity | 405,552 | 2.5 us |
-| @2toad/profanity (fastest) | 870,297 | 1.2 us |
+| glin-profanity | 7,362 | 136.4 us |
+| allprofanity | 40,825 | 25.0 us |
+| obscenity | 6,422 | 156.3 us |
+| bad-words | 256 | 3915.3 us |
+| leo-profanity | 395,855 | 2.6 us |
+| @2toad/profanity (fastest) | 883,718 | 1.1 us |
 
 ## Bundle Size (unminified JS dist)
 
 | Library | Size |
 |---------|------|
-| glin-profanity | 140.7 KB |
+| glin-profanity | 141.1 KB |
 | allprofanity | 90.6 KB |
 | obscenity | 1.8 KB |
 | bad-words | 2.8 KB |

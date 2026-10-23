@@ -5,7 +5,7 @@
     "recall": 0.9867,
     "fpr": 0.011,
     "fprStrict": 0,
-    "opsPerSec": 7463
+    "opsPerSec": 7362
   },
   "allprofanity": {
     "f1": 0.786,

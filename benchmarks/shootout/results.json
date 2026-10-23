@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T17:19:09.400Z",
+  "generatedAt": "2026-10-23T17:20:43.560Z",
   "node": "v22.22.2",
   "cases": {
     "total": 1153,
@@ -14,7 +14,7 @@
       "f1": 0.9896,
       "fpr": 0.011,
       "fprStrict": 0,
-      "opsPerSec": 7463,
+      "opsPerSec": 7362,
       "counts": {
         "tp": 521,
         "fp": 4,
@@ -1951,7 +1951,7 @@
       "f1": 0.786,
       "fpr": 0.0767,
       "fprStrict": 0.0304,
-      "opsPerSec": 38767,
+      "opsPerSec": 40825,
       "counts": {
         "tp": 360,
         "fp": 28,
@@ -5393,7 +5393,7 @@
       "f1": 0.607,
       "fpr": 0.1315,
       "fprStrict": 0.0845,
-      "opsPerSec": 6253,
+      "opsPerSec": 6422,
       "counts": {
         "tp": 251,
         "fp": 48,
@@ -9742,7 +9742,7 @@
       "f1": 0.2888,
       "fpr": 0.0795,
       "fprStrict": 0.0101,
-      "opsPerSec": 258,
+      "opsPerSec": 256,
       "counts": {
         "tp": 94,
         "fp": 29,
@@ -15195,7 +15195,7 @@
       "f1": 0.1608,
       "fpr": 0.0575,
       "fprStrict": 0.0068,
-      "opsPerSec": 405552,
+      "opsPerSec": 395855,
       "counts": {
         "tp": 48,
         "fp": 21,
@@ -20952,7 +20952,7 @@
       "f1": 0.2945,
       "fpr": 0.0767,
       "fprStrict": 0.0101,
-      "opsPerSec": 870297,
+      "opsPerSec": 883718,
       "counts": {
         "tp": 96,
         "fp": 28,
