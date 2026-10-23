@@ -73,7 +73,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "glin-profanity": "^3.2.1"
+    "glin-profanity": "^4.0.0"
   },
   "peerDependencies": {
     "@sinclair/typebox": ">=0.32.0"
