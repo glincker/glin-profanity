@@ -14,10 +14,15 @@ Examples:
     True
 """
 
-__version__ = "3.4.0"
+__version__ = "4.0.0"
 __author__ = "glinr"
 __email__ = "contact@glincker.com"
 
+from .core.filter_pool import (
+    clear_filter_pool,
+    create_filter_config,
+    get_pooled_filter,
+)
 from .filters.filter import Filter
 from .types.types import (
     CheckProfanityResult,
@@ -49,6 +54,9 @@ from .utils import (
 __all__ = [
     # Core
     "Filter",
+    "create_filter_config",
+    "get_pooled_filter",
+    "clear_filter_pool",
     # Types
     "CheckProfanityResult",
     "FilterConfig",

@@ -2,13 +2,11 @@
 Tests for PiiScanner — ported from JS pii.test.ts on release.
 """
 
-import pytest
 
 from glin_profanity.scanners.base import ScanDecision
 from glin_profanity.scanners.patterns.pii_patterns import iban_check, luhn_check
 from glin_profanity.scanners.pii import PiiScanner, scan_pii
 from glin_profanity.scanners.vault import Vault
-
 
 # ---------------------------------------------------------------------------
 # Email

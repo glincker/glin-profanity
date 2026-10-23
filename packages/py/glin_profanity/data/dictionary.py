@@ -70,14 +70,21 @@ class DictionaryLoader:
                 data = json.load(f)
                 # Handle both {"words": [...]} and [...] formats
                 if isinstance(data, dict) and "words" in data:
-                    self._dictionaries[language] = data["words"]
+                    raw_words = data["words"]
                 elif isinstance(data, list):
-                    self._dictionaries[language] = data
+                    raw_words = data
                 else:
                     self._raise_format_error(filename)
+                    return
+                # Guard against malformed entries (None/numbers/objects) so the
+                # AC build and matching never crash on bad dictionary data.
+                self._dictionaries[language] = [
+                    word for word in raw_words if isinstance(word, str) and word
+                ]
         except (FileNotFoundError, json.JSONDecodeError, ValueError) as e:
             print(f"Warning: Could not load {filename}: {e}")  # noqa: T201
-            self._dictionaries[language] = []
+            # Do not cache the failure: a later call can retry after the file
+            # appears (e.g. misconfigured wheel path during startup).
 
     def get_words(self, language: Language) -> list[str]:
         """Get words for a specific language."""

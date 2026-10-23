@@ -397,7 +397,7 @@ INJECTION_PATTERNS: list[InjectionPattern] = [
     ),
     InjectionPattern(
         id="PI-034",
-        pattern=re.compile(r"\bHUMAN\s*:\s*|ASSISTANT\s*:\s*"),
+        pattern=re.compile(r"\bHUMAN\s*:\s*|ASSISTANT\s*:\s*", _I),
         category="delimiter_injection",
         severity="medium",
         description="Anthropic/Claude-style conversation delimiter injection",
@@ -416,9 +416,9 @@ INJECTION_PATTERNS: list[InjectionPattern] = [
     ),
     InjectionPattern(
         id="PI-036",
-        # Base64-looking blobs ≥40 chars that are not URLs or file paths
+        # Base64-looking blobs ≥40 chars, bounded to avoid ReDoS on long inputs.
         pattern=re.compile(
-            r"(?<![a-zA-Z0-9/._-])([A-Za-z0-9+/]{40,}={0,2})(?![a-zA-Z0-9/._-])"
+            r"(?<![a-zA-Z0-9/._-])([A-Za-z0-9+/]{40,512}={0,2})(?![a-zA-Z0-9/._-])"
         ),
         category="encoding_bypass",
         severity="low",

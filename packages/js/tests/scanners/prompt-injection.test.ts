@@ -107,6 +107,17 @@ describe('PromptInjectionScanner — HITL cases', () => {
     expect(result.score).toBeGreaterThan(0);
     expect(result.score).toBeLessThan(0.5);
   });
+
+  test('PI-036 match span excludes boundary delimiter chars', () => {
+    const blob = 'SGVsbG8gV29ybGQhIFRoaXMgaXMgYSB0ZXN0IG1lc3NhZ2UgZm9yIHNjYW5uaW5n';
+    const text = `payload: ${blob}`;
+    const result = scanner.scan(text);
+    const pi036 = result.matches?.filter((m) => m.pattern === 'PI-036') ?? [];
+    expect(pi036).toHaveLength(1);
+    const matched = text.slice(pi036[0]!.startIndex, pi036[0]!.endIndex);
+    expect(matched).toBe(blob);
+    expect(matched.startsWith(':')).toBe(false);
+  });
 });
 
 // ─── Custom pattern injection ─────────────────────────────────────────────────

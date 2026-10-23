@@ -20,18 +20,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - VS Code extension scaffold (`packages/vscode-extension`, v0.1.0)
 - Gradio Hugging Face Space (`packages/huggingface-space`) — 5-tab multi-scanner demo
 - Benchmark shootout CI gate (`benchmarks/shootout/`) — F1 regression guard vs obscenity, bad-words, leo-profanity, @2toad/profanity
+- Aho-Corasick dictionary matcher (JS + Python) with legacy regex fallback via `disableAhoCorasick` / `disable_aho_corasick`
+- CJK automatic matching by word script — Latin terms use `\b` boundaries; CJK terms match as substrings (including ASCII adjacency)
+- Context-aware profanity filtering (`ContextAnalyzer`) with positive/negative context scoring, phrase whitelists, and gaming domain whitelists (JS + Python parity)
+- Python filter instance pool (`get_pooled_filter`, `create_filter_config`, `clear_filter_pool`) mirroring JS `filterPool`
+- Expanded cross-language parity tests covering CJK matching, context-aware optimization, and `is_profane` agreement
+- Evasion normalization pipeline (`normalizeEvasion`) — HTML tag/entity decoding, separator collapse (`f.u.c.k`), asterisk masking (`f*cking`, `f***`), abbreviated insults (`go f yourself`)
+- Armenian homoglyph support (`ս` → `u`) and aggressive leetspeak `@` → `u` variant for patterns like `f@cking`
+- Added `shite` to English dictionary (covers `shi7e` leetspeak variant)
 
 ### Changed
 - Documentation throughput claims replaced with reproducible figures (uncached about 300,000 ops/sec; result-cache hit about 25M ops/sec)
 - Default scan now catches separators, masks, stretched letters and HTML-encoded words; `matches[].index` refers to the original input
 - Scanner implementations live at `glin-profanity/scanners` subpath export to keep core bundle unchanged; root entry exports types only
 - `ScanMatch.category` now carries pattern family (e.g. `"stripe"`, `"aws_access_key"`) instead of severity
+- Context-aware mode enables Aho-Corasick candidate discovery even when `wordBoundaries` / `word_boundaries` is `false`
+- `isProfane` / `is_profane` apply context filtering when `enableContextAware` / `enable_context_aware` is enabled
+- Filter instance pools use LRU touch-on-access eviction (JS Map reorder + Python `OrderedDict.move_to_end`)
+- Evasion normalization can be disabled via `enableEvasionNormalization` / `enable_evasion_normalization` (default: on)
 
 ### Fixed
 - Word-boundary matching no longer uses an ASCII-only `\b` for dictionary words that start or end with a non-ASCII letter. Russian, Arabic, Chinese, Korean, Japanese, Thai, Persian and edge letters in Turkish, Finnish, Polish and others now match with the default `wordBoundaries: true` (JS and Python); see docs/MIGRATION-4.0.md
 - PI-034 missing `/i` flag (only matched ALL-CAPS variants)
 - PI-036 removed negative lookbehind for broader runtime support (Safari, older Node)
 - Overlapping match range deduplication in secrets redaction
+- Python legacy fuzzy matching restricted to `word_boundaries=false` (aligned with JS)
+- Latin word-boundary checks use correct start/end positions (fixes Scunthorpe/classic false positives)
+- Korean NFKD normalization gaps — original/normalized/aggressive three-variant matching in both JS and Python
+- Normalized-variant matches map spans back to original text for context analysis and `replaceWith`
+- Context-aware recording analyzes context once per match (no duplicate `analyzeContext` calls)
+- `checkProfanity` AC path records original matched substrings instead of dictionary keys for normalized variants
+- `hasAnyMatch` early-exits on first hit instead of collecting all matches (JS + Python)
+- Case-sensitive mode builds Aho-Corasick automaton from original-case dictionary entries
+- JS `allowObfuscatedMatch` skipped when `detectLeetspeak` is enabled (parity with Python)
+- Python `clear_cache` now clears compiled regex cache
+- Python package exports `get_pooled_filter`, `create_filter_config`, and `clear_filter_pool` from top level
+- Variant span mapping handles homoglyphs, mask chars, and lowercased checkProfanity tiers
+- Context-aware mode supplements AC with legacy fuzzy matching when `wordBoundaries` is disabled
+- ContextAnalyzer locates match tokens by character span instead of estimated offsets
+- Nested profanity dedupe uses word-boundary checks (avoids `ass` inside `classic`)
+- `getConfig()` exports `enableEvasionNormalization` / `enable_evasion_normalization`
 
 ## [3.1.0] - 2025-12-30
 

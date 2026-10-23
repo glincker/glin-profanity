@@ -291,11 +291,9 @@ export const INJECTION_PATTERNS: InjectionPattern[] = [
   },
   {
     id: 'PI-036',
-    // Base64-looking blobs ≥40 chars that are not embedded in URLs or file paths.
-    // Uses a non-capturing boundary group instead of lookbehind for engine
-    // compatibility. Matches a non-path boundary char (or start-of-string anchor
-    // handled by alternation) before and after the blob.
-    pattern: /(?:^|[^a-zA-Z0-9/._-])([A-Za-z0-9+/]{40,}={0,2})(?:[^a-zA-Z0-9/._-]|$)/,
+    // Base64-looking blobs ≥40 chars, bounded to avoid ReDoS on long inputs.
+    // Lookbehind/lookahead match span excludes boundary chars (aligned with Python).
+    pattern: /(?<![a-zA-Z0-9/._-])([A-Za-z0-9+/]{40,512}={0,2})(?![a-zA-Z0-9/._-])/,
     category: 'encoding_bypass',
     severity: 'low',
     description: 'Possible base64-encoded payload (≥40 chars)',

@@ -92,8 +92,8 @@ export class ContextAnalyzer {
     matchWord: string,
     matchIndex: number
   ): ContextAnalysisResult {
-    const words = this.tokenize(text);
-    const matchWordIndex = this.findWordIndex(words, matchIndex);
+    const tokens = this.tokenizeWithSpans(text);
+    const matchWordIndex = this.findWordIndex(tokens, matchIndex);
     
     if (matchWordIndex === -1) {
       return {
@@ -105,8 +105,8 @@ export class ContextAnalyzer {
 
     // Extract context window
     const startIndex = Math.max(0, matchWordIndex - this.contextWindow);
-    const endIndex = Math.min(words.length, matchWordIndex + this.contextWindow + 1);
-    const contextWords = words.slice(startIndex, endIndex);
+    const endIndex = Math.min(tokens.length, matchWordIndex + this.contextWindow + 1);
+    const contextWords = tokens.slice(startIndex, endIndex).map((token) => token.word);
     const contextText = contextWords.join(' ').toLowerCase();
 
     // Check for exact phrase matches first
@@ -195,27 +195,47 @@ export class ContextAnalyzer {
     }
   }
 
-  private tokenize(text: string): string[] {
-    // Simple tokenization - split on whitespace and punctuation
-    return text.toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(word => word.length > 0);
+  private tokenizeWithSpans(text: string): Array<{ word: string; start: number; end: number }> {
+    const tokens: Array<{ word: string; start: number; end: number }> = [];
+    const pattern = /\S+/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(text)) !== null) {
+      const raw = match[0];
+      const normalized = raw.toLowerCase().replace(/[^\p{L}\p{N}_]/gu, '');
+      if (normalized.length > 0) {
+        tokens.push({
+          word: normalized,
+          start: match.index,
+          end: match.index + raw.length,
+        });
+      }
+    }
+
+    return tokens;
   }
 
-  private findWordIndex(words: string[], charIndex: number): number {
-    // This is a simplified approach - in production, you'd want more robust mapping
-    // For now, we'll estimate based on the character position
-    let currentPos = 0;
-    for (let i = 0; i < words.length; i++) {
-      if (currentPos >= charIndex) {
+  private findWordIndex(
+    tokens: Array<{ word: string; start: number; end: number }>,
+    charIndex: number,
+  ): number {
+    // No tokens (e.g. text has no word characters): signal "not found" with -1
+    // so the caller's fallback path runs, matching Python's _find_word_index.
+    if (tokens.length === 0) {
+      return -1;
+    }
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]!;
+      if (charIndex >= token.start && charIndex < token.end) {
+        return i;
+      }
+      if (charIndex < token.start) {
         return Math.max(0, i - 1);
       }
-      currentPos += words[i].length + 1; // +1 for space
     }
-    return words.length - 1;
+    return tokens.length - 1;
   }
-
 
   private calculateSentimentScore(contextWords: string[], matchPosition: number): number {
     let positiveCount = 0;

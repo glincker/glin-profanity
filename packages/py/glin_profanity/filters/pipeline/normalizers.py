@@ -10,6 +10,7 @@ from glin_profanity.utils.leetspeak import (
     SPACED_CHARS_PATTERN,
     LeetspeakLevel,
     get_leetspeak_tables,
+    measurement_digit_indices,
 )
 from glin_profanity.utils.unicode import HOMOGLYPHS, ZERO_WIDTH_CHARS
 
@@ -81,7 +82,7 @@ def leet_transformer(
         )
         for pattern, replacement in multi:
             m = replace_regex(m, pattern, _constant(replacement))
-        m = map_chars(m, single)
+        m = map_chars(m, single, measurement_digit_indices(m.text))
         return replace_regex(m, repeated, lambda x: x.group(1) * max_repeated)
 
     return run

@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.0",
-    "glin-profanity": "^3.2.1",
+    "glin-profanity": "^4.0.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {

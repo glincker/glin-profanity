@@ -12,7 +12,6 @@ from glin_profanity.scanners.prompt_injection import (
     default_prompt_injection_scanner,
 )
 
-
 # ─── Known jailbreak inputs — should BLOCK ───────────────────────────────────
 # Strict mode: normalizer=1.0, so any critical-severity match → score=1.0 → BLOCK
 
@@ -125,6 +124,18 @@ class TestPromptInjectionScannerHitlCases:
         )
         assert result.score > 0
         assert result.score < 0.5
+
+    def test_pi036_match_span_excludes_boundary_chars(self) -> None:
+        """PI-036 lookaround must not include leading/trailing delimiter chars."""
+        blob = "SGVsbG8gV29ybGQhIFRoaXMgaXMgYSB0ZXN0IG1lc3NhZ2UgZm9yIHNjYW5uaW5n"
+        text = f"payload: {blob}"
+        scanner = PromptInjectionScanner(strictness="moderate")
+        result = scanner.scan(text)
+        pi036 = [m for m in result.matches if m.pattern == "PI-036"]
+        assert len(pi036) == 1
+        matched = text[pi036[0].start_index : pi036[0].end_index]
+        assert matched == blob
+        assert not matched.startswith(":") and not matched.endswith(" ")
 
 
 # ─── Custom pattern injection ─────────────────────────────────────────────────

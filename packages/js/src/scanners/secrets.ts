@@ -5,7 +5,7 @@
  */
 
 import type { Scanner, ScanResult, ScanContext, ScanMatch } from './base';
-import { allowResult, blockResult } from './base';
+import { allowResult, blockResult, coerceScanInput } from './base';
 import { SECRET_PATTERNS, type SecretPattern } from './patterns/secret-patterns';
 import type { Vault } from './vault';
 
@@ -71,6 +71,22 @@ export interface SecretsOptions {
 // SecretsScanner
 // ---------------------------------------------------------------------------
 
+/** A secret pattern with a pre-compiled global RegExp for scanning. */
+interface CompiledSecretPattern {
+  def: SecretPattern;
+  re: RegExp;
+}
+
+function compileSecretPattern(entry: SecretPattern): CompiledSecretPattern {
+  const flags = entry.pattern.flags.includes('g')
+    ? entry.pattern.flags
+    : entry.pattern.flags + 'g';
+  return {
+    def: entry,
+    re: new RegExp(entry.pattern.source, flags),
+  };
+}
+
 /**
  * Scanner that detects secrets, API keys, and credentials in text.
  *
@@ -80,13 +96,14 @@ export class SecretsScanner implements Scanner {
   /** @inheritdoc */
   readonly name = 'secrets';
 
-  private readonly patterns: SecretPattern[];
+  private readonly compiledPatterns: CompiledSecretPattern[];
   private readonly options: Required<Omit<SecretsOptions, 'vault' | 'customPatterns'>> & {
     vault?: Vault;
   };
 
   constructor(options: SecretsOptions = {}) {
-    this.patterns = [...SECRET_PATTERNS, ...(options.customPatterns ?? [])];
+    const patterns = [...SECRET_PATTERNS, ...(options.customPatterns ?? [])];
+    this.compiledPatterns = patterns.map(compileSecretPattern);
     this.options = {
       redact: options.redact ?? false,
       vault: options.vault,
@@ -99,16 +116,14 @@ export class SecretsScanner implements Scanner {
 
   /** @inheritdoc */
   scan(input: string, _ctx?: ScanContext): ScanResult {
+    input = coerceScanInput(input);
     const matches: ScanMatch[] = [];
     const reasons: string[] = [];
     let sanitized = input;
 
-    for (const entry of this.patterns) {
-      const flags = entry.pattern.flags.includes('g')
-        ? entry.pattern.flags
-        : entry.pattern.flags + 'g';
-      const re = new RegExp(entry.pattern.source, flags);
+    for (const { def: entry, re } of this.compiledPatterns) {
       let m: RegExpExecArray | null;
+      re.lastIndex = 0;
 
       while ((m = re.exec(input)) !== null) {
         // For patterns with capture groups, prefer group 1 for entropy check

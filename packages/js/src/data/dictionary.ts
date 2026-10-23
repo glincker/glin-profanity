@@ -10,7 +10,7 @@ import German from '@shared/dictionaries/german.json';
 import Hindi from '@shared/dictionaries/hindi.json';
 import Hungarian from '@shared/dictionaries/hungarian.json';
 import Korean from '@shared/dictionaries/korean.json';
-import Norwegian from '@shared/dictionaries/Norwegian.json';
+import Norwegian from '@shared/dictionaries/norwegian.json';
 import Persian from '@shared/dictionaries/persian.json';
 import Polish from '@shared/dictionaries/polish.json';
 import Portuguese from '@shared/dictionaries/portuguese.json';

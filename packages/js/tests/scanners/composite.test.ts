@@ -29,6 +29,24 @@ describe('scanAll — defaults', () => {
     }
   });
 
+  test.each([null, undefined, 123, ['a'], { x: 1 }])(
+    'non-string input %p does not crash',
+    (bad) => {
+      const results = scanAll(bad as unknown as string);
+      expect(results).toHaveLength(3);
+      for (const r of results) {
+        expect(r.decision).toBe('ALLOW');
+      }
+    },
+  );
+
+  test('vault null does not redact (matches Python is-not-None semantics)', () => {
+    const text = 'my email is user@example.com';
+    const results = scanAll(text, { vault: null as never });
+    const pii = results.find((r) => r.scanner === 'pii')!;
+    expect(pii.sanitized).toBe(text);
+  });
+
   test('PII text triggers pii scanner', () => {
     const results = scanAll('Contact me at user@example.com');
     const piiResult = results.find((r) => r.scanner === 'pii')!;

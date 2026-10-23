@@ -158,6 +158,8 @@ class FilterConfig(ContextAwareConfig, total=False):
     max_cache_size: int  # Maximum cache size when caching is enabled
 
 
+
+
 class FilteredProfanityResult(TypedDict):
     """Result with minimum severity filtering."""
 

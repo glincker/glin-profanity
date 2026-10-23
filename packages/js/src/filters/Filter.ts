@@ -2,6 +2,7 @@ import dictionary from '../data/dictionary';
 import { Language, CheckProfanityResult, SeverityLevel, Match, FilterConfig, LeetspeakLevel } from '../types/types';
 import { ContextAnalyzer } from '../nlp/contextAnalyzer';
 import { normalizeForMatching } from './normalizeText';
+import { normalizeUnicode } from '../utils/unicode';
 import { WordMatcher } from './wordMatcher';
 import { redactText } from './redact';
 import { uniqueSpans, summarizeHits } from './hitSummary';
@@ -154,6 +155,12 @@ class Filter {
       words = [...words, ...config.customWords];
     }
 
+    // Text folds diacritics, so an accented entry needs a folded alias to match
+    // "ereccion". Short entries are skipped (año would alias to ano).
+    if (this.normalizeUnicodeEnabled) {
+      words = Filter.withAccentFoldedAliases(words);
+    }
+
     this.words = new Map(words.map((word) => [word.toLowerCase(), 1]));
     this.scanner = this.createScanner();
     // Fuzzy matching has no scanner; only the user's own safe words apply there.
@@ -165,6 +172,22 @@ class Filter {
    * The obfuscation-aware scanner needs word boundaries; fuzzy matching
    * (wordBoundaries off) and `obfuscation: 'off'` keep the legacy scan.
    */
+  private static readonly ACCENT_ALIAS_MIN_LENGTH = 4;
+
+  private static withAccentFoldedAliases(words: string[]): string[] {
+    const seen = new Set(words.map((word) => word.toLowerCase()));
+    const extra: string[] = [];
+    for (const word of words) {
+      const folded = normalizeUnicode(word);
+      const key = folded.toLowerCase();
+      if (key === word.toLowerCase() || seen.has(key)) continue;
+      if (key.replace(/ /g, '').length < Filter.ACCENT_ALIAS_MIN_LENGTH) continue;
+      seen.add(key);
+      extra.push(folded);
+    }
+    return extra.length > 0 ? [...words, ...extra] : words;
+  }
+
   private createScanner(): Scanner | undefined {
     const obfuscation = resolveObfuscation(this.obfuscationOption);
     if (!this.wordBoundaries) return undefined;

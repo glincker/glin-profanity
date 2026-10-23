@@ -11,7 +11,14 @@ Mirrors the TypeScript scanner at packages/js/src/scanners/prompt-injection.ts.
 
 from typing import Optional
 
-from .base import ScanDecision, ScanMatch, ScanResult, allow_result, block_result
+from .base import (
+    ScanDecision,
+    ScanMatch,
+    ScanResult,
+    allow_result,
+    block_result,
+    coerce_scan_input,
+)
 from .patterns.injection_patterns import INJECTION_PATTERNS, InjectionPattern
 
 SEVERITY_WEIGHTS: dict[str, float] = {
@@ -77,6 +84,7 @@ class PromptInjectionScanner:
         Returns:
             A :class:`~.base.ScanResult` with decision, score, and match details.
         """
+        input = coerce_scan_input(input)
         effective_strictness = (
             ctx.get("strictness", self._strictness) if ctx else self._strictness
         )

@@ -8,9 +8,11 @@ from glin_profanity.data.dictionary import dictionary
 from glin_profanity.types.types import (
     CheckProfanityResult,
     FilterConfig,
+    Language,
     Match,
     SeverityLevel,
 )
+from glin_profanity.utils.unicode import normalize_unicode
 
 from .legacy_scan import (
     LegacyScanContext,
@@ -25,6 +27,23 @@ from .replacement import replace_spans, replace_words
 from .scanner import ScanHit, Scanner, ScannerConfig
 from .whitelist import Interval, Whitelist, blank_protected
 from .word_matcher import WordMatcher
+
+_ACCENT_ALIAS_MIN_LENGTH = 4
+
+
+def _with_accent_folded_aliases(words: list[str]) -> list[str]:
+    seen = {word.lower() for word in words}
+    extra: list[str] = []
+    for word in words:
+        folded = normalize_unicode(word)
+        key = folded.lower()
+        if key == word.lower() or key in seen:
+            continue
+        if len(key.replace(" ", "")) < _ACCENT_ALIAS_MIN_LENGTH:
+            continue
+        seen.add(key)
+        extra.append(folded)
+    return words + extra
 
 LeetspeakLevel = Literal["basic", "moderate", "aggressive"]
 
@@ -69,6 +88,12 @@ class Filter:
         """
         config = config or {}
 
+        # Kept so get_config() can round-trip what the caller passed in.
+        self._languages: list[Language] = list(config.get("languages") or [])
+        self._all_languages = bool(config.get("all_languages", False))
+        self._custom_words: list[str] = list(config.get("custom_words") or [])
+        self._domain_whitelists = config.get("domain_whitelists")
+
         # Basic configuration
         self.case_sensitive = config.get("case_sensitive", False)
         self.allow_obfuscated_match = config.get("allow_obfuscated_match", False)
@@ -93,7 +118,7 @@ class Filter:
         # Caching configuration
         self.cache_results = config.get("cache_results", False)
         self.max_cache_size = config.get("max_cache_size", 1000)
-        self._cache: dict[str, CheckProfanityResult] = {}
+        self._cache: dict[tuple[object, ...], CheckProfanityResult] = {}
         self._matcher = WordMatcher(
             self.case_sensitive, self.word_boundaries, self.fuzzy_tolerance_level
         )
@@ -131,6 +156,11 @@ class Filter:
         custom_words = config.get("custom_words")
         if custom_words:
             words.extend(custom_words)
+
+        # Text folds diacritics, so an accented entry needs a folded alias to match
+        # "ereccion". Short entries are skipped (año would alias to ano).
+        if self.normalize_unicode_enabled:
+            words = _with_accent_folded_aliases(words)
 
         # Insertion order is kept so hits come out in a stable dictionary order.
         self._word_list: list[str] = list(dict.fromkeys(word.lower() for word in words))
@@ -250,7 +280,12 @@ class Filter:
             "cache_results": self.cache_results,
             "max_cache_size": self.max_cache_size,
             "whitelist": self.whitelist_words,
+            "languages": list(self._languages),
+            "all_languages": self._all_languages,
+            "custom_words": list(self._custom_words),
         }
+        if self._domain_whitelists is not None:
+            config["domain_whitelists"] = self._domain_whitelists
         if self.obfuscation_option is not None:
             config["obfuscation"] = self.obfuscation_option
         return config
@@ -266,7 +301,11 @@ class Filter:
         """
         return len(self.words)
 
-    def _add_to_cache(self, key: str, result: CheckProfanityResult) -> None:
+    def _cache_key(self, text: str) -> tuple[object, ...]:
+        # Settings callers can change after construction must not serve stale results.
+        return (text, self.replace_with, frozenset(self.ignore_words))
+
+    def _add_to_cache(self, key: tuple[object, ...], result: CheckProfanityResult) -> None:
         """Add a result to the cache, evicting oldest entries if necessary."""
         if not self.cache_results:
             return
@@ -278,7 +317,7 @@ class Filter:
 
         self._cache[key] = result
 
-    def _get_from_cache(self, key: str) -> CheckProfanityResult | None:
+    def _get_from_cache(self, key: tuple[object, ...]) -> CheckProfanityResult | None:
         """Get a cached result if available."""
         if not self.cache_results:
             return None
@@ -374,7 +413,8 @@ class Filter:
             >>> result["contains_profanity"]
             True
         """
-        cached_result = self._get_from_cache(text)
+        cache_key = self._cache_key(text)
+        cached_result = self._get_from_cache(cache_key)
         if cached_result is not None:
             self._debug_log("Cache hit for:", text[:50])
             return cached_result
@@ -442,7 +482,7 @@ class Filter:
             else "No profanity detected"
         )
 
-        self._add_to_cache(text, result)
+        self._add_to_cache(cache_key, result)
         return result
 
     def check_profanity_with_min_severity(

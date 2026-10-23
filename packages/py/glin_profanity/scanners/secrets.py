@@ -9,7 +9,13 @@ Mirrors packages/js/src/scanners/secrets.ts.
 import math
 from typing import Optional, TypedDict
 
-from .base import ScanMatch, ScanResult, allow_result, block_result
+from .base import (
+    ScanMatch,
+    ScanResult,
+    allow_result,
+    block_result,
+    coerce_scan_input,
+)
 from .patterns.secret_patterns import SECRET_PATTERNS, SecretPattern
 from .vault import Vault
 
@@ -171,6 +177,7 @@ class SecretsScanner:
         Returns:
             A ScanResult with decision, score, and match details.
         """
+        input = coerce_scan_input(input)
         matches: list[ScanMatch] = []
         reasons: list[str] = []
 

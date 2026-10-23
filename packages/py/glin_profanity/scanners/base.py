@@ -74,6 +74,16 @@ class Scanner(Protocol):
         ...
 
 
+def coerce_scan_input(value: object) -> str:
+    """Coerce scanner input to a string.
+
+    Scanners receive arbitrary runtime values; a non-string input (``None``,
+    numbers, dicts) would otherwise blow up inside ``finditer``/``exec``. Treat
+    anything that is not a string as empty so scanners never raise on bad input.
+    """
+    return value if isinstance(value, str) else ""
+
+
 def allow_result(scanner: str, input: str) -> ScanResult:
     """
     Build an ALLOW result for a scanner that found nothing to flag.

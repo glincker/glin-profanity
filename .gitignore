@@ -241,3 +241,6 @@ CLAUDE.local.md
 
 # Roadmap kept local — not tracked upstream
 ROADMAP.md
+
+# Local CSV comparison benchmark (machine-specific paths)
+benchmarks/compare_csv_packages.py

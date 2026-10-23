@@ -55,6 +55,18 @@ export interface ScanContext {
 }
 
 /**
+ * Coerce scanner input to a string.
+ *
+ * Scanners are reached from untyped runtime call sites; a non-string input
+ * (`null`, `undefined`, numbers, objects) would otherwise throw inside
+ * `RegExp.exec`. Treat anything that is not a string as empty so scanners never
+ * raise on bad input. Mirrors Python's `coerce_scan_input`.
+ */
+export function coerceScanInput(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+/**
  * Build an ALLOW result for a scanner that found nothing to flag.
  *
  * @param scanner - Name of the scanner producing the result.

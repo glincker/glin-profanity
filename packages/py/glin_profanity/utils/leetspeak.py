@@ -106,6 +106,18 @@ SPACED_CHARS_PATTERN = re.compile(
 )
 
 
+# A digit plus one Latin letter ("5m") is a measurement, so its digits stay digits.
+_MEASUREMENT_LIKE = re.compile(r"(?<![A-Za-z])\d+[A-Za-z](?![A-Za-z])")
+
+
+def measurement_digit_indices(text: str) -> set[int]:
+    """Indices of digits that belong to a measurement-like token such as `5m`."""
+    keep: set[int] = set()
+    for match in _MEASUREMENT_LIKE.finditer(text):
+        keep.update(i for i in range(match.start(), match.end()) if text[i].isdigit())
+    return keep
+
+
 def get_leetspeak_tables(
     level: LeetspeakLevel, ambiguous_as_l: bool = False
 ) -> tuple[list[tuple[re.Pattern[str], str]], dict[str, str]]:
@@ -159,7 +171,11 @@ def normalize_leetspeak(
 
     # Step 3: Apply single-character substitutions
     substitutions = _get_substitution_map(level, ambiguous_as_l)
-    normalized = "".join(substitutions.get(char, char) for char in normalized)
+    keep_digits = measurement_digit_indices(normalized)
+    normalized = "".join(
+        char if i in keep_digits else substitutions.get(char, char)
+        for i, char in enumerate(normalized)
+    )
 
     # Step 4: Collapse repeated characters (fuuuuck -> fuck)
     if collapse_repeated:

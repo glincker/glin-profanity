@@ -1,14 +1,23 @@
 import { renderHook, act } from '@testing-library/react';
 
+const mockFilterIsProfane = jest.fn();
+
 // Mock the core functions to ensure we're testing the hook behavior
 jest.mock('../src/core', () => ({
   checkProfanity: jest.fn(),
   checkProfanityAsync: jest.fn(),
-  isWordProfane: jest.fn(),
+}));
+
+jest.mock('../src/core/filterPool', () => ({
+  createFilterConfig: jest.fn((config?: unknown) => config ?? {}),
+  getPooledFilter: jest.fn(() => ({
+    isProfane: mockFilterIsProfane,
+  })),
 }));
 
 // Mock React hooks
 jest.mock('react', () => ({
+  ...jest.requireActual('react'),
   useState: jest.fn(),
   useCallback: jest.fn(),
 }));
@@ -19,7 +28,6 @@ import { SeverityLevel, Language } from '../src/types/types';
 // Get the mocked functions
 const mockCheckProfanity = jest.mocked(require('../src/core').checkProfanity);
 const mockCheckProfanityAsync = jest.mocked(require('../src/core').checkProfanityAsync);
-const mockIsWordProfane = jest.mocked(require('../src/core').isWordProfane);
 const mockUseState = jest.mocked(require('react').useState);
 const mockUseCallback = jest.mocked(require('react').useCallback);
 
@@ -112,16 +120,16 @@ describe('useProfanityChecker Hook', () => {
   });
 
   describe('Word Checking', () => {
-    test('calls isWordProfane with correct parameters', () => {
-      mockIsWordProfane.mockReturnValue(true);
-      
+    test('calls filter.isProfane for single-word checks', () => {
+      mockFilterIsProfane.mockReturnValue(true);
+
       const { result } = renderHook(() => useProfanityChecker());
-      
+
       act(() => {
         result.current.isWordProfane('badword');
       });
 
-      expect(mockIsWordProfane).toHaveBeenCalledWith('badword', undefined);
+      expect(mockFilterIsProfane).toHaveBeenCalledWith('badword');
     });
   });
 

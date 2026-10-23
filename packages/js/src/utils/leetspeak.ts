@@ -67,7 +67,7 @@ const BASIC_SUBSTITUTIONS: Record<string, string> = {
  * Moderate character substitution map (numbers + common symbols).
  * Includes symbol substitutions that are commonly used in profanity evasion.
  */
-const MODERATE_SUBSTITUTIONS: Record<string, string> = {
+export const MODERATE_SUBSTITUTIONS: Record<string, string> = {
   ...BASIC_SUBSTITUTIONS,
   '@': 'a',
   '$': 's',
@@ -154,7 +154,7 @@ AGGRESSIVE_MULTI_CHAR.sort((a, b) => b[0].source.length - a[0].source.length);
  * Aggressive single-character substitutions.
  * Includes less common substitutions that may cause some false positives.
  */
-const AGGRESSIVE_SUBSTITUTIONS: Record<string, string> = {
+export const AGGRESSIVE_SUBSTITUTIONS: Record<string, string> = {
   ...MODERATE_SUBSTITUTIONS,
   '|': 'i',
   '6': 'g',
@@ -168,6 +168,21 @@ const AMBIGUOUS_AS_L: Record<string, string> = { '|': 'l', '1': 'l', '!': 'l' };
 /** Matches 3+ single characters separated by whitespace (f u c k). */
 export const SPACED_CHARS_PATTERN =
   /\b([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+\b/g;
+
+/** Digit + one Latin letter ("5m") is a measurement, so its digits must not turn into letters. */
+const MEASUREMENT_LIKE = /(?<![A-Za-z])\d+[A-Za-z](?![A-Za-z])/g;
+
+/** Indices of digits that belong to a measurement-like token such as `5m`. */
+export function measurementDigitIndices(text: string): Set<number> {
+  const keep = new Set<number>();
+  for (const match of text.matchAll(MEASUREMENT_LIKE)) {
+    const start = match.index ?? 0;
+    for (let i = start; i < start + match[0].length; i++) {
+      if (text[i] >= '0' && text[i] <= '9') keep.add(i);
+    }
+  }
+  return keep;
+}
 
 /** Tables the mapped (offset-tracking) normalizer shares with this module. */
 export function getLeetspeakTables(
@@ -227,9 +242,10 @@ export function normalizeLeetspeak(
 
   // Step 3: Apply single-character substitutions
   const substitutions = getSubstitutionMap(level, ambiguousAsL);
+  const keepDigits = measurementDigitIndices(normalized);
   normalized = normalized
     .split('')
-    .map((char) => substitutions[char] || char)
+    .map((char, index) => (keepDigits.has(index) ? char : substitutions[char] || char))
     .join('');
 
   // Step 4: Collapse repeated characters (fuuuuck → fuck)

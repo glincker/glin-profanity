@@ -8,7 +8,13 @@ Mirrors packages/js/src/scanners/pii.ts.
 
 from typing import Optional, TypedDict
 
-from .base import ScanMatch, ScanResult, allow_result, block_result
+from .base import (
+    ScanMatch,
+    ScanResult,
+    allow_result,
+    block_result,
+    coerce_scan_input,
+)
 from .patterns.pii_patterns import PII_PATTERNS, PiiPattern
 from .vault import Vault
 
@@ -127,6 +133,7 @@ class PiiScanner:
         Returns:
             A ScanResult with decision, score, and match details.
         """
+        input = coerce_scan_input(input)
         matches: list[ScanMatch] = []
         reasons: list[str] = []
 

@@ -32,6 +32,13 @@ describe('Leetspeak Detection', () => {
       expect(normalizeLeetspeak('f#ck', { level: 'moderate' })).toBe('fhck');
     });
 
+    it('should not treat measurement tokens like 5m as leetspeak', () => {
+      expect(normalizeLeetspeak('…5mまで', { level: 'moderate' })).toBe('…5mまで');
+      expect(normalizeLeetspeak('stay 10m away', { level: 'moderate' })).toBe('stay 10m away');
+      expect(normalizeLeetspeak('f4ck', { level: 'moderate' })).toBe('fack');
+      expect(normalizeLeetspeak('5ex', { level: 'moderate' })).toBe('sex');
+    });
+
     it('should handle aggressive substitutions', () => {
       expect(normalizeLeetspeak('ph4t', { level: 'aggressive' })).toBe('fat');
     });
@@ -95,6 +102,26 @@ describe('Unicode Normalization', () => {
       // Greek letters that look like Latin
       expect(normalizeUnicode('fυck')).toBe('fuck'); // Greek upsilon
       expect(normalizeUnicode('fосk')).toBe('fock'); // Cyrillic о
+      expect(normalizeUnicode('fսck')).toBe('fuck'); // Armenian seh
+    });
+
+    it('normalizes the extended homoglyph categories (kept in sync with Python)', () => {
+      expect(normalizeUnicode('у')).toBe('u'); // Cyrillic small u -> u (not y)
+      expect(normalizeUnicode('к')).toBe('k'); // Cyrillic small ka
+      expect(normalizeUnicode('ℝ')).toBe('R'); // double-struck capital R
+      expect(normalizeUnicode('ⓐ')).toBe('a'); // circled a
+      expect(normalizeUnicode('ʀ')).toBe('R'); // small-cap R
+      expect(normalizeUnicode('ɐ')).toBe('a'); // turned a
+      expect(normalizeUnicode('¢')).toBe('c'); // cent sign
+    });
+
+    it('keeps Japanese dakuten while folding Latin diacritics', () => {
+      // ゾ must not collapse to ソ (that made クソ match ゾクゾク); ビ stays ビ.
+      expect(normalizeUnicode('ゾクゾク')).toBe('ゾクゾク');
+      expect(normalizeUnicode('ビッチ')).toBe('ビッチ');
+      expect(normalizeUnicode('クソゲー')).toBe('クソゲー');
+      expect(normalizeUnicode('café')).toBe('cafe');
+      expect(normalizeUnicode('erección')).toBe('ereccion');
     });
   });
 
@@ -211,10 +238,25 @@ describe('Filter with Leetspeak and Unicode', () => {
     });
   });
 
+  describe('Measurement false positives', () => {
+    const filter = new Filter({
+      languages: ['japanese'],
+      detectLeetspeak: true,
+      normalizeUnicode: true,
+    });
+
+    it('should not flag distance 5m as Japanese sm', () => {
+      const result = filter.checkProfanity('おい近づくな…5mまでだ');
+      expect(result.containsProfanity).toBe(false);
+      expect(result.profaneWords).toEqual([]);
+    });
+  });
+
   describe('Combined Leetspeak and Unicode', () => {
     const filter = new Filter({
       languages: ['english'],
       detectLeetspeak: true,
+      leetspeakLevel: 'aggressive',
       normalizeUnicode: true,
       fuzzyToleranceLevel: 0.7,
     });
@@ -224,6 +266,22 @@ describe('Filter with Leetspeak and Unicode', () => {
       expect(filter.isProfane('fück')).toBe(true);
       expect(filter.isProfane('f\u200Buck')).toBe(true); // zero-width in "fuck"
       expect(filter.isProfane('sh!t')).toBe(true);
+    });
+
+    it('should detect shootout evasion categories', () => {
+      const cases = [
+        'shi7e',
+        'f.u.c.k',
+        'a<br>ss',
+        'sh&#105;t',
+        'This is f*cking ridiculous',
+        'holy f*** that was amazing',
+        'what a f@cking mess',
+        'fսck',
+      ];
+      for (const text of cases) {
+        expect(filter.isProfane(text)).toBe(true);
+      }
     });
   });
 
@@ -287,5 +345,28 @@ describe('checkProfanity with new options', () => {
     const result = filter.checkProfanity('fück this');
     expect(result.containsProfanity).toBe(true);
     expect(result.profaneWords.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Accent-folded aliases', () => {
+  it('matches an accented entry even when the user drops diacritics', () => {
+    const filter = new Filter({
+      languages: [],
+      customWords: ['erección'],
+      normalizeUnicode: true,
+      detectLeetspeak: true,
+    });
+    expect(filter.checkProfanity('le muerdo la ereccion').containsProfanity).toBe(true);
+    expect(filter.checkProfanity('le muerdo la erección').containsProfanity).toBe(true);
+  });
+
+  it('does not alias short accented words (año -> ano)', () => {
+    const filter = new Filter({
+      languages: [],
+      customWords: ['año'],
+      normalizeUnicode: true,
+      detectLeetspeak: true,
+    });
+    expect(filter.checkProfanity('el ano').containsProfanity).toBe(false);
   });
 });

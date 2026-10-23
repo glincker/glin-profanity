@@ -8,7 +8,7 @@
  */
 
 import type { Scanner, ScanResult, ScanContext, ScanMatch } from './base';
-import { allowResult, blockResult } from './base';
+import { allowResult, blockResult, coerceScanInput } from './base';
 import { INJECTION_PATTERNS, type InjectionPattern } from './patterns/injection-patterns';
 
 /** Configuration options for the PromptInjectionScanner. */
@@ -78,9 +78,13 @@ export class PromptInjectionScanner implements Scanner {
 
   /** @inheritdoc */
   scan(input: string, ctx?: ScanContext): ScanResult {
+    input = coerceScanInput(input);
     // ctx.strictness overrides constructor option when provided
     const effectiveStrictness = ctx?.strictness ?? this.strictness;
-    const normalizer = STRICTNESS_NORMALIZER[effectiveStrictness];
+    // Fall back to the moderate normalizer for unknown strictness values so an
+    // out-of-range ctx.strictness can never make the score NaN (matches Python).
+    const normalizer =
+      STRICTNESS_NORMALIZER[effectiveStrictness] ?? STRICTNESS_NORMALIZER.moderate;
 
     const matchDetails: ScanMatch[] = [];
     const matchedCategories = new Set<string>();

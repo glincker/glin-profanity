@@ -17,12 +17,15 @@ export type EdgeKind = 'ascii' | 'native' | 'free' | 'kata';
 const KATA = '\\u30a1-\\u30fa\\u30fc-\\u30ff\\u31f0-\\u31ff\\uff66-\\uff9f';
 const HAN = /^(?:[\u3005\u3100-\u312f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]|[\u{20000}-\u{2fa1f}])$/u;
 const KATAKANA = new RegExp(`^[${KATA}]$`, 'u');
+/** One-character Han words that are profane wherever they appear. */
+const UNAMBIGUOUS_SINGLE_HAN = new Set(Array.from('肏屄屌膣姦姘'));
 const NATIVE = /^[\p{L}\p{N}\p{M}]$/u;
 
 function edgeKind(char: string, wordLength: number): EdgeKind {
   if (char.charCodeAt(0) < 128 || !NATIVE.test(char)) return 'ascii';
   if (KATAKANA.test(char)) return 'kata';
-  return wordLength >= 2 && HAN.test(char) ? 'free' : 'native';
+  if (!HAN.test(char)) return 'native';
+  return wordLength >= 2 || UNAMBIGUOUS_SINGLE_HAN.has(char) ? 'free' : 'native';
 }
 
 export interface WordEdges {

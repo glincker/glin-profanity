@@ -59,7 +59,7 @@ const AWS_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-AWS-003',
     name: 'AWS Session Token',
-    pattern: /(?:aws[_\-. ]?session[_\-. ]?token)['":\s=]+([A-Za-z0-9\/+=]{100,})/i,
+    pattern: /(?:aws[_\-. ]?session[_\-. ]?token)['":\s=]+([A-Za-z0-9\/+=]{100,2048})/i,
     severity: 'critical',
     entropyCheck: true,
   },
@@ -104,7 +104,7 @@ const GCP_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-GCP-005',
     name: 'Firebase Cloud Messaging Key',
-    pattern: /(?:firebase|fcm)[_\-. ]?(?:api[_\-. ]?)?key['":\s=]+([A-Za-z0-9_\-]{38,})/i,
+    pattern: /(?:firebase|fcm)[_\-. ]?(?:api[_\-. ]?)?key['":\s=]+([A-Za-z0-9_\-]{38,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -124,7 +124,7 @@ const AZURE_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-AZ-002',
     name: 'Azure Connection String',
-    pattern: /(?:azure|az)[_\-. ]?(?:storage)?[_\-. ]?(?:connection[_\-. ]?string|conn[_\-. ]?str)['":\s=]+([^'";\s]{30,})/i,
+    pattern: /(?:azure|az)[_\-. ]?(?:storage)?[_\-. ]?(?:connection[_\-. ]?string|conn[_\-. ]?str)['":\s=]+([^'";\s]{30,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -137,7 +137,7 @@ const AZURE_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-AZ-004',
     name: 'Azure SAS Token',
-    pattern: /sig=[A-Za-z0-9%+\/=]{20,}(&|$)/,
+    pattern: /sig=[A-Za-z0-9%+\/=]{20,512}(&|$)/,
     severity: 'high',
     entropyCheck: true,
   },
@@ -159,7 +159,7 @@ const GITHUB_PATTERNS: SecretPattern[] = [
     id: 'SEC-GH-002',
     name: 'GitHub Fine-Grained PAT',
     // github_pat_ followed by 60+ alphanumeric/underscore chars
-    pattern: /github_pat_[0-9A-Za-z_]{60,}/,
+    pattern: /github_pat_[0-9A-Za-z_]{60,1024}/,
     severity: 'critical',
   },
   {
@@ -177,13 +177,13 @@ const GITHUB_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-GH-005',
     name: 'GitHub Refresh Token',
-    pattern: /ghr_[0-9A-Za-z]{60,}/,
+    pattern: /ghr_[0-9A-Za-z]{60,1024}/,
     severity: 'high',
   },
   {
     id: 'SEC-GH-006',
     name: 'GitHub Actions Secret',
-    pattern: /(?:GITHUB[_\-. ]?TOKEN|GH[_\-. ]?TOKEN)['":\s=]+([A-Za-z0-9_\-]{36,})/i,
+    pattern: /(?:GITHUB[_\-. ]?TOKEN|GH[_\-. ]?TOKEN)['":\s=]+([A-Za-z0-9_\-]{36,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -222,7 +222,7 @@ const BITBUCKET_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-BB-001',
     name: 'Bitbucket App Password',
-    pattern: /(?:bitbucket)[_\-. ]?(?:app[_\-. ]?)?(?:password|token|key)['":\s=]+([A-Za-z0-9+\/]{16,})/i,
+    pattern: /(?:bitbucket)[_\-. ]?(?:app[_\-. ]?)?(?:password|token|key)['":\s=]+([A-Za-z0-9+\/]{16,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -254,7 +254,7 @@ const SLACK_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-SLACK-004',
     name: 'Slack Webhook URL',
-    pattern: /https:\/\/hooks\.slack\.com\/services\/T[0-9A-Z]{8,10}\/B[0-9A-Z]{8,10}\/[A-Za-z0-9]{24,}/,
+    pattern: /https:\/\/hooks\.slack\.com\/services\/T[0-9A-Z]{8,10}\/B[0-9A-Z]{8,10}\/[A-Za-z0-9]{24,512}/,
     severity: 'high',
   },
   {
@@ -285,13 +285,13 @@ const STRIPE_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-STRIPE-003',
     name: 'Stripe Restricted Key',
-    pattern: /rk_(?:live|test)_[0-9A-Za-z]{24,}/,
+    pattern: /rk_(?:live|test)_[0-9A-Za-z]{24,512}/,
     severity: 'high',
   },
   {
     id: 'SEC-STRIPE-004',
     name: 'Stripe Publishable Key',
-    pattern: /pk_(?:live|test)_[0-9A-Za-z]{24,}/,
+    pattern: /pk_(?:live|test)_[0-9A-Za-z]{24,512}/,
     severity: 'medium',
   },
 ];
@@ -310,31 +310,31 @@ const AI_PROVIDER_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-OPENAI-002',
     name: 'OpenAI Project API Key',
-    pattern: /sk-proj-[A-Za-z0-9\-_]{50,}/,
+    pattern: /sk-proj-[A-Za-z0-9\-_]{50,512}/,
     severity: 'critical',
   },
   {
     id: 'SEC-ANTHROPIC-001',
     name: 'Anthropic API Key',
-    pattern: /sk-ant-(?:api03-)[A-Za-z0-9\-_]{93,}/,
+    pattern: /sk-ant-(?:api03-)[A-Za-z0-9\-_]{93,1024}/,
     severity: 'critical',
   },
   {
     id: 'SEC-ANTHROPIC-002',
     name: 'Anthropic API Key (short form)',
-    pattern: /sk-ant-[A-Za-z0-9\-_]{20,}/,
+    pattern: /sk-ant-[A-Za-z0-9\-_]{20,512}/,
     severity: 'critical',
   },
   {
     id: 'SEC-HUGGINGFACE-001',
     name: 'Hugging Face User Access Token',
-    pattern: /hf_[A-Za-z0-9]{34,}/,
+    pattern: /hf_[A-Za-z0-9]{34,512}/,
     severity: 'high',
   },
   {
     id: 'SEC-COHERE-001',
     name: 'Cohere API Key',
-    pattern: /(?:cohere)[_\-. ]?(?:api[_\-. ]?)?key['":\s=]+([A-Za-z0-9]{40,})/i,
+    pattern: /(?:cohere)[_\-. ]?(?:api[_\-. ]?)?key['":\s=]+([A-Za-z0-9]{40,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -361,7 +361,7 @@ const PAYMENT_PATTERNS: SecretPattern[] = [
     id: 'SEC-SG-001',
     name: 'SendGrid API Key',
     // SG. + 20-30 alphanumeric chars + . + 40+ alphanumeric chars
-    pattern: /SG\.[0-9A-Za-z\-_]{20,30}\.[0-9A-Za-z\-_]{40,}/,
+    pattern: /SG\.[0-9A-Za-z\-_]{20,30}\.[0-9A-Za-z\-_]{40,512}/,
     severity: 'critical',
   },
   {
@@ -373,7 +373,7 @@ const PAYMENT_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-MG-002',
     name: 'Mailgun Webhook Signing Key',
-    pattern: /(?:mailgun)[_\-. ]?(?:webhook[_\-. ]?)?(?:signing[_\-. ]?)?key['":\s=]+([A-Za-z0-9_\-]{32,})/i,
+    pattern: /(?:mailgun)[_\-. ]?(?:webhook[_\-. ]?)?(?:signing[_\-. ]?)?key['":\s=]+([A-Za-z0-9_\-]{32,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -411,13 +411,13 @@ const REGISTRY_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-NPM-002',
     name: 'npm Legacy Token',
-    pattern: /\/\/registry\.npmjs\.org\/:_authToken=[A-Za-z0-9\-_]{36,}/,
+    pattern: /\/\/registry\.npmjs\.org\/:_authToken=[A-Za-z0-9\-_]{36,512}/,
     severity: 'high',
   },
   {
     id: 'SEC-PYPI-001',
     name: 'PyPI Upload Token',
-    pattern: /pypi-AgEIcHlwaS5vcmc[A-Za-z0-9\-_]{50,}/,
+    pattern: /pypi-AgEIcHlwaS5vcmc[A-Za-z0-9\-_]{50,512}/,
     severity: 'high',
   },
 ];
@@ -460,7 +460,7 @@ const CRYPTO_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-JWT-001',
     name: 'JSON Web Token',
-    pattern: /eyJ[A-Za-z0-9\-_=]{10,}\.eyJ[A-Za-z0-9\-_=]{10,}\.[A-Za-z0-9\-_=]{10,}/,
+    pattern: /eyJ[A-Za-z0-9\-_=]{10,512}\.eyJ[A-Za-z0-9\-_=]{10,512}\.[A-Za-z0-9\-_=]{10,512}/,
     severity: 'high',
     entropyCheck: true,
   },
@@ -492,46 +492,46 @@ const INFRA_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-DO-003',
     name: 'DigitalOcean Spaces Key',
-    pattern: /(?:digitalocean|do)[_\-. ]?spaces[_\-. ]?(?:secret|key)['":\s=]+([A-Za-z0-9+\/=]{40,})/i,
+    pattern: /(?:digitalocean|do)[_\-. ]?spaces[_\-. ]?(?:secret|key)['":\s=]+([A-Za-z0-9+\/=]{40,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
   {
     id: 'SEC-SUPABASE-001',
     name: 'Supabase Service Role Key',
-    pattern: /eyJ[A-Za-z0-9\-_=]+\.eyJ[A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_.+\/=]+(?=.*supabase)/i,
+    pattern: /eyJ[A-Za-z0-9\-_=]{1,2048}\.eyJ[A-Za-z0-9\-_=]{1,4096}\.[A-Za-z0-9\-_.+\/=]{1,4096}(?=.{0,4096}supabase)/i,
     severity: 'critical',
   },
   {
     id: 'SEC-SUPABASE-002',
     name: 'Supabase Connection String',
-    pattern: /postgresql:\/\/postgres:[A-Za-z0-9!@#$%^&*()_+\-=]{8,}@[a-z0-9.]+\.supabase\.co/i,
+    pattern: /postgresql:\/\/postgres:[A-Za-z0-9!@#$%^&*()_+\-=]{8,512}@[a-z0-9.]+\.supabase\.co/i,
     severity: 'critical',
   },
   {
     id: 'SEC-FIREBASE-001',
     name: 'Firebase Admin SDK Credential',
-    pattern: /"type":\s*"service_account"[^}]*"project_id"/s,
+    pattern: /"type":\s*"service_account"[^}]{0,4096}"project_id"/s,
     severity: 'critical',
   },
   {
     id: 'SEC-NETLIFY-001',
     name: 'Netlify Access Token',
-    pattern: /(?:netlify)[_\-. ]?(?:access[_\-. ]?)?token['":\s=]+([A-Za-z0-9_\-]{40,})/i,
+    pattern: /(?:netlify)[_\-. ]?(?:access[_\-. ]?)?token['":\s=]+([A-Za-z0-9_\-]{40,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
   {
     id: 'SEC-VERCEL-001',
     name: 'Vercel Token',
-    pattern: /(?:vercel)[_\-. ]?token['":\s=]+([A-Za-z0-9_\-]{24,})/i,
+    pattern: /(?:vercel)[_\-. ]?token['":\s=]+([A-Za-z0-9_\-]{24,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
   {
     id: 'SEC-RAILWAY-001',
     name: 'Railway Token',
-    pattern: /(?:railway)[_\-. ]?token['":\s=]+([A-Za-z0-9_\-]{24,})/i,
+    pattern: /(?:railway)[_\-. ]?token['":\s=]+([A-Za-z0-9_\-]{24,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
@@ -545,14 +545,14 @@ const DATABASE_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-DB-001',
     name: 'Generic Database Connection String (with credentials)',
-    pattern: /(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis):\/\/[^:@\s]+:[^@\s]{8,}@[^\s'"]+/i,
+    pattern: /(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis):\/\/[^:@\s]{1,256}:[^@\s]{8,256}@[^\s'"]{1,512}/i,
     severity: 'critical',
     entropyCheck: true,
   },
   {
     id: 'SEC-DB-002',
     name: 'MongoDB Atlas Connection String',
-    pattern: /mongodb\+srv:\/\/[A-Za-z0-9]+:[A-Za-z0-9!@#$%^&*()_+\-=]{8,}@cluster/i,
+    pattern: /mongodb\+srv:\/\/[A-Za-z0-9]+:[A-Za-z0-9!@#$%^&*()_+\-=]{8,512}@cluster/i,
     severity: 'critical',
   },
 ];
@@ -584,20 +584,20 @@ const DEVTOOLS_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-JIRA-001',
     name: 'Atlassian / Jira API Token',
-    pattern: /(?:atlassian|jira)[_\-. ]?(?:api[_\-. ]?)?token['":\s=]+([A-Za-z0-9+\/=]{24,})/i,
+    pattern: /(?:atlassian|jira)[_\-. ]?(?:api[_\-. ]?)?token['":\s=]+([A-Za-z0-9+\/=]{24,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
   {
     id: 'SEC-VAULT-001',
     name: 'HashiCorp Vault Token',
-    pattern: /hvs\.[A-Za-z0-9_\-]{24,}/,
+    pattern: /hvs\.[A-Za-z0-9_\-]{24,512}/,
     severity: 'critical',
   },
   {
     id: 'SEC-VAULT-002',
     name: 'HashiCorp Vault Token (legacy)',
-    pattern: /s\.[A-Za-z0-9]{24,}\b/,
+    pattern: /s\.[A-Za-z0-9]{24,512}\b/,
     severity: 'medium',
     entropyCheck: true,
   },
@@ -624,7 +624,7 @@ const SOCIAL_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-DISCORD-002',
     name: 'Discord Webhook',
-    pattern: /https:\/\/discord(?:app)?\.com\/api\/webhooks\/[0-9]{17,20}\/[A-Za-z0-9\-_]{60,}/,
+    pattern: /https:\/\/discord(?:app)?\.com\/api\/webhooks\/[0-9]{17,20}\/[A-Za-z0-9\-_]{60,1024}/,
     severity: 'high',
   },
   {
@@ -636,7 +636,7 @@ const SOCIAL_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-TWITTER-001',
     name: 'Twitter / X Bearer Token',
-    pattern: /AAAAAAAAAAAAAAAA[A-Za-z0-9%]{40,}/,
+    pattern: /AAAAAAAAAAAAAAAA[A-Za-z0-9%]{40,512}/,
     severity: 'high',
   },
 ];
@@ -655,7 +655,7 @@ const SEARCH_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-CONTENTFUL-001',
     name: 'Contentful Delivery API Token',
-    pattern: /(?:contentful)[_\-. ]?(?:access|delivery|preview)[_\-. ]?token['":\s=]+([A-Za-z0-9_\-]{43,})/i,
+    pattern: /(?:contentful)[_\-. ]?(?:access|delivery|preview)[_\-. ]?token['":\s=]+([A-Za-z0-9_\-]{43,512})/i,
     severity: 'medium',
     entropyCheck: true,
   },
@@ -687,14 +687,14 @@ const CONTAINER_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-DOCKER-001',
     name: 'Docker Hub Password (Basic Auth)',
-    pattern: /(?:docker)[_\-. ]?(?:password|token|secret)['":\s=]+([^\s'"]{12,})/i,
+    pattern: /(?:docker)[_\-. ]?(?:password|token|secret)['":\s=]+([^\s'"]{12,512})/i,
     severity: 'high',
     entropyCheck: true,
   },
   {
     id: 'SEC-GHCR-001',
     name: 'GitHub Container Registry Auth',
-    pattern: /ghcr\.io[^\s]*:[^\s]{20,}/,
+    pattern: /ghcr\.io[^\s:]{0,256}:[^\s]{20,512}/,
     severity: 'high',
     entropyCheck: true,
   },
@@ -708,49 +708,49 @@ const GENERIC_ENTROPY_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-GEN-001',
     name: 'Generic Password Assignment',
-    pattern: /(?:password|passwd|pwd)\s*[:=]\s*['"]?([A-Za-z0-9!@#$%^&*()_+\-=]{16,})['"]?/i,
+    pattern: /(?:password|passwd|pwd)\s*[:=]\s*['"]?([A-Za-z0-9!@#$%^&*()_+\-=]{16,512})['"]?/i,
     severity: 'medium',
     entropyCheck: true,
   },
   {
     id: 'SEC-GEN-002',
     name: 'Generic Token Assignment',
-    pattern: /(?:token|api.?key|api.?token|access.?token|auth.?token)\s*[:=]\s*['"]?([A-Za-z0-9+\/\-_]{24,})['"]?/i,
+    pattern: /(?:token|api.?key|api.?token|access.?token|auth.?token)\s*[:=]\s*['"]?([A-Za-z0-9+\/\-_]{24,512})['"]?/i,
     severity: 'medium',
     entropyCheck: true,
   },
   {
     id: 'SEC-GEN-003',
     name: 'Generic Secret Assignment',
-    pattern: /(?:secret|client.?secret|app.?secret)\s*[:=]\s*['"]?([A-Za-z0-9+\/\-_]{24,})['"]?/i,
+    pattern: /(?:secret|client.?secret|app.?secret)\s*[:=]\s*['"]?([A-Za-z0-9+\/\-_]{24,512})['"]?/i,
     severity: 'medium',
     entropyCheck: true,
   },
   {
     id: 'SEC-GEN-004',
     name: 'High-Entropy Base64 (near secret keyword)',
-    pattern: /(?:key|secret|token|password)['":\s=]+([A-Za-z0-9+\/]{32,}={0,2})/i,
+    pattern: /(?:key|secret|token|password)['":\s=]+([A-Za-z0-9+\/]{32,512}={0,2})/i,
     severity: 'low',
     entropyCheck: true,
   },
   {
     id: 'SEC-GEN-005',
     name: 'High-Entropy Hex String (near secret keyword)',
-    pattern: /(?:key|secret|token|password)['":\s=]+([a-f0-9]{40,})\b/i,
+    pattern: /(?:key|secret|token|password)['":\s=]+([a-f0-9]{40,512})\b/i,
     severity: 'low',
     entropyCheck: true,
   },
   {
     id: 'SEC-GEN-006',
     name: 'Authorization Bearer Token in Header',
-    pattern: /Authorization:\s*Bearer\s+([A-Za-z0-9\-_=.]{20,})/i,
+    pattern: /Authorization:\s*Bearer\s+([A-Za-z0-9\-_=.]{20,512})/i,
     severity: 'medium',
     entropyCheck: true,
   },
   {
     id: 'SEC-GEN-007',
     name: 'Authorization Basic Header',
-    pattern: /Authorization:\s*Basic\s+([A-Za-z0-9+\/=]{12,})/i,
+    pattern: /Authorization:\s*Basic\s+([A-Za-z0-9+\/=]{12,512})/i,
     severity: 'medium',
     entropyCheck: true,
   },
@@ -845,13 +845,13 @@ const MISC_PATTERNS: SecretPattern[] = [
   {
     id: 'SEC-TYPEFORM-001',
     name: 'Typeform Personal Access Token',
-    pattern: /tfp_[A-Za-z0-9_\-]{40,}/,
+    pattern: /tfp_[A-Za-z0-9_\-]{40,512}/,
     severity: 'high',
   },
   {
     id: 'SEC-GRAFANA-001',
     name: 'Grafana API Key',
-    pattern: /eyJrIjoi[A-Za-z0-9\-_=]{40,}/,
+    pattern: /eyJrIjoi[A-Za-z0-9\-_=]{40,512}/,
     severity: 'high',
   },
   {

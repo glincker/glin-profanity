@@ -1,6 +1,7 @@
 import { HOMOGLYPHS, ZERO_WIDTH_CHARS } from '../../utils/unicode';
 import {
   getLeetspeakTables,
+  measurementDigitIndices,
   SPACED_CHARS_PATTERN,
   LeetspeakLevel,
 } from '../../utils/leetspeak';
@@ -66,7 +67,9 @@ export function leetTransformer(options: LeetTransformOptions): Transformer {
     for (const [pattern, replacement] of tables.multi) {
       m = replaceRegex(m, pattern, () => replacement);
     }
-    m = mapChars(m, (ch) => tables.single[ch]);
+    const keepDigits = measurementDigitIndices(m.text);
+    let at = -1;
+    m = mapChars(m, (ch) => (keepDigits.has(++at) ? undefined : tables.single[ch]));
     return replaceRegex(m, repeated, (match) => match[1].repeat(options.maxRepeated));
   };
 }

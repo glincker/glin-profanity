@@ -133,12 +133,14 @@ def replace_regex(
     return apply_edits(m, edits)
 
 
-def map_chars(m: MappedText, table: dict[str, str]) -> MappedText:
-    """Map every character through `table`; characters not in it are kept."""
+def map_chars(
+    m: MappedText, table: dict[str, str], skip: set[int] | None = None
+) -> MappedText:
+    """Map every character through `table`; characters not in it, or at `skip`, are kept."""
     edits = [
         Edit(i, i + 1, table[ch])
         for i, ch in enumerate(m.text)
-        if ch in table and table[ch] != ch
+        if ch in table and table[ch] != ch and not (skip and i in skip)
     ]
     return apply_edits(m, edits)
 

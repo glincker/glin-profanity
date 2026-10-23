@@ -53,3 +53,17 @@ class TestDictionaryLazy:
         """
         assert hasattr(dictionary, "LANGUAGE_FILES")
         assert len(dictionary.available_languages) == 24
+
+    def test_failed_load_is_not_cached(self, tmp_path) -> None:
+        """A missing dictionary file should not permanently cache an empty list."""
+        loader = DictionaryLoader()
+        loader._dict_path = tmp_path
+        assert loader.get_words("english") == []
+        assert "english" not in loader._dictionaries
+
+        (tmp_path / "english.json").write_text(
+            '{"words": ["retryword"]}', encoding="utf-8"
+        )
+        words = loader.get_words("english")
+        assert "retryword" in words
+        assert "english" in loader._dictionaries

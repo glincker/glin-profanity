@@ -72,7 +72,10 @@ export function scanAll(text: string, options?: ScanAllOptions): ScanResult[] {
 
   const active = new Set(requested);
   const vault = options?.vault;
-  const redact = vault !== undefined;
+  // Only redact when a real vault is provided. Treat an explicit null like
+  // Python's `vault is not None` (no redaction) rather than redacting with a
+  // placeholder.
+  const redact = vault !== undefined && vault !== null;
   const results: ScanResult[] = [];
 
   for (const name of ALL_SCANNERS) {

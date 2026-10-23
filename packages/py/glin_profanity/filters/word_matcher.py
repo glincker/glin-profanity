@@ -36,13 +36,19 @@ def _is_han(ch: str) -> bool:
     return any(lo <= code <= hi for lo, hi in _HAN_RANGES)
 
 
+# One-character Han words that are profane wherever they appear.
+_UNAMBIGUOUS_SINGLE_HAN = frozenset("肏屄屌膣姦姘")
+
+
 def edge_kind(ch: str, length: int) -> str:
     """Edge rule for a word's first or last character: ascii, native, free or kata."""
     if not _is_native_letter(ch):
         return "ascii"
     if _is_katakana(ch):
         return "kata"
-    return "free" if length >= 2 and _is_han(ch) else "native"
+    if not _is_han(ch):
+        return "native"
+    return "free" if length >= 2 or ch in _UNAMBIGUOUS_SINGLE_HAN else "native"
 
 
 def _edge(ch: str, length: int, head: bool) -> str:
