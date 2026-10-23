@@ -1,8 +1,11 @@
 {
   "glin-profanity": {
-    "f1": 0.7843,
-    "fpr": 0.0822,
-    "opsPerSec": 1141
+    "f1": 0.9896,
+    "precision": 0.9924,
+    "recall": 0.9867,
+    "fpr": 0.011,
+    "fprStrict": 0,
+    "opsPerSec": 7463
   },
   "allprofanity": {
     "f1": 0.786,

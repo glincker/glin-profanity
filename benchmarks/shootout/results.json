@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T16:53:36.630Z",
+  "generatedAt": "2026-10-23T17:19:09.400Z",
   "node": "v22.22.2",
   "cases": {
     "total": 1153,
@@ -9,17 +9,17 @@
   "libraries": [
     {
       "name": "glin-profanity",
-      "precision": 0.9231,
-      "recall": 0.6818,
-      "f1": 0.7843,
-      "fpr": 0.0822,
-      "fprStrict": 0.0304,
-      "opsPerSec": 1147,
+      "precision": 0.9924,
+      "recall": 0.9867,
+      "f1": 0.9896,
+      "fpr": 0.011,
+      "fprStrict": 0,
+      "opsPerSec": 7463,
       "counts": {
-        "tp": 360,
-        "fp": 30,
-        "fn": 168,
-        "tn": 335
+        "tp": 521,
+        "fp": 4,
+        "fn": 7,
+        "tn": 361
       },
       "errors": 0,
       "byCategory": {
@@ -36,14 +36,14 @@
         },
         "false-positive": {
           "tp": 0,
-          "fp": 30,
+          "fp": 4,
           "fn": 0,
-          "tn": 290,
+          "tn": 316,
           "precision": 0,
           "recall": 1,
           "f1": 0,
-          "fpr": 0.0938,
-          "fprStrict": 0.0359
+          "fpr": 0.0125,
+          "fprStrict": 0
         },
         "plain": {
           "tp": 11,
@@ -57,13 +57,13 @@
           "fprStrict": 0
         },
         "leetspeak": {
-          "tp": 32,
+          "tp": 36,
           "fp": 0,
-          "fn": 5,
+          "fn": 1,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8649,
-          "f1": 0.9275,
+          "recall": 0.973,
+          "f1": 0.9863,
           "fpr": 0,
           "fprStrict": 0
         },
@@ -90,35 +90,35 @@
           "fprStrict": 0
         },
         "separators": {
-          "tp": 17,
+          "tp": 57,
           "fp": 0,
-          "fn": 44,
+          "fn": 4,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2787,
-          "f1": 0.4359,
+          "recall": 0.9344,
+          "f1": 0.9661,
           "fpr": 0,
           "fprStrict": 0
         },
         "html": {
-          "tp": 14,
+          "tp": 67,
           "fp": 0,
-          "fn": 53,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.209,
-          "f1": 0.3457,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "in-sentence": {
-          "tp": 67,
+          "tp": 86,
           "fp": 0,
-          "fn": 20,
+          "fn": 1,
           "tn": 0,
           "precision": 1,
-          "recall": 0.7701,
-          "f1": 0.8701,
+          "recall": 0.9885,
+          "f1": 0.9942,
           "fpr": 0,
           "fprStrict": 0
         },
@@ -134,24 +134,24 @@
           "fprStrict": 0
         },
         "stretched": {
-          "tp": 25,
+          "tp": 31,
           "fp": 0,
-          "fn": 6,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8065,
-          "f1": 0.8929,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "masking": {
-          "tp": 0,
+          "tp": 26,
           "fp": 0,
-          "fn": 26,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
@@ -167,13 +167,13 @@
           "fprStrict": 0
         },
         "mixed-technique": {
-          "tp": 29,
+          "tp": 42,
           "fp": 0,
-          "fn": 13,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.6905,
-          "f1": 0.8169,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         }
@@ -252,49 +252,49 @@
           "n": 3
         },
         "separators/legacy-word-break": {
-          "tp": 1,
+          "tp": 6,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.1667,
-          "f1": 0.2857,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 6
         },
         "html/legacy-html-injection": {
-          "tp": 0,
+          "tp": 3,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 3
         },
         "in-sentence/legacy-in-sentence": {
-          "tp": 1,
+          "tp": 3,
           "fp": 0,
-          "fn": 3,
+          "fn": 1,
           "tn": 0,
           "precision": 1,
-          "recall": 0.25,
-          "f1": 0.4,
+          "recall": 0.75,
+          "f1": 0.8571,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "in-sentence/legacy-in-sentence-leetspeak": {
-          "tp": 2,
+          "tp": 3,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.6667,
-          "f1": 0.8,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 3
@@ -396,13 +396,13 @@
           "n": 5
         },
         "leetspeak/leet-l2-full": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -420,25 +420,25 @@
           "n": 5
         },
         "leetspeak/leet-l3-full": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "leetspeak/leet-l3-single": {
-          "tp": 3,
+          "tp": 4,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
@@ -684,49 +684,49 @@
           "n": 5
         },
         "separators/comma-full": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "separators/slash-full": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "separators/pipe-full": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "separators/dot-single": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -756,13 +756,13 @@
           "n": 5
         },
         "separators/mixed-separators": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -780,145 +780,145 @@
           "n": 5
         },
         "masking/mask-hash": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "masking/mask-percent": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "masking/mask-question": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "masking/mask-underscore": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "masking/mask-interior": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "stretched/stretch-first": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "stretched/stretch-last": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "stretched/stretch-vowel-extreme": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "stretched/stretch-all-double": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "stretched/stretch-all-triple": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/tag-split-br": {
-          "tp": 1,
+          "tp": 5,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2,
-          "f1": 0.3333,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/tag-split-span": {
-          "tp": 1,
+          "tp": 5,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2,
-          "f1": 0.3333,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -948,97 +948,97 @@
           "n": 5
         },
         "html/tag-every-letter": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/tag-comment": {
-          "tp": 1,
+          "tp": 5,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2,
-          "f1": 0.3333,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/entity-dec-one": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/entity-hex-one": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/entity-dec-all": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/entity-hex-all": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/entity-shy": {
-          "tp": 1,
+          "tp": 5,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2,
-          "f1": 0.3333,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "html/entity-double-encoded": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -1128,13 +1128,13 @@
           "n": 5
         },
         "mixed-technique/leet+stretch": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -1164,13 +1164,13 @@
           "n": 5
         },
         "mixed-technique/mask+upper": {
-          "tp": 1,
+          "tp": 5,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2,
-          "f1": 0.3333,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -1212,13 +1212,13 @@
           "n": 3
         },
         "leetspeak/leet-mixed": {
-          "tp": 3,
+          "tp": 4,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
@@ -1236,25 +1236,25 @@
           "n": 4
         },
         "separators/underscore-full": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "separators/hyphen-full": {
-          "tp": 0,
+          "tp": 3,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 3
@@ -1272,49 +1272,49 @@
           "n": 4
         },
         "masking/mask-star": {
-          "tp": 0,
+          "tp": 3,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 3
         },
         "masking/mask-at": {
-          "tp": 0,
+          "tp": 2,
           "fp": 0,
-          "fn": 2,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 2
         },
         "stretched/stretch-vowel": {
-          "tp": 3,
+          "tp": 4,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.75,
-          "f1": 0.8571,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
         },
         "html/tag-split-bold": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
@@ -1332,13 +1332,13 @@
           "n": 4
         },
         "mixed-technique/leet+dot": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
@@ -1356,13 +1356,13 @@
           "n": 4
         },
         "mixed-technique/html+leet": {
-          "tp": 0,
+          "tp": 4,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 4
@@ -1392,13 +1392,13 @@
           "n": 3
         },
         "separators/dot-full": {
-          "tp": 0,
+          "tp": 3,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 3
@@ -1428,13 +1428,13 @@
           "n": 1
         },
         "masking/mask-all-vowels": {
-          "tp": 0,
+          "tp": 1,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 1
@@ -1476,25 +1476,25 @@
           "n": 5
         },
         "in-sentence/dot-full": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "in-sentence/space-full": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -1524,25 +1524,25 @@
           "n": 5
         },
         "in-sentence/stretch-vowel": {
-          "tp": 4,
+          "tp": 5,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.8,
-          "f1": 0.8889,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
         },
         "in-sentence/star-mask": {
-          "tp": 1,
+          "tp": 5,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0.2,
-          "f1": 0.3333,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -1572,13 +1572,13 @@
           "n": 5
         },
         "in-sentence/html-tag-split": {
-          "tp": 0,
+          "tp": 5,
           "fp": 0,
-          "fn": 5,
+          "fn": 0,
           "tn": 0,
           "precision": 1,
-          "recall": 0,
-          "f1": 0,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0,
           "n": 5
@@ -1633,49 +1633,49 @@
         },
         "false-positive/scunthorpe-substring": {
           "tp": 0,
-          "fp": 2,
+          "fp": 0,
           "fn": 0,
-          "tn": 102,
-          "precision": 0,
+          "tn": 104,
+          "precision": 1,
           "recall": 1,
-          "f1": 0,
-          "fpr": 0.0192,
-          "fprStrict": 0.0192,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0,
           "n": 104
         },
         "false-positive/place-name": {
           "tp": 0,
-          "fp": 1,
+          "fp": 0,
           "fn": 0,
-          "tn": 25,
-          "precision": 0,
+          "tn": 26,
+          "precision": 1,
           "recall": 1,
-          "f1": 0,
-          "fpr": 0.0385,
-          "fprStrict": 0.0385,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0,
           "n": 26
         },
         "false-positive/person-name": {
           "tp": 0,
-          "fp": 8,
+          "fp": 0,
           "fn": 0,
-          "tn": 9,
-          "precision": 0,
+          "tn": 17,
+          "precision": 1,
           "recall": 1,
-          "f1": 0,
-          "fpr": 0.4706,
+          "f1": 1,
+          "fpr": 0,
           "fprStrict": 0,
           "n": 17
         },
         "false-positive/medical-technical": {
           "tp": 0,
-          "fp": 5,
+          "fp": 2,
           "fn": 0,
-          "tn": 28,
+          "tn": 31,
           "precision": 0,
           "recall": 1,
           "f1": 0,
-          "fpr": 0.1515,
+          "fpr": 0.0606,
           "fprStrict": 0,
           "n": 33
         },
@@ -1693,38 +1693,38 @@
         },
         "false-positive/dictionary-ambiguous": {
           "tp": 0,
-          "fp": 8,
+          "fp": 2,
           "fn": 0,
-          "tn": 11,
+          "tn": 17,
           "precision": 0,
           "recall": 1,
           "f1": 0,
-          "fpr": 0.4211,
+          "fpr": 0.1053,
           "fprStrict": 0,
           "n": 19
         },
         "false-positive/leet-lookalike-benign": {
           "tp": 0,
-          "fp": 5,
+          "fp": 0,
           "fn": 0,
-          "tn": 29,
-          "precision": 0,
+          "tn": 34,
+          "precision": 1,
           "recall": 1,
-          "f1": 0,
-          "fpr": 0.1471,
-          "fprStrict": 0.1471,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0,
           "n": 34
         },
         "false-positive/obfuscation-lookalike-benign": {
           "tp": 0,
-          "fp": 1,
+          "fp": 0,
           "fn": 0,
-          "tn": 50,
-          "precision": 0,
+          "tn": 51,
+          "precision": 1,
           "recall": 1,
-          "f1": 0,
-          "fpr": 0.0196,
-          "fprStrict": 0.0196,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0,
           "n": 51
         },
         "clean/clean-sentence": {
@@ -1754,101 +1754,101 @@
       },
       "multilingual": {
         "fr": {
-          "tp": 23,
+          "tp": 27,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8519,
-          "f1": 0.92,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "de": {
-          "tp": 24,
+          "tp": 27,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8889,
-          "f1": 0.9412,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "es": {
-          "tp": 24,
+          "tp": 27,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8889,
-          "f1": 0.9412,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "pt": {
-          "tp": 24,
+          "tp": 27,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8889,
-          "f1": 0.9412,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "it": {
-          "tp": 23,
+          "tp": 27,
           "fp": 0,
-          "fn": 4,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8519,
-          "f1": 0.92,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "tr": {
-          "tp": 16,
+          "tp": 18,
           "fp": 0,
-          "fn": 2,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8889,
-          "f1": 0.9412,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "nl": {
-          "tp": 24,
+          "tp": 27,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8889,
-          "f1": 0.9412,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "ru": {
-          "tp": 16,
+          "tp": 18,
           "fp": 0,
-          "fn": 2,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8889,
-          "f1": 0.9412,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         },
         "pl": {
-          "tp": 23,
+          "tp": 26,
           "fp": 0,
-          "fn": 3,
+          "fn": 0,
           "tn": 4,
           "precision": 1,
-          "recall": 0.8846,
-          "f1": 0.9388,
+          "recall": 1,
+          "f1": 1,
           "fpr": 0,
           "fprStrict": 0
         }
@@ -1871,147 +1871,11 @@
           "language": "en"
         },
         {
-          "id": "separators-001",
-          "input": "f.u.c.k",
-          "expected": true,
-          "category": "separators",
-          "technique": "legacy-word-break",
-          "language": "en"
-        },
-        {
-          "id": "separators-002",
-          "input": "f_u_c_k",
-          "expected": true,
-          "category": "separators",
-          "technique": "legacy-word-break",
-          "language": "en"
-        },
-        {
-          "id": "separators-003",
-          "input": "f-u-c-k",
-          "expected": true,
-          "category": "separators",
-          "technique": "legacy-word-break",
-          "language": "en"
-        },
-        {
-          "id": "separators-005",
-          "input": "s.h.i.t",
-          "expected": true,
-          "category": "separators",
-          "technique": "legacy-word-break",
-          "language": "en"
-        },
-        {
-          "id": "separators-006",
-          "input": "b-i-t-c-h",
-          "expected": true,
-          "category": "separators",
-          "technique": "legacy-word-break",
-          "language": "en"
-        },
-        {
-          "id": "html-001",
-          "input": "a<br>ss",
-          "expected": true,
-          "category": "html",
-          "technique": "legacy-html-injection",
-          "language": "en"
-        },
-        {
-          "id": "html-002",
-          "input": "f<b>u</b>ck",
-          "expected": true,
-          "category": "html",
-          "technique": "legacy-html-injection",
-          "language": "en"
-        },
-        {
-          "id": "html-003",
-          "input": "sh&#105;t",
-          "expected": true,
-          "category": "html",
-          "technique": "legacy-html-injection",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-001",
-          "input": "This is f*cking ridiculous",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "legacy-in-sentence",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-003",
-          "input": "holy f*** that was amazing",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "legacy-in-sentence",
-          "language": "en"
-        },
-        {
           "id": "in-sentence-004",
           "input": "go f yourself",
           "expected": true,
           "category": "in-sentence",
           "technique": "legacy-in-sentence",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-007",
-          "input": "what a f@cking mess",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "legacy-in-sentence-leetspeak",
-          "language": "en"
-        },
-        {
-          "id": "leetspeak-010",
-          "input": "f|_|(|<",
-          "expected": true,
-          "category": "leetspeak",
-          "technique": "leet-l3-full",
-          "language": "en"
-        },
-        {
-          "id": "leetspeak-011",
-          "input": "f|_|ck",
-          "expected": true,
-          "category": "leetspeak",
-          "technique": "leet-l3-single",
-          "language": "en"
-        },
-        {
-          "id": "separators-008",
-          "input": "f,u,c,k",
-          "expected": true,
-          "category": "separators",
-          "technique": "comma-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-009",
-          "input": "f/u/c/k",
-          "expected": true,
-          "category": "separators",
-          "technique": "slash-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-010",
-          "input": "f|u|c|k",
-          "expected": true,
-          "category": "separators",
-          "technique": "pipe-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-011",
-          "input": "f.uck",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-single",
           "language": "en"
         },
         {
@@ -2023,411 +1887,11 @@
           "language": "en"
         },
         {
-          "id": "separators-014",
-          "input": "f.u_c-k",
-          "expected": true,
-          "category": "separators",
-          "technique": "mixed-separators",
-          "language": "en"
-        },
-        {
-          "id": "masking-001",
-          "input": "f#ck",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-hash",
-          "language": "en"
-        },
-        {
-          "id": "masking-002",
-          "input": "f%ck",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-percent",
-          "language": "en"
-        },
-        {
-          "id": "masking-003",
-          "input": "f?ck",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-question",
-          "language": "en"
-        },
-        {
-          "id": "masking-004",
-          "input": "f_ck",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-underscore",
-          "language": "en"
-        },
-        {
-          "id": "masking-005",
-          "input": "f**k",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-interior",
-          "language": "en"
-        },
-        {
-          "id": "html-004",
-          "input": "fu<br>ck",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-br",
-          "language": "en"
-        },
-        {
-          "id": "html-005",
-          "input": "<span>fu</span><span>ck</span>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-span",
-          "language": "en"
-        },
-        {
-          "id": "html-008",
-          "input": "<i>f</i><i>u</i><i>c</i><i>k</i>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-every-letter",
-          "language": "en"
-        },
-        {
-          "id": "html-009",
-          "input": "fu<!-- x -->ck",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-comment",
-          "language": "en"
-        },
-        {
-          "id": "html-010",
-          "input": "f&#117;ck",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-one",
-          "language": "en"
-        },
-        {
-          "id": "html-011",
-          "input": "f&#x75;ck",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-one",
-          "language": "en"
-        },
-        {
-          "id": "html-012",
-          "input": "&#102;&#117;&#99;&#107;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-all",
-          "language": "en"
-        },
-        {
-          "id": "html-013",
-          "input": "&#x66;&#x75;&#x63;&#x6b;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-all",
-          "language": "en"
-        },
-        {
-          "id": "html-014",
-          "input": "fu&shy;ck",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-shy",
-          "language": "en"
-        },
-        {
-          "id": "html-015",
-          "input": "f&amp;#117;ck",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-double-encoded",
-          "language": "en"
-        },
-        {
-          "id": "separators-016",
-          "input": "s_h_i_t",
-          "expected": true,
-          "category": "separators",
-          "technique": "underscore-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-017",
-          "input": "s-h-i-t",
-          "expected": true,
-          "category": "separators",
-          "technique": "hyphen-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-019",
-          "input": "s,h,i,t",
-          "expected": true,
-          "category": "separators",
-          "technique": "comma-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-020",
-          "input": "s/h/i/t",
-          "expected": true,
-          "category": "separators",
-          "technique": "slash-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-021",
-          "input": "s|h|i|t",
-          "expected": true,
-          "category": "separators",
-          "technique": "pipe-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-022",
-          "input": "s.hit",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-single",
-          "language": "en"
-        },
-        {
           "id": "separators-023",
           "input": "sh it",
           "expected": true,
           "category": "separators",
           "technique": "space-single",
-          "language": "en"
-        },
-        {
-          "id": "separators-025",
-          "input": "s.h_i-t",
-          "expected": true,
-          "category": "separators",
-          "technique": "mixed-separators",
-          "language": "en"
-        },
-        {
-          "id": "masking-006",
-          "input": "sh*t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-star",
-          "language": "en"
-        },
-        {
-          "id": "masking-007",
-          "input": "sh#t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-hash",
-          "language": "en"
-        },
-        {
-          "id": "masking-008",
-          "input": "sh@t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-at",
-          "language": "en"
-        },
-        {
-          "id": "masking-009",
-          "input": "sh%t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-percent",
-          "language": "en"
-        },
-        {
-          "id": "masking-010",
-          "input": "sh?t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-question",
-          "language": "en"
-        },
-        {
-          "id": "masking-011",
-          "input": "sh_t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-underscore",
-          "language": "en"
-        },
-        {
-          "id": "masking-012",
-          "input": "s**t",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-interior",
-          "language": "en"
-        },
-        {
-          "id": "html-016",
-          "input": "s<b>h</b>it",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-bold",
-          "language": "en"
-        },
-        {
-          "id": "html-017",
-          "input": "sh<br>it",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-br",
-          "language": "en"
-        },
-        {
-          "id": "html-018",
-          "input": "<span>sh</span><span>it</span>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-span",
-          "language": "en"
-        },
-        {
-          "id": "html-021",
-          "input": "<i>s</i><i>h</i><i>i</i><i>t</i>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-every-letter",
-          "language": "en"
-        },
-        {
-          "id": "html-022",
-          "input": "sh<!-- x -->it",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-comment",
-          "language": "en"
-        },
-        {
-          "id": "html-023",
-          "input": "s&#104;it",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-one",
-          "language": "en"
-        },
-        {
-          "id": "html-024",
-          "input": "s&#x68;it",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-one",
-          "language": "en"
-        },
-        {
-          "id": "html-025",
-          "input": "&#115;&#104;&#105;&#116;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-all",
-          "language": "en"
-        },
-        {
-          "id": "html-026",
-          "input": "&#x73;&#x68;&#x69;&#x74;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-all",
-          "language": "en"
-        },
-        {
-          "id": "html-027",
-          "input": "sh&shy;it",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-shy",
-          "language": "en"
-        },
-        {
-          "id": "html-028",
-          "input": "s&amp;#104;it",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-double-encoded",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-008",
-          "input": "5.h.i.t",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "leet+dot",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-013",
-          "input": "5<b>h</b>it",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "html+leet",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-014",
-          "input": "SH*T",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "mask+upper",
-          "language": "en"
-        },
-        {
-          "id": "separators-027",
-          "input": "b.i.t.c.h",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-028",
-          "input": "b_i_t_c_h",
-          "expected": true,
-          "category": "separators",
-          "technique": "underscore-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-030",
-          "input": "b,i,t,c,h",
-          "expected": true,
-          "category": "separators",
-          "technique": "comma-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-031",
-          "input": "b/i/t/c/h",
-          "expected": true,
-          "category": "separators",
-          "technique": "slash-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-032",
-          "input": "b|i|t|c|h",
-          "expected": true,
-          "category": "separators",
-          "technique": "pipe-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-033",
-          "input": "b.itch",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-single",
           "language": "en"
         },
         {
@@ -2439,454 +1903,6 @@
           "language": "en"
         },
         {
-          "id": "separators-036",
-          "input": "b.i_t-c h",
-          "expected": true,
-          "category": "separators",
-          "technique": "mixed-separators",
-          "language": "en"
-        },
-        {
-          "id": "masking-013",
-          "input": "b*tch",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-star",
-          "language": "en"
-        },
-        {
-          "id": "masking-014",
-          "input": "b#tch",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-hash",
-          "language": "en"
-        },
-        {
-          "id": "masking-015",
-          "input": "b@tch",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-at",
-          "language": "en"
-        },
-        {
-          "id": "masking-016",
-          "input": "b%tch",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-percent",
-          "language": "en"
-        },
-        {
-          "id": "masking-017",
-          "input": "b?tch",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-question",
-          "language": "en"
-        },
-        {
-          "id": "masking-018",
-          "input": "b_tch",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-underscore",
-          "language": "en"
-        },
-        {
-          "id": "masking-019",
-          "input": "b***h",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-interior",
-          "language": "en"
-        },
-        {
-          "id": "html-029",
-          "input": "b<b>i</b>tch",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-bold",
-          "language": "en"
-        },
-        {
-          "id": "html-030",
-          "input": "bi<br>tch",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-br",
-          "language": "en"
-        },
-        {
-          "id": "html-031",
-          "input": "<span>bi</span><span>tch</span>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-span",
-          "language": "en"
-        },
-        {
-          "id": "html-034",
-          "input": "<i>b</i><i>i</i><i>t</i><i>c</i><i>h</i>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-every-letter",
-          "language": "en"
-        },
-        {
-          "id": "html-035",
-          "input": "bi<!-- x -->tch",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-comment",
-          "language": "en"
-        },
-        {
-          "id": "html-036",
-          "input": "b&#105;tch",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-one",
-          "language": "en"
-        },
-        {
-          "id": "html-037",
-          "input": "b&#x69;tch",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-one",
-          "language": "en"
-        },
-        {
-          "id": "html-038",
-          "input": "&#98;&#105;&#116;&#99;&#104;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-all",
-          "language": "en"
-        },
-        {
-          "id": "html-039",
-          "input": "&#x62;&#x69;&#x74;&#x63;&#x68;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-all",
-          "language": "en"
-        },
-        {
-          "id": "html-040",
-          "input": "bi&shy;tch",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-shy",
-          "language": "en"
-        },
-        {
-          "id": "html-041",
-          "input": "b&amp;#105;tch",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-double-encoded",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-017",
-          "input": "b.1.t.c.h",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "leet+dot",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-022",
-          "input": "b<b>1</b>tch",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "html+leet",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-023",
-          "input": "B*TCH",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "mask+upper",
-          "language": "en"
-        },
-        {
-          "id": "leetspeak-026",
-          "input": "@$$ho|e",
-          "expected": true,
-          "category": "leetspeak",
-          "technique": "leet-l2-full",
-          "language": "en"
-        },
-        {
-          "id": "leetspeak-030",
-          "input": "@5$ho|e",
-          "expected": true,
-          "category": "leetspeak",
-          "technique": "leet-mixed",
-          "language": "en"
-        },
-        {
-          "id": "separators-038",
-          "input": "a.s.s.h.o.l.e",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-039",
-          "input": "a_s_s_h_o_l_e",
-          "expected": true,
-          "category": "separators",
-          "technique": "underscore-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-040",
-          "input": "a-s-s-h-o-l-e",
-          "expected": true,
-          "category": "separators",
-          "technique": "hyphen-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-042",
-          "input": "a,s,s,h,o,l,e",
-          "expected": true,
-          "category": "separators",
-          "technique": "comma-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-043",
-          "input": "a/s/s/h/o/l/e",
-          "expected": true,
-          "category": "separators",
-          "technique": "slash-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-044",
-          "input": "a|s|s|h|o|l|e",
-          "expected": true,
-          "category": "separators",
-          "technique": "pipe-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-045",
-          "input": "a.sshole",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-single",
-          "language": "en"
-        },
-        {
-          "id": "separators-048",
-          "input": "a.s_s-h o.l_e",
-          "expected": true,
-          "category": "separators",
-          "technique": "mixed-separators",
-          "language": "en"
-        },
-        {
-          "id": "stretched-020",
-          "input": "aaaasshole",
-          "expected": true,
-          "category": "stretched",
-          "technique": "stretch-first",
-          "language": "en"
-        },
-        {
-          "id": "stretched-021",
-          "input": "assholeeee",
-          "expected": true,
-          "category": "stretched",
-          "technique": "stretch-last",
-          "language": "en"
-        },
-        {
-          "id": "stretched-022",
-          "input": "aaaaasshole",
-          "expected": true,
-          "category": "stretched",
-          "technique": "stretch-vowel",
-          "language": "en"
-        },
-        {
-          "id": "stretched-023",
-          "input": "aaaaaaaaaaaaaaasshole",
-          "expected": true,
-          "category": "stretched",
-          "technique": "stretch-vowel-extreme",
-          "language": "en"
-        },
-        {
-          "id": "stretched-024",
-          "input": "aasssshhoollee",
-          "expected": true,
-          "category": "stretched",
-          "technique": "stretch-all-double",
-          "language": "en"
-        },
-        {
-          "id": "stretched-025",
-          "input": "aaasssssshhhooollleee",
-          "expected": true,
-          "category": "stretched",
-          "technique": "stretch-all-triple",
-          "language": "en"
-        },
-        {
-          "id": "html-042",
-          "input": "a<b>s</b>shole",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-bold",
-          "language": "en"
-        },
-        {
-          "id": "html-047",
-          "input": "<i>a</i><i>s</i><i>s</i><i>h</i><i>o</i><i>l</i><i>e</i>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-every-letter",
-          "language": "en"
-        },
-        {
-          "id": "html-049",
-          "input": "a&#115;shole",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-one",
-          "language": "en"
-        },
-        {
-          "id": "html-050",
-          "input": "a&#x73;shole",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-one",
-          "language": "en"
-        },
-        {
-          "id": "html-051",
-          "input": "&#97;&#115;&#115;&#104;&#111;&#108;&#101;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-all",
-          "language": "en"
-        },
-        {
-          "id": "html-052",
-          "input": "&#x61;&#x73;&#x73;&#x68;&#x6f;&#x6c;&#x65;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-all",
-          "language": "en"
-        },
-        {
-          "id": "html-054",
-          "input": "a&amp;#115;shole",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-double-encoded",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-026",
-          "input": "4.s.s.h.o.l.e",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "leet+dot",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-027",
-          "input": "@@@sshole",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "leet+stretch",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-031",
-          "input": "4<b>s</b>shole",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "html+leet",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-032",
-          "input": "*SSHOLE",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "mask+upper",
-          "language": "en"
-        },
-        {
-          "id": "separators-050",
-          "input": "b.a.s.t.a.r.d",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-051",
-          "input": "b_a_s_t_a_r_d",
-          "expected": true,
-          "category": "separators",
-          "technique": "underscore-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-052",
-          "input": "b-a-s-t-a-r-d",
-          "expected": true,
-          "category": "separators",
-          "technique": "hyphen-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-054",
-          "input": "b,a,s,t,a,r,d",
-          "expected": true,
-          "category": "separators",
-          "technique": "comma-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-055",
-          "input": "b/a/s/t/a/r/d",
-          "expected": true,
-          "category": "separators",
-          "technique": "slash-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-056",
-          "input": "b|a|s|t|a|r|d",
-          "expected": true,
-          "category": "separators",
-          "technique": "pipe-full",
-          "language": "en"
-        },
-        {
-          "id": "separators-057",
-          "input": "b.astard",
-          "expected": true,
-          "category": "separators",
-          "technique": "dot-single",
-          "language": "en"
-        },
-        {
           "id": "separators-058",
           "input": "bas tard",
           "expected": true,
@@ -2895,640 +1911,8 @@
           "language": "en"
         },
         {
-          "id": "separators-060",
-          "input": "b.a_s-t a.r_d",
-          "expected": true,
-          "category": "separators",
-          "technique": "mixed-separators",
-          "language": "en"
-        },
-        {
-          "id": "masking-020",
-          "input": "b*stard",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-star",
-          "language": "en"
-        },
-        {
-          "id": "masking-021",
-          "input": "b#stard",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-hash",
-          "language": "en"
-        },
-        {
-          "id": "masking-022",
-          "input": "b%stard",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-percent",
-          "language": "en"
-        },
-        {
-          "id": "masking-023",
-          "input": "b?stard",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-question",
-          "language": "en"
-        },
-        {
-          "id": "masking-024",
-          "input": "b_stard",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-underscore",
-          "language": "en"
-        },
-        {
-          "id": "masking-025",
-          "input": "b*st*rd",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-all-vowels",
-          "language": "en"
-        },
-        {
-          "id": "masking-026",
-          "input": "b*****d",
-          "expected": true,
-          "category": "masking",
-          "technique": "mask-interior",
-          "language": "en"
-        },
-        {
-          "id": "html-055",
-          "input": "b<b>a</b>stard",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-bold",
-          "language": "en"
-        },
-        {
-          "id": "html-056",
-          "input": "bas<br>tard",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-br",
-          "language": "en"
-        },
-        {
-          "id": "html-057",
-          "input": "<span>bas</span><span>tard</span>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-split-span",
-          "language": "en"
-        },
-        {
-          "id": "html-060",
-          "input": "<i>b</i><i>a</i><i>s</i><i>t</i><i>a</i><i>r</i><i>d</i>",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-every-letter",
-          "language": "en"
-        },
-        {
-          "id": "html-061",
-          "input": "bas<!-- x -->tard",
-          "expected": true,
-          "category": "html",
-          "technique": "tag-comment",
-          "language": "en"
-        },
-        {
-          "id": "html-062",
-          "input": "b&#97;stard",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-one",
-          "language": "en"
-        },
-        {
-          "id": "html-063",
-          "input": "b&#x61;stard",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-one",
-          "language": "en"
-        },
-        {
-          "id": "html-064",
-          "input": "&#98;&#97;&#115;&#116;&#97;&#114;&#100;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-dec-all",
-          "language": "en"
-        },
-        {
-          "id": "html-065",
-          "input": "&#x62;&#x61;&#x73;&#x74;&#x61;&#x72;&#x64;",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-hex-all",
-          "language": "en"
-        },
-        {
-          "id": "html-066",
-          "input": "bas&shy;tard",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-shy",
-          "language": "en"
-        },
-        {
-          "id": "html-067",
-          "input": "b&amp;#97;stard",
-          "expected": true,
-          "category": "html",
-          "technique": "entity-double-encoded",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-035",
-          "input": "b.4.s.t.a.r.d",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "leet+dot",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-040",
-          "input": "b<b>4</b>stard",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "html+leet",
-          "language": "en"
-        },
-        {
-          "id": "mixed-technique-041",
-          "input": "B*STARD",
-          "expected": true,
-          "category": "mixed-technique",
-          "technique": "mask+upper",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-011",
-          "input": "Honestly, what the f.u.c.k was that about?",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:dot-full",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-019",
-          "input": "I cannot believe this f<b>u</b>ck just happened again",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:html-tag-split",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-023",
-          "input": "s.h.i.t off, I am done with this thread",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:dot-full",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-024",
-          "input": "You are such a s h i t and everyone knows it",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:space-full",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-028",
-          "input": "sh*t off, I am done with this thread",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:star-mask",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-031",
-          "input": "Shut up, s<b>h</b>it, nobody asked you",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:html-tag-split",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-035",
-          "input": "You are such a b.i.t.c.h and everyone knows it",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:dot-full",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-040",
-          "input": "You are such a b*tch and everyone knows it",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:star-mask",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-043",
-          "input": "Honestly, what the b<b>i</b>tch was that about?",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:html-tag-split",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-047",
-          "input": "I cannot believe this a.s.s.h.o.l.e just happened again",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:dot-full",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-051",
-          "input": "You are such a aaaaasshole and everyone knows it",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:stretch-vowel",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-052",
-          "input": "I cannot believe this assh*le just happened again",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:star-mask",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-055",
-          "input": "a<b>s</b>shole off, I am done with this thread",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:html-tag-split",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-059",
-          "input": "Shut up, b.a.s.t.a.r.d, nobody asked you",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:dot-full",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-064",
-          "input": "Shut up, b*stard, nobody asked you",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:star-mask",
-          "language": "en"
-        },
-        {
-          "id": "in-sentence-067",
-          "input": "You are such a b<b>a</b>stard and everyone knows it",
-          "expected": true,
-          "category": "in-sentence",
-          "technique": "sentence:html-tag-split",
-          "language": "en"
-        },
-        {
-          "id": "non-english-005",
-          "input": "m.e.r.d.e",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "fr"
-        },
-        {
-          "id": "non-english-014",
-          "input": "p.u.t.a.i.n",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "fr"
-        },
-        {
-          "id": "non-english-023",
-          "input": "c.o.n.n.a.r.d",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "fr"
-        },
-        {
-          "id": "non-english-024",
-          "input": "coooonnard",
-          "expected": true,
-          "category": "non-english",
-          "technique": "stretch-vowel",
-          "language": "fr"
-        },
-        {
-          "id": "non-english-032",
-          "input": "a.r.s.c.h",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "de"
-        },
-        {
-          "id": "non-english-041",
-          "input": "f.o.t.z.e",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "de"
-        },
-        {
-          "id": "non-english-050",
-          "input": "k.a.c.k.e",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "de"
-        },
-        {
-          "id": "non-english-059",
-          "input": "m.i.e.r.d.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "es"
-        },
-        {
-          "id": "non-english-068",
-          "input": "p.u.t.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "es"
-        },
-        {
-          "id": "non-english-077",
-          "input": "c.u.l.o",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "es"
-        },
-        {
-          "id": "non-english-086",
-          "input": "m.e.r.d.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "pt"
-        },
-        {
-          "id": "non-english-095",
-          "input": "c.a.r.a.l.h.o",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "pt"
-        },
-        {
-          "id": "non-english-104",
-          "input": "b.o.s.t.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "pt"
-        },
-        {
-          "id": "non-english-113",
-          "input": "m.e.r.d.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "it"
-        },
-        {
-          "id": "non-english-122",
-          "input": "c.a.z.z.o",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "it"
-        },
-        {
-          "id": "non-english-123",
-          "input": "caaaazzo",
-          "expected": true,
-          "category": "non-english",
-          "technique": "stretch-vowel",
-          "language": "it"
-        },
-        {
-          "id": "non-english-131",
-          "input": "s.t.r.o.n.z.o",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "it"
-        },
-        {
-          "id": "non-english-140",
-          "input": "s.i.k.t.i.r",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "tr"
-        },
-        {
-          "id": "non-english-149",
-          "input": "a.h.m.a.k",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "tr"
-        },
-        {
-          "id": "non-english-158",
-          "input": "k.u.t",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "nl"
-        },
-        {
-          "id": "non-english-167",
-          "input": "d.r.o.l",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "nl"
-        },
-        {
-          "id": "non-english-176",
-          "input": "e.i.k.e.l",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "nl"
-        },
-        {
-          "id": "non-english-185",
-          "input": "p.i.z.d.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "ru"
-        },
-        {
-          "id": "non-english-194",
-          "input": "s.v.o.l.o.c.h",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "ru"
-        },
-        {
-          "id": "non-english-203",
-          "input": "k.u.r.w.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "pl"
-        },
-        {
-          "id": "non-english-212",
-          "input": "d.u.p.a",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "pl"
-        },
-        {
-          "id": "non-english-221",
-          "input": "c.h.u.j",
-          "expected": true,
-          "category": "non-english",
-          "technique": "dot-full",
-          "language": "pl"
-        },
-        {
-          "id": "false-positive-108",
-          "input": "Moby Dick",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "scunthorpe-substring",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-109",
-          "input": "Dick Whittington",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "scunthorpe-substring",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-124",
-          "input": "Twatt, Orkney",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "place-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-141",
-          "input": "Dick Van Dyke",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-142",
-          "input": "Dick Tracy",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-143",
-          "input": "Dick Cavett",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-144",
-          "input": "Dick Francis",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-145",
-          "input": "Moby Dick is a novel",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-147",
-          "input": "Philip K. Dick",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-148",
-          "input": "Dick Grayson is Robin",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-153",
-          "input": "Rick Astley and Dick Clark",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "person-name",
-          "language": "en"
-        },
-        {
           "id": "false-positive-158",
           "input": "The patient reported mild anal itching",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "medical-technical",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-159",
-          "input": "anal fissure",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "medical-technical",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-172",
-          "input": "the Latin phrase summa cum laude",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "medical-technical",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-173",
-          "input": "He graduated magna cum laude",
           "expected": false,
           "category": "false-positive",
           "technique": "medical-technical",
@@ -3543,56 +1927,8 @@
           "language": "en"
         },
         {
-          "id": "false-positive-217",
-          "input": "pussy willow",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "dictionary-ambiguous",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-219",
-          "input": "A great tit sat on the feeder",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "dictionary-ambiguous",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-220",
-          "input": "blue tit nest box",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "dictionary-ambiguous",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-224",
-          "input": "cock the hammer back",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "dictionary-ambiguous",
-          "language": "en"
-        },
-        {
           "id": "false-positive-225",
           "input": "a rooster, also called a cock",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "dictionary-ambiguous",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-233",
-          "input": "a bastard file is a type of metal file",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "dictionary-ambiguous",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-234",
-          "input": "jackass penguin",
           "expected": false,
           "category": "false-positive",
           "technique": "dictionary-ambiguous",
@@ -3605,54 +1941,6 @@
           "category": "false-positive",
           "technique": "dictionary-ambiguous",
           "language": "en"
-        },
-        {
-          "id": "false-positive-243",
-          "input": "cl@ss starts at 5",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "leet-lookalike-benign",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-244",
-          "input": "gl@ss of water",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "leet-lookalike-benign",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-245",
-          "input": "gr@ss is green",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "leet-lookalike-benign",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-246",
-          "input": "m@ss transit",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "leet-lookalike-benign",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-247",
-          "input": "b@ss guitar",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "leet-lookalike-benign",
-          "language": "en"
-        },
-        {
-          "id": "false-positive-275",
-          "input": "ass﻿istant",
-          "expected": false,
-          "category": "false-positive",
-          "technique": "obfuscation-lookalike-benign",
-          "language": "en"
         }
       ]
     },
@@ -3663,7 +1951,7 @@
       "f1": 0.786,
       "fpr": 0.0767,
       "fprStrict": 0.0304,
-      "opsPerSec": 37621,
+      "opsPerSec": 38767,
       "counts": {
         "tp": 360,
         "fp": 28,
@@ -7105,7 +5393,7 @@
       "f1": 0.607,
       "fpr": 0.1315,
       "fprStrict": 0.0845,
-      "opsPerSec": 5819,
+      "opsPerSec": 6253,
       "counts": {
         "tp": 251,
         "fp": 48,
@@ -11454,7 +9742,7 @@
       "f1": 0.2888,
       "fpr": 0.0795,
       "fprStrict": 0.0101,
-      "opsPerSec": 218,
+      "opsPerSec": 258,
       "counts": {
         "tp": 94,
         "fp": 29,
@@ -16907,7 +15195,7 @@
       "f1": 0.1608,
       "fpr": 0.0575,
       "fprStrict": 0.0068,
-      "opsPerSec": 384248,
+      "opsPerSec": 405552,
       "counts": {
         "tp": 48,
         "fp": 21,
@@ -22664,7 +20952,7 @@
       "f1": 0.2945,
       "fpr": 0.0767,
       "fprStrict": 0.0101,
-      "opsPerSec": 835215,
+      "opsPerSec": 870297,
       "counts": {
         "tp": 96,
         "fp": 28,
