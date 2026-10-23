@@ -68,6 +68,37 @@ export interface ContextAwareConfig {
 /** Leetspeak detection intensity levels */
 export type LeetspeakLevel = 'basic' | 'moderate' | 'aggressive';
 
+/**
+ * Shortcut for the obfuscation pipeline.
+ * - `off`: plain matching only (the behavior before the pipeline existed)
+ * - `basic`: HTML tags and entities, stretched letters, safe-word list
+ * - `standard`: basic plus separators (f.u.c.k), masks (f*ck) and `|`/`1`/`!` read as l
+ * - `strict`: standard plus looser joins (spaces inside mixed chains, shorter fragments)
+ */
+export type ObfuscationLevel = 'off' | 'basic' | 'standard' | 'strict';
+
+/** Fine-grained switches for the obfuscation pipeline. Each overrides the level. */
+export interface ObfuscationOptions {
+  /** Starting point for the switches below. @default 'standard' */
+  level?: ObfuscationLevel;
+  /** Strip tags and decode entities before matching. `decodeDepth` handles double encoding. */
+  html?: boolean | { decodeDepth?: number };
+  /** Join letters split by separators such as `f.u.c.k` or `f|u|c|k`. */
+  separators?: boolean | {
+    chars?: string;
+    allowSpace?: boolean;
+    minTwoPieceLength?: number;
+  };
+  /** Resolve masked words such as `f*ck` or `b*****d`. */
+  masking?: boolean | { chars?: string; minVisible?: number };
+  /** Collapse stretched letters such as `aaaasshole`. */
+  stretch?: boolean;
+  /** Also read `|`, `1` and `!` as `l` (needs detectLeetspeak). */
+  ambiguousLeet?: boolean;
+  /** Skip dictionary hits that overlap the built-in safe words and phrases. */
+  builtinWhitelist?: boolean;
+}
+
 /** Main filter configuration options - unified with Python */
 export interface FilterConfig extends ContextAwareConfig {
   languages?: Language[];
@@ -102,6 +133,18 @@ export interface FilterConfig extends ContextAwareConfig {
    * @default true
    */
   normalizeUnicode?: boolean;
+
+  /**
+   * Obfuscation pipeline: a level shortcut or fine-grained switches.
+   * @default 'standard'
+   */
+  obfuscation?: ObfuscationLevel | ObfuscationOptions;
+
+  /**
+   * Extra safe words or phrases. A dictionary hit that overlaps one is ignored.
+   * Matched case-insensitively on word boundaries.
+   */
+  whitelist?: string[];
 
   /**
    * Cache profanity check results for repeated strings.
