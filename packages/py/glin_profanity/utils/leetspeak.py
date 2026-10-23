@@ -32,7 +32,16 @@ MODERATE_SUBSTITUTIONS: dict[str, str] = {
     "{": "c",
     "[": "c",
     "+": "t",
+    "\u20ac": "e",
+    "&": "e",
     "#": "h",
+    "\u00a5": "y",
+    "\u00a7": "s",
+    "\u2020": "t",
+    "\u00ae": "r",
+    "\u00a9": "c",
+    "\u00b2": "2",
+    "\u00b3": "3",
 }
 
 # Aggressive single-character substitutions
@@ -44,26 +53,65 @@ AGGRESSIVE_SUBSTITUTIONS: dict[str, str] = {
     "%": "z",
 }
 
-# Aggressive multi-character substitution patterns
-AGGRESSIVE_MULTI_CHAR: list[tuple[str, str]] = [
-    (r"/\\", "a"),
-    (r"/-\\", "a"),
-    (r"\^", "a"),
-    (r"\|3", "b"),
-    (r"13", "b"),
-    (r"\|\)", "d"),
-    (r"\|>", "d"),
-    (r"\|=", "f"),
-    (r"ph", "f"),
-    (r"\|-\|", "h"),
-    (r"\}\{", "h"),
-    (r"\|<", "k"),
-    (r"\|_", "l"),
-    (r"\|2", "r"),
-    (r"\|_\|", "u"),
-    (r"\\/", "v"),
-    (r"vv", "w"),
+# Glyphs that can stand for either `i` or `l`.
+AMBIGUOUS_AS_L: dict[str, str] = {"|": "l", "1": "l", "!": "l"}
+
+# Aggressive multi-character patterns, longest first so `|_|` (u) is not eaten
+# by `|_` (l) and `/\/\` (m) by `/\` (a). Order mirrors the JS package.
+_MULTI_SOURCE: list[tuple[str, str, int]] = [
+    (r"/\\/\\", "m", 0),
+    (r"\\/\\/", "w", 0),
+    ("\u00df", "b", 0),
+    (r"/\\/", "n", 0),
+    (r"\|\\\|", "n", 0),
+    (r"/-\\", "a", 0),
+    (r"\|-\|", "h", 0),
+    (r"\|V\|", "m", 0),
+    (r"\[V\]", "m", 0),
+    (r"\|_\|", "u", 0),
+    (r"\\_\\", "u", 0),
+    (r"/_/", "u", 0),
+    (r"/\\", "a", 0),
+    (r"\|\)", "d", 0),
+    (r"\[\)", "d", 0),
+    (r"\}\{", "h", 0),
+    (r"\|\{", "k", 0),
+    (r"\|\*", "p", 0),
+    (r"\|\?", "r", 0),
+    (r"\\/", "v", 0),
+    (r"\|3", "b", 0),
+    (r"\|>", "d", 0),
+    (r"\|=", "f", 0),
+    (r"\|<", "k", 0),
+    (r"\|_", "l", 0),
+    (r"\|o", "p", 0),
+    (r"\|2", "r", 0),
+    (r"'/", "y", 0),
+    (r"\^", "a", 0),
+    ("13", "b", 0),
+    ("ph", "f", re.IGNORECASE),
+    ("vv", "w", re.IGNORECASE),
+    ("><", "x", 0),
+    ("7_", "z", 0),
 ]
+AGGRESSIVE_MULTI_CHAR: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(pattern, flags), replacement)
+    for pattern, replacement, flags in _MULTI_SOURCE
+]
+
+# Three or more single characters separated by whitespace (f u c k). `(?a:\b)`
+# keeps the boundary ASCII-only like the JS package.
+SPACED_CHARS_PATTERN = re.compile(
+    r"(?a:\b)([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+(?a:\b)"
+)
+
+
+def get_leetspeak_tables(
+    level: LeetspeakLevel, ambiguous_as_l: bool = False
+) -> tuple[list[tuple[re.Pattern[str], str]], dict[str, str]]:
+    """Return the multi-character patterns and the single-character map for a level."""
+    multi = AGGRESSIVE_MULTI_CHAR if level == "aggressive" else []
+    return multi, _get_substitution_map(level, ambiguous_as_l)
 
 
 def normalize_leetspeak(
@@ -72,6 +120,7 @@ def normalize_leetspeak(
     collapse_repeated: bool = True,
     max_repeated: int = 2,
     remove_spaced_chars: bool = True,
+    ambiguous_as_l: bool = False,
 ) -> str:
     """
     Normalize leetspeak text to standard characters.
@@ -82,6 +131,7 @@ def normalize_leetspeak(
         collapse_repeated: Whether to collapse repeated characters
         max_repeated: Maximum allowed consecutive repeated characters
         remove_spaced_chars: Whether to remove spaces between single characters
+        ambiguous_as_l: Read `|`, `1` and `!` as `l` instead of `i`
 
     Returns:
         The normalized text with leetspeak characters replaced
@@ -105,14 +155,11 @@ def normalize_leetspeak(
     # Step 2: Apply multi-character patterns first (aggressive only)
     if level == "aggressive":
         for pattern, replacement in AGGRESSIVE_MULTI_CHAR:
-            normalized = re.sub(pattern, replacement, normalized, flags=re.IGNORECASE)
+            normalized = pattern.sub(replacement, normalized)
 
     # Step 3: Apply single-character substitutions
-    substitutions = _get_substitution_map(level)
-    result = []
-    for char in normalized:
-        result.append(substitutions.get(char, char))
-    normalized = "".join(result)
+    substitutions = _get_substitution_map(level, ambiguous_as_l)
+    normalized = "".join(substitutions.get(char, char) for char in normalized)
 
     # Step 4: Collapse repeated characters (fuuuuck -> fuck)
     if collapse_repeated:
@@ -121,8 +168,12 @@ def normalize_leetspeak(
     return normalized
 
 
-def _get_substitution_map(level: LeetspeakLevel) -> dict[str, str]:
+def _get_substitution_map(
+    level: LeetspeakLevel, ambiguous_as_l: bool = False
+) -> dict[str, str]:
     """Get the appropriate substitution map based on the detection level."""
+    if ambiguous_as_l:
+        return {**_get_substitution_map(level), **AMBIGUOUS_AS_L}
     if level == "basic":
         return BASIC_SUBSTITUTIONS
     elif level == "aggressive":
@@ -146,14 +197,8 @@ def collapse_spaced_characters(text: str) -> str:
         >>> collapse_spaced_characters("hello f u c k world")
         'hello fuck world'
     """
-    # Match sequences of single characters separated by spaces
-    # At least 3 characters to avoid false positives
-    pattern = r"\b([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+\b"
-
-    def replace_match(match: re.Match[str]) -> str:
-        return re.sub(r"\s+", "", match.group(0))
-
-    return re.sub(pattern, replace_match, text)
+    # At least 3 characters to avoid false positives with "I a m" etc.
+    return SPACED_CHARS_PATTERN.sub(lambda m: re.sub(r"\s+", "", m.group(0)), text)
 
 
 def collapse_repeated_characters(text: str, max_repeated: int = 2) -> str:
@@ -174,7 +219,9 @@ def collapse_repeated_characters(text: str, max_repeated: int = 2) -> str:
         'shit'
     """
     pattern = rf"(.)\1{{{max_repeated},}}"
-    return re.sub(pattern, lambda m: m.group(1) * max_repeated, text, flags=re.IGNORECASE)
+    return re.sub(
+        pattern, lambda m: m.group(1) * max_repeated, text, flags=re.IGNORECASE
+    )
 
 
 def contains_leetspeak(text: str) -> bool:
@@ -205,7 +252,9 @@ def contains_leetspeak(text: str) -> bool:
     return any(re.search(pattern, text) for pattern in patterns)
 
 
-def generate_leetspeak_variants(word: str, level: LeetspeakLevel = "moderate") -> list[str]:
+def generate_leetspeak_variants(
+    word: str, level: LeetspeakLevel = "moderate"
+) -> list[str]:
     """
     Generate all possible leetspeak variants of a word.
 
@@ -258,4 +307,6 @@ def _generate_variants_recursive(
     # Add leetspeak variants for this character
     if char in reverse_map:
         for leet_char in reverse_map[char]:
-            _generate_variants_recursive(word, index + 1, current + leet_char, variants, reverse_map)
+            _generate_variants_recursive(
+                word, index + 1, current + leet_char, variants, reverse_map
+            )

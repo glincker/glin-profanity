@@ -80,6 +80,45 @@ class ContextAwareConfig(TypedDict, total=False):
 LeetspeakLevel = Literal["basic", "moderate", "aggressive"]
 
 
+# Shortcut for the obfuscation pipeline:
+# off (plain matching), basic (html, stretch, safe words), standard (plus separators,
+# masks and `|`/`1`/`!` read as l), strict (looser joins).
+ObfuscationLevel = Literal["off", "basic", "standard", "strict"]
+
+
+class HtmlOptions(TypedDict, total=False):
+    """Entity decoding passes, so `&amp;#117;` (double encoded) resolves."""
+
+    decode_depth: int
+
+
+class SeparatorOptions(TypedDict, total=False):
+    """Characters that may sit between the letters of one word."""
+
+    chars: str
+    allow_space: bool
+    min_two_piece_length: int
+
+
+class MaskingOptions(TypedDict, total=False):
+    """Characters that can stand in for one hidden letter."""
+
+    chars: str
+    min_visible: int
+
+
+class ObfuscationOptions(TypedDict, total=False):
+    """Fine-grained switches for the obfuscation pipeline. Each overrides the level."""
+
+    level: ObfuscationLevel
+    html: bool | HtmlOptions
+    separators: bool | SeparatorOptions
+    masking: bool | MaskingOptions
+    stretch: bool
+    ambiguous_leet: bool
+    builtin_whitelist: bool
+
+
 class FilterConfig(ContextAwareConfig, total=False):
     """Main filter configuration options - unified with JavaScript."""
 
@@ -97,10 +136,18 @@ class FilterConfig(ContextAwareConfig, total=False):
 
     # Leetspeak detection options
     detect_leetspeak: bool  # Enable leetspeak detection (e.g., "f4ck" -> "fuck")
-    leetspeak_level: LeetspeakLevel  # Detection intensity: 'basic', 'moderate', 'aggressive'
+    leetspeak_level: (
+        LeetspeakLevel  # Detection intensity: 'basic', 'moderate', 'aggressive'
+    )
 
     # Unicode normalization options
     normalize_unicode: bool  # Enable Unicode normalization to detect homoglyphs
+
+    # Obfuscation pipeline: a level or fine-grained switches (default "standard")
+    obfuscation: ObfuscationLevel | ObfuscationOptions
+
+    # Extra safe words or phrases; a dictionary hit overlapping one is ignored
+    whitelist: list[str]
 
     # Caching options
     cache_results: bool  # Cache profanity check results for repeated strings

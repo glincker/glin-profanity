@@ -286,13 +286,17 @@ _SLACK_PATTERNS: list[SecretPattern] = [
     SecretPattern(
         id="SEC-SLACK-002",
         name="Slack User Token",
-        pattern=re.compile(r"xoxp-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{32}"),
+        pattern=re.compile(
+            r"xoxp-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{32}"
+        ),
         severity="critical",
     ),
     SecretPattern(
         id="SEC-SLACK-003",
         name="Slack Workspace Token",
-        pattern=re.compile(r"xoxa-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{32}"),
+        pattern=re.compile(
+            r"xoxa-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{32}"
+        ),
         severity="critical",
     ),
     SecretPattern(
@@ -516,7 +520,9 @@ _CRYPTO_PATTERNS: list[SecretPattern] = [
     SecretPattern(
         id="SEC-JWT-001",
         name="JSON Web Token",
-        pattern=re.compile(r"eyJ[A-Za-z0-9\-_=]{10,}\.eyJ[A-Za-z0-9\-_=]{10,}\.[A-Za-z0-9\-_=]{10,}"),
+        pattern=re.compile(
+            r"eyJ[A-Za-z0-9\-_=]{10,}\.eyJ[A-Za-z0-9\-_=]{10,}\.[A-Za-z0-9\-_=]{10,}"
+        ),
         severity="high",
         entropy_check=True,
     ),
@@ -720,7 +726,9 @@ _SOCIAL_PATTERNS: list[SecretPattern] = [
     SecretPattern(
         id="SEC-DISCORD-001",
         name="Discord Bot Token",
-        pattern=re.compile(r"[MN][A-Za-z0-9]{23,25}\.[A-Za-z0-9\-_]{6,7}\.[A-Za-z0-9\-_]{27,40}"),
+        pattern=re.compile(
+            r"[MN][A-Za-z0-9]{23,25}\.[A-Za-z0-9\-_]{6,7}\.[A-Za-z0-9\-_]{27,40}"
+        ),
         severity="high",
     ),
     SecretPattern(
