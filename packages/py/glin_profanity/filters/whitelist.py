@@ -1,73 +1,92 @@
-"""Interval whitelist: safe spans that let overlapping dictionary hits be dropped."""
+"""Interval whitelist: protected spans that let dictionary hits inside them be dropped."""
 
 from __future__ import annotations
 
 import re
+from typing import NamedTuple
 
 from .builtin_whitelist import BUILTIN_WHITELIST, WhitelistEntry
 from .pipeline.mapped import MappedText, to_original_span
+from .word_matcher import edge_kind
 
 Interval = tuple[int, int]
 
 # Whitespace stays Unicode-aware inside the ASCII-scoped patterns.
 _SPACE = r"(?u:\s)"
+_ASCII_BOUNDARY = r"(?a:\b)"
+_KATAKANA = "\u30a1-\u30fa\u30fc-\u30ff\u31f0-\u31ff\uff66-\uff9f"
 
 
-def _compile(
-    entries: list[WhitelistEntry], ignore_case: bool
-) -> re.Pattern[str] | None:
-    if not entries:
-        return None
-    body = "|".join(e.pattern for e in entries)
-    # ASCII-only folding and boundaries like JS; whitespace stays Unicode-aware.
-    scoped = f"(?ai:{body})" if ignore_case else f"(?:{body})"
-    return re.compile(rf"(?a:\b){scoped}(?a:\b)")
+class _Compiled(NamedTuple):
+    regex: re.Pattern[str]
 
 
-def overlaps(a: Interval, b: Interval) -> bool:
-    return a[0] < b[1] and b[0] < a[1]
+def within(hit: Interval, span: Interval) -> bool:
+    """True when the hit lies fully inside the protected span."""
+    return hit[0] >= span[0] and hit[1] <= span[1]
+
+
+def _edge(char: str, length: int, head: bool) -> str:
+    """Lookaround for one end of a user entry; symbols like "+" use the native rule."""
+    kind = edge_kind(char, length)
+    if kind == "ascii":
+        if char.isascii() and (char.isalnum() or char == "_"):
+            return _ASCII_BOUNDARY
+        kind = "native"
+    if kind == "kata":
+        return f"(?<![{_KATAKANA}])" if head else f"(?![{_KATAKANA}])"
+    if kind == "free":
+        return ""
+    return r"(?<!\w)" if head else r"(?!\w)"
+
+
+def _compile_builtin(entry: WhitelistEntry) -> _Compiled:
+    body = "".join(
+        f"({part.replace(chr(92) + 's', _SPACE)})"
+        for part in (entry.before, entry.protect, entry.after)
+    )
+    scoped = f"{body}" if entry.case_sensitive else f"(?ai:{body})"
+    return _Compiled(re.compile(rf"{_ASCII_BOUNDARY}{scoped}{_ASCII_BOUNDARY}"))
+
+
+def _compile_user(entry: str) -> _Compiled:
+    parts = entry.split()
+    protect = f"{_SPACE}+".join(re.escape(p) for p in parts)
+    head = _edge(entry[0], len(entry), True)
+    tail = _edge(entry[-1], len(entry), False)
+    flag = "ai" if entry.isascii() else "i"
+    return _Compiled(re.compile(rf"{head}()(?{flag}:({protect})){tail}()"))
 
 
 class Whitelist:
-    """Case-insensitive and case-sensitive entries are compiled into one regex each."""
+    """Each entry is its own regex: context before, the protected word, context after."""
 
     def __init__(self, user_entries: list[str], use_builtin: bool) -> None:
-        entries: list[WhitelistEntry] = []
+        compiled: list[_Compiled] = []
         if use_builtin:
-            entries = [
-                WhitelistEntry(e.pattern.replace(r"\s", _SPACE), e.case_sensitive)
-                for e in BUILTIN_WHITELIST
-            ]
+            compiled.extend(_compile_builtin(e) for e in BUILTIN_WHITELIST)
         for entry in user_entries:
-            parts = entry.split()
-            if parts:
-                entries.append(
-                    WhitelistEntry(f"{_SPACE}+".join(re.escape(p) for p in parts))
-                )
-        self._insensitive = _compile([e for e in entries if not e.case_sensitive], True)
-        self._sensitive = _compile([e for e in entries if e.case_sensitive], False)
+            stripped = entry.strip()
+            if stripped:
+                compiled.append(_compile_user(stripped))
+        self._compiled = compiled
 
     @property
     def is_empty(self) -> bool:
-        return self._insensitive is None and self._sensitive is None
+        return not self._compiled
 
     def might_match(self, texts: list[str]) -> bool:
         """Cheap test on plain strings: could any safe span exist at all?"""
-        for regex in (self._insensitive, self._sensitive):
-            if regex is None:
-                continue
-            if any(regex.search(text) for text in texts):
-                return True
-        return False
+        return any(c.regex.search(t) for c in self._compiled for t in texts)
 
     def intervals(self, view: MappedText) -> list[Interval]:
-        """Safe spans of the view, in original-text offsets."""
+        """Protected spans of the view, in original-text offsets."""
         found: list[Interval] = []
-        for regex in (self._insensitive, self._sensitive):
-            if regex is None:
-                continue
-            for match in regex.finditer(view.text):
-                if match.end() == match.start():
+        for compiled in self._compiled:
+            for match in compiled.regex.finditer(view.text):
+                start = match.start(2)
+                end = match.end(2)
+                if end == start:
                     continue
-                found.append(to_original_span(view, match.start(), match.end()))
+                found.append(to_original_span(view, start, end))
         return found

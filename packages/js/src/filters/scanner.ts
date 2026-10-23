@@ -4,7 +4,7 @@ import { DictionaryIndex } from './pipeline/dictionaryIndex';
 import { MappedText, toOriginalSpan } from './pipeline/mapped';
 import { ViewFactory, ViewConfig, LegacyViews } from './pipeline/views';
 import { WordMatcher } from './wordMatcher';
-import { Whitelist, overlaps, Interval } from './whitelist';
+import { Whitelist, within, Interval } from './whitelist';
 import { escapeRegExp } from './replacement';
 import { wordEdges, headSource, tailSource, EdgeKind } from './wordEdges';
 
@@ -175,6 +175,6 @@ export class Scanner {
     const sources = [legacy.orig, legacy.norm, ...(mode === 'full' ? [legacy.aggr] : []), ...enhanced];
     for (const view of sources) safe.push(...this.whitelist.intervals(view));
     if (safe.length === 0) return hits;
-    return hits.filter((hit) => !safe.some((span) => overlaps([hit.start, hit.end], span)));
+    return hits.filter((hit) => !safe.some((span) => within([hit.start, hit.end], span)));
   }
 }

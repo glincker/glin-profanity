@@ -12,7 +12,7 @@ from glin_profanity.types.types import SeverityLevel
 from .pipeline.dictionary_index import DictionaryIndex
 from .pipeline.mapped import MappedText, to_original_span
 from .pipeline.views import LegacyViews, ViewConfig, ViewFactory
-from .whitelist import Interval, Whitelist, overlaps
+from .whitelist import Interval, Whitelist, within
 from .word_matcher import WordMatcher, is_token_word, word_pattern
 
 ViewKind = Literal["orig", "norm", "aggr", "enhanced"]
@@ -214,5 +214,5 @@ class Scanner:
         return [
             h
             for h in hits
-            if not any(overlaps((h.start, h.end), span) for span in safe)
+            if not any(within((h.start, h.end), span) for span in safe)
         ]

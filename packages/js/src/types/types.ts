@@ -141,7 +141,7 @@ export interface FilterConfig extends ContextAwareConfig {
   obfuscation?: ObfuscationLevel | ObfuscationOptions;
 
   /**
-   * Extra safe words or phrases. A dictionary hit that overlaps one is ignored.
+   * Extra safe words or phrases. A dictionary hit lying fully inside one is ignored; other words around it are still checked.
    * Matched case-insensitively on word boundaries.
    */
   whitelist?: string[];

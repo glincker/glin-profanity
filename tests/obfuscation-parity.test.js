@@ -124,7 +124,9 @@ suite('obfuscation parity between JS and Python', () => {
     '&#102;&#117;&#99;&#107;', 'b&amp;#105;tch', 'cl@ss starts at 5', 'Moby Dick is a novel',
     'you are a dick', '@$$ho|e', 'f|_|ck', 'b/\\stard', 'You are such a s h i t', 'fu.c k',
     'ass​istant', 'f​u​c​k', 'ｆｕｃｋ', 'p@ssword reset',
-    '| **React Hook** | yes | no |', 'The end.Fuel is cheap', 'Hello, World!', '',
+    '| **React Hook** | yes | no |',
+    'Fuck Dick', 'Dick Fuck', 'You Dick', 'what a Big Dick', 'Fuck Moby Dick', 'Twatt, Orkney',
+    'Moby Dick is great, you dick', 'The end.Fuel is cheap', 'Hello, World!', '',
   ];
 
   test.each(LEVELS)('probe inputs agree at obfuscation level %s', (level) => {
