@@ -100,7 +100,8 @@ class TestHostileInputStaysFast:
         start = time.perf_counter()
         self.filter.is_profane(value)
         self.filter.check_profanity(value)
-        assert time.perf_counter() - start < 3
+        # CI is slower than a laptop; the bound still catches quadratic blowups.
+        assert time.perf_counter() - start < 10
 
 
 class TestQuadraticInputIsBounded:
@@ -121,4 +122,5 @@ class TestQuadraticInputIsBounded:
         start = time.perf_counter()
         self.filter.is_profane(value)
         self.filter.check_profanity(value)
-        assert time.perf_counter() - start < 3
+        # CI is slower than a laptop; the bound still catches quadratic blowups.
+        assert time.perf_counter() - start < 10

@@ -55,6 +55,7 @@ def masking_transformer(
         if not quick.search(inp.text):
             return inp
         edits: list[Edit] = []
+        resolved: dict[str, str | None] = {}
         for match in token.finditer(inp.text):
             raw = match.group(0)
             if _is_emphasis(raw, inp.text, match.start(), masks):
@@ -68,7 +69,9 @@ def masking_transformer(
             core = raw[lo:hi]
             if len(core) < 3:
                 continue
-            word = index.resolve_masked(core, masks, min_visible)
+            if core not in resolved:
+                resolved[core] = index.resolve_masked(core, masks, min_visible)
+            word = resolved[core]
             if word and len(word) == len(core):
                 edits.append(Edit(match.start() + lo, match.start() + hi, word))
         return apply_edits(inp, edits)
