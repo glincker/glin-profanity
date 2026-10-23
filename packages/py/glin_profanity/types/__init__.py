@@ -7,8 +7,13 @@ from .types import (
     FilteredProfanityResult,
     Language,
     LeetspeakLevel,
+    HtmlOptions,
+    MaskingOptions,
     Match,
+    ObfuscationLevel,
+    ObfuscationOptions,
     SeverityLevel,
+    SeparatorOptions,
 )
 
 __all__ = [
@@ -18,6 +23,11 @@ __all__ = [
     "FilteredProfanityResult",
     "Language",
     "LeetspeakLevel",
+    "HtmlOptions",
+    "MaskingOptions",
     "Match",
+    "ObfuscationLevel",
+    "ObfuscationOptions",
+    "SeparatorOptions",
     "SeverityLevel",
 ]

@@ -1,0 +1,203 @@
+"""Dictionary scan over the original text and its normalized and enhanced views."""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Literal
+
+from glin_profanity.types.types import SeverityLevel
+
+from .pipeline.dictionary_index import DictionaryIndex
+from .pipeline.mapped import MappedText, to_original_span
+from .pipeline.views import LegacyViews, ViewConfig, ViewFactory
+from .whitelist import Interval, Whitelist, overlaps
+from .word_matcher import WordMatcher
+
+ViewKind = Literal["orig", "norm", "aggr", "enhanced"]
+ScanMode = Literal["full", "context"]
+
+_WORD_ONLY = re.compile(r"\w+")
+
+
+@dataclass
+class ScanHit:
+    """One dictionary hit, with its span in the original input."""
+
+    word: str
+    # Text matched in the view (lowercase).
+    text: str
+    view: ViewKind
+    start: int
+    end: int
+    severity: SeverityLevel
+
+
+@dataclass
+class ScannerConfig:
+    """Everything the scanner needs from the owning Filter."""
+
+    words: list[str]
+    ignore_words: set[str]
+    matcher: WordMatcher
+    view: ViewConfig
+    # Plain string normalization, used for the cheap prefilter.
+    normalize_text: Callable[[str, bool], str]
+    whitelist: list[str]
+    case_sensitive: bool
+
+
+@dataclass
+class _LiveView:
+    kind: ViewKind
+    view: MappedText
+    lower: str
+    present: set[str]
+
+
+class Scanner:
+    """A combined candidate test answers "anything here?" in one pass.
+
+    Clean text never pays for the per-word loop. Single-token words are looked up
+    in a set of the text's tokens, as Python's `re` has no fast many-word alternation.
+    """
+
+    def __init__(self, cfg: ScannerConfig) -> None:
+        self._cfg = cfg
+        self.active_words = [w for w in cfg.words if w.lower() not in cfg.ignore_words]
+        self.index = DictionaryIndex(
+            self.active_words, cfg.view.detect_leetspeak, cfg.view.leetspeak_level
+        )
+        self._views = ViewFactory(cfg.view, self.index)
+        self._whitelist = Whitelist(
+            cfg.whitelist, cfg.view.obfuscation.builtin_whitelist
+        )
+        self._pure = {w for w in self.active_words if _WORD_ONLY.fullmatch(w)}
+        self._rest = [w for w in self.active_words if w not in self._pure]
+        self._rest_set = set(self._rest)
+        self._rest_any = (
+            re.compile(
+                r"\b(?:" + "|".join(re.escape(w) for w in self._rest) + r")\b",
+                0 if cfg.case_sensitive else re.IGNORECASE,
+            )
+            if self._rest
+            else None
+        )
+
+    def _has_candidate(self, text: str) -> bool:
+        if not self.active_words:
+            return False
+        hay = text if self._cfg.case_sensitive else text.lower()
+        if self._pure and not self._pure.isdisjoint(_WORD_ONLY.findall(hay)):
+            return True
+        return self._rest_any is not None and self._rest_any.search(text) is not None
+
+    def is_profane(self, text: str) -> bool:
+        """Clean text exits after one candidate test per view.
+
+        Text with a hit also exits early unless a safe word could overlap it.
+        """
+        norm = self._cfg.normalize_text(text, False)
+        aggr = self._cfg.normalize_text(text, True)
+        enhanced = self._views.enhanced_views(text)
+        texts = [text, norm, aggr, *(v.text for v in enhanced)]
+        if not any(self._has_candidate(t) for t in texts):
+            return False
+        if not self._whitelist.might_match(texts):
+            return True
+        return len(self.scan(text, "full")) > 0
+
+    def scan(self, text: str, mode: ScanMode) -> list[ScanHit]:
+        """Hits in dictionary order, views in order orig, norm, aggr, enhanced.
+
+        `context` mode skips the original and aggressive views, as the
+        context-aware path always did.
+        """
+        enhanced = self._views.enhanced_views(text)
+        quick = [
+            text.lower(),
+            self._cfg.normalize_text(text, False).lower(),
+            self._cfg.normalize_text(text, True).lower(),
+        ]
+        if not any(self._has_candidate(t) for t in quick) and not any(
+            self._has_candidate(v.text.lower()) for v in enhanced
+        ):
+            return []
+        legacy = self._views.legacy_views(text)
+
+        candidates: list[tuple[ViewKind, MappedText]] = []
+        if mode == "full":
+            candidates.append(("orig", legacy.orig))
+        candidates.append(("norm", legacy.norm))
+        if mode == "full":
+            candidates.append(("aggr", legacy.aggr))
+        candidates.extend(("enhanced", view) for view in enhanced)
+
+        live: list[_LiveView] = []
+        for kind, view in candidates:
+            lowered = view.text.lower()
+            lower = lowered if len(lowered) == len(view.text) else view.text
+            if self._has_candidate(lower):
+                present = set(_WORD_ONLY.findall(lower)) & self._pure
+                live.append(_LiveView(kind, view, lower, present))
+
+        wanted: set[str] = set(self._rest)
+        for item in live:
+            wanted |= item.present
+
+        hits: list[ScanHit] = []
+        seen: set[tuple[str, int, int]] = set()
+        for word in self.active_words:
+            if word not in wanted:
+                continue
+            regex = self._cfg.matcher.get_regex(word)
+            is_rest = word in self._rest_set
+            for item in live:
+                if not is_rest and word not in item.present:
+                    continue
+                for match in regex.finditer(item.lower):
+                    if match.end() == match.start():
+                        continue
+                    start, end = to_original_span(item.view, match.start(), match.end())
+                    key = (word, start, end)
+                    if item.kind != "orig" and mode == "context" and key in seen:
+                        continue
+                    if item.kind == "enhanced" and key in seen:
+                        continue
+                    seen.add(key)
+                    hits.append(
+                        ScanHit(
+                            word,
+                            match.group(0),
+                            item.kind,
+                            start,
+                            end,
+                            SeverityLevel.EXACT,
+                        )
+                    )
+        return self._drop_whitelisted(hits, legacy, enhanced, mode)
+
+    def _drop_whitelisted(
+        self,
+        hits: list[ScanHit],
+        legacy: LegacyViews,
+        enhanced: list[MappedText],
+        mode: ScanMode,
+    ) -> list[ScanHit]:
+        if not hits or self._whitelist.is_empty:
+            return hits
+        sources = [legacy.orig, legacy.norm]
+        if mode == "full":
+            sources.append(legacy.aggr)
+        sources.extend(enhanced)
+        safe: list[Interval] = []
+        for view in sources:
+            safe.extend(self._whitelist.intervals(view))
+        if not safe:
+            return hits
+        return [
+            h
+            for h in hits
+            if not any(overlaps((h.start, h.end), span) for span in safe)
+        ]

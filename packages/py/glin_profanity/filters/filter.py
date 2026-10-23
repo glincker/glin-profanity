@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Literal
 
 from glin_profanity.data.dictionary import dictionary
@@ -12,8 +11,19 @@ from glin_profanity.types.types import (
     Match,
     SeverityLevel,
 )
-from glin_profanity.utils.leetspeak import normalize_leetspeak
-from glin_profanity.utils.unicode import normalize_unicode
+
+from .legacy_scan import (
+    LegacyScanContext,
+    legacy_context_hits,
+    legacy_is_profane,
+    legacy_scan,
+)
+from .normalize_text import NormalizeConfig, normalize_for_matching
+from .obfuscation import resolve_obfuscation
+from .pipeline.views import ViewConfig
+from .replacement import replace_spans, replace_words
+from .scanner import ScanHit, Scanner, ScannerConfig
+from .word_matcher import WordMatcher
 
 LeetspeakLevel = Literal["basic", "moderate", "aggressive"]
 
@@ -24,13 +34,16 @@ class Filter:
 
     Provides functionality to detect and filter profane language in text
     with support for multiple languages, leetspeak detection, Unicode
-    normalization, custom configurations, and context-aware filtering.
+    normalization, obfuscation handling (HTML, separators, masks, stretched
+    letters), custom configurations, and context-aware filtering.
 
     Examples:
         >>> filter = Filter({"languages": ["english"], "detect_leetspeak": True})
         >>> filter.is_profane("@ss")
         True
         >>> filter.is_profane("fück")  # Unicode normalization
+        True
+        >>> filter.is_profane("f.u.c.k")  # Separators (obfuscation "standard")
         True
     """
 
@@ -68,14 +81,21 @@ class Filter:
         self.cache_results = config.get("cache_results", False)
         self.max_cache_size = config.get("max_cache_size", 1000)
         self._cache: dict[str, CheckProfanityResult] = {}
-        self._regex_cache: dict[str, re.Pattern[str]] = {}
+        self._matcher = WordMatcher(
+            self.case_sensitive, self.word_boundaries, self.fuzzy_tolerance_level
+        )
+
+        # Obfuscation pipeline and extra safe words
+        self.obfuscation_option = config.get("obfuscation")
+        self.whitelist_words: list[str] = list(config.get("whitelist") or [])
 
         # Initialize word sets
-        ignore_words_list = config.get("ignore_words", [])
+        ignore_words_list = config.get("ignore_words") or []
         self.ignore_words: set[str] = {word.lower() for word in ignore_words_list}
 
         # Load dictionary words
         self._load_words(config)
+        self._scanner = self._create_scanner()
 
     def _load_words(self, config: FilterConfig) -> None:
         """Load profanity words based on configuration."""
@@ -84,83 +104,84 @@ class Filter:
         if config.get("all_languages", False):
             words = dictionary.get_all_words()
         else:
-            languages = config.get("languages", ["english"])
-            if languages:
-                for lang in languages:
-                    words.extend(dictionary.get_words(lang))
+            languages = config.get("languages") or ["english"]
+            for lang in languages:
+                words.extend(dictionary.get_words(lang))
 
         # Add custom words if provided
         custom_words = config.get("custom_words")
         if custom_words:
             words.extend(custom_words)
 
-        # Store as set for faster lookup
-        self.words: set[str] = {word.lower() for word in words}
+        # Insertion order is kept so hits come out in a stable dictionary order.
+        self._word_list: list[str] = list(dict.fromkeys(word.lower() for word in words))
+        self.words: set[str] = set(self._word_list)
+
+    def _create_scanner(self) -> Scanner | None:
+        """Build the obfuscation-aware scanner.
+
+        It needs word boundaries; fuzzy matching (word_boundaries off) and
+        `obfuscation: "off"` without safe words keep the legacy scan.
+        """
+        obfuscation = resolve_obfuscation(self.obfuscation_option)
+        if not self.word_boundaries:
+            return None
+        if not obfuscation.any_enabled and not self.whitelist_words:
+            return None
+        return Scanner(
+            ScannerConfig(
+                words=self._word_list,
+                ignore_words=self.ignore_words,
+                matcher=self._matcher,
+                view=ViewConfig(
+                    detect_leetspeak=self.detect_leetspeak,
+                    leetspeak_level=self.leetspeak_level,
+                    normalize_unicode=self.normalize_unicode_enabled,
+                    allow_obfuscated_match=self.allow_obfuscated_match,
+                    obfuscation=obfuscation,
+                ),
+                normalize_text=self._normalize_text,
+                whitelist=self.whitelist_words,
+                case_sensitive=self.case_sensitive,
+            )
+        )
 
     def _debug_log(self, *args: object) -> None:
         """Log debug information if logging is enabled."""
         if self.log_profanity:
             print("[glin-profanity]", *args)  # noqa: T201
 
-    def _normalize_text(self, text: str) -> str:
+    def _normalize_text(self, text: str, aggressive: bool = False) -> str:
         """
-        Normalize text for profanity detection using all enabled normalization methods.
-
-        Applies Unicode normalization, leetspeak detection, and obfuscation handling.
+        Normalize text with every enabled method (Unicode, leetspeak, legacy).
 
         Args:
             text: The input text to normalize
+            aggressive: Collapse repeated characters to one
 
         Returns:
             The normalized text
         """
-        normalized = text
+        return normalize_for_matching(
+            text,
+            aggressive,
+            NormalizeConfig(
+                normalize_unicode=self.normalize_unicode_enabled,
+                detect_leetspeak=self.detect_leetspeak,
+                leetspeak_level=self.leetspeak_level,
+                allow_obfuscated_match=self.allow_obfuscated_match,
+            ),
+        )
 
-        # Step 1: Apply Unicode normalization (handles homoglyphs, diacritics, etc.)
-        if self.normalize_unicode_enabled:
-            normalized = normalize_unicode(normalized)
-
-        # Step 2: Apply leetspeak normalization
-        if self.detect_leetspeak:
-            normalized = normalize_leetspeak(
-                normalized,
-                level=self.leetspeak_level,
-                collapse_repeated=True,
-                remove_spaced_chars=True,
-            )
-
-        # Step 3: Apply legacy obfuscation handling (for backward compatibility)
-        if self.allow_obfuscated_match and not self.detect_leetspeak:
-            normalized = self._normalize_obfuscated(normalized)
-
-        return normalized
-
-    def _normalize_obfuscated(self, text: str) -> str:
-        """
-        Normalize obfuscated text by replacing common character substitutions.
-
-        Deprecated: Use _normalize_text with detect_leetspeak option instead.
-        """
-        # Remove repeated characters (e.g., "hiiiii" -> "hii")
-        normalized = re.sub(r"([a-zA-Z])\1{1,}", r"\1\1", text)
-
-        # Character substitution map
-        char_map = {
-            "@": "a",
-            "$": "s",
-            "!": "i",
-            "1": "i",
-            "*": "",
-        }
-
-        for char, replacement in char_map.items():
-            normalized = normalized.replace(char, replacement)
-
-        return normalized
+    def _legacy_context(self) -> LegacyScanContext:
+        return LegacyScanContext(
+            self._word_list, self.ignore_words, self._matcher, self._normalize_text
+        )
 
     def clear_cache(self) -> None:
         """Clear the result cache."""
         self._cache.clear()
+        self._matcher.clear()
 
     def get_cache_size(self) -> int:
         """Get the current cache size."""
@@ -183,9 +204,9 @@ class Filter:
             ... })
             >>> config = filter.get_config()
             >>> # Save to file: json.dump(config, open('filter.config.json', 'w'))
-            >>> # Later, restore: new_filter = Filter(json.load(open('filter.config.json')))
+            >>> # Later: new_filter = Filter(json.load(open('filter.config.json')))
         """
-        return {
+        config: FilterConfig = {
             "case_sensitive": self.case_sensitive,
             "word_boundaries": self.word_boundaries,
             "replace_with": self.replace_with,
@@ -202,7 +223,11 @@ class Filter:
             "normalize_unicode": self.normalize_unicode_enabled,
             "cache_results": self.cache_results,
             "max_cache_size": self.max_cache_size,
+            "whitelist": self.whitelist_words,
         }
+        if self.obfuscation_option is not None:
+            config["obfuscation"] = self.obfuscation_option
+        return config
 
     def get_word_count(self) -> int:
         """
@@ -233,75 +258,21 @@ class Filter:
             return None
         return self._cache.get(key)
 
-    def _get_regex(self, word: str) -> re.Pattern[str]:
-        """Create regex pattern for word matching."""
-        if word in self._regex_cache:
-            return self._regex_cache[word]
-
-        flags = 0 if self.case_sensitive else re.IGNORECASE
-        escaped_word = re.escape(word)
-
-        pattern = rf"\b{escaped_word}\b" if self.word_boundaries else escaped_word
-
-        regex = re.compile(pattern, flags)
-        self._regex_cache[word] = regex
-        return regex
-
-    def _is_fuzzy_tolerance_match(self, word: str, text: str) -> bool:
-        """Check if word matches text within fuzzy tolerance."""
-        simplified_text = re.sub(r"[^a-z]", "", text.lower())
-        simplified_word = word.lower()
-
-        # If word boundaries are enabled, don't do fuzzy matching
-        # that could match across word boundaries
-        if self.word_boundaries:
-            # Only do fuzzy matching if the word appears as a separate token
-            words_in_text = re.findall(r"\b\w+\b", text.lower())
-            for text_word in words_in_text:
-                if self._fuzzy_match_single_word(simplified_word, text_word):
-                    return True
-            return False
-
-        # Original fuzzy matching for non-word-boundary mode
-        match_count = 0
-        index = 0
-
-        for char in simplified_text:
-            if index < len(simplified_word) and char == simplified_word[index]:
-                match_count += 1
-                index += 1
-
-        score = match_count / len(simplified_word) if simplified_word else 0
-        return score >= self.fuzzy_tolerance_level
-
-    def _fuzzy_match_single_word(self, pattern_word: str, text_word: str) -> bool:
-        """Check if a single word matches the pattern with fuzzy tolerance."""
-        # For word boundary mode, require a more exact match
-        # The pattern word should be roughly the same length as the text word
-        if abs(len(pattern_word) - len(text_word)) > max(1, len(pattern_word) // 2):
-            return False
-
-        match_count = 0
-        index = 0
-
-        for char in text_word:
-            if index < len(pattern_word) and char == pattern_word[index]:
-                match_count += 1
-                index += 1
-
-        score = match_count / len(pattern_word) if pattern_word else 0
-        return score >= self.fuzzy_tolerance_level
-
-    def _evaluate_severity(self, word: str, text: str) -> SeverityLevel | None:
-        """Evaluate the severity level of a match."""
-        regex = self._get_regex(word)
-
-        if regex.search(text):
-            return SeverityLevel.EXACT
-        if self._is_fuzzy_tolerance_match(word, text):
-            return SeverityLevel.FUZZY
-
-        return None
+    def _redact(
+        self, text: str, profane_words: list[str], hits: list[ScanHit] | None = None
+    ) -> str:
+        """Mask obfuscated spans by offset, then plain dictionary words by pattern."""
+        if not profane_words or not self.replace_with:
+            return text
+        spans = [
+            (h.start, h.end)
+            for h in hits or []
+            if h.view != "orig" and text[h.start : h.end].lower() != h.word
+        ]
+        spanned = replace_spans(text, spans, self.replace_with)
+        return replace_words(
+            spanned, profane_words, self.replace_with, self.word_boundaries
+        )
 
     def is_profane(self, value: str) -> bool:
         """
@@ -322,17 +293,9 @@ class Filter:
             >>> filter.is_profane("f u c k")
             True
         """
-        # Apply all normalizations
-        input_text = self._normalize_text(value)
-
-        for word in self.words:
-            if (
-                word.lower() not in self.ignore_words
-                and self._evaluate_severity(word, input_text) is not None
-            ):
-                return True
-
-        return False
+        if self._scanner is not None:
+            return self._scanner.is_profane(value)
+        return legacy_is_profane(self._legacy_context(), value)
 
     def matches(self, word: str) -> bool:
         """
@@ -362,89 +325,75 @@ class Filter:
             >>> result["contains_profanity"]
             True
         """
-        # Check cache first
         cached_result = self._get_from_cache(text)
         if cached_result is not None:
             self._debug_log("Cache hit for:", text[:50])
             return cached_result
 
-        # Apply all normalizations
-        input_text = self._normalize_text(text)
-        input_lower = input_text.lower()
-
+        hits: list[ScanHit] | None = None
         profane_words: list[str] = []
         severity_map: dict[str, SeverityLevel] = {}
         matches: list[Match] = []
 
-        # Check each word in dictionary
-        for dict_word in self.words:
-            if dict_word.lower() in self.ignore_words:
-                continue
+        if self.enable_context_aware:
+            if self._scanner is not None:
+                for hit in self._scanner.scan(text, "context"):
+                    matches.append(
+                        {"word": hit.text, "index": hit.start, "severity": hit.severity}
+                    )
+            else:
+                for ctx_hit in legacy_context_hits(self._legacy_context(), text):
+                    matches.append(
+                        {
+                            "word": ctx_hit.word,
+                            "index": ctx_hit.index,
+                            "severity": ctx_hit.severity,
+                        }
+                    )
+            for match in matches:
+                profane_words.append(match["word"])
+                severity_map.setdefault(match["word"], match["severity"])
+        elif self._scanner is not None:
+            hits = self._scanner.scan(text, "full")
+            for hit in hits:
+                # Original view reports the matched text, derived views the dictionary word.
+                key = hit.text if hit.view == "orig" else hit.word
+                if hit.view == "orig" or key not in profane_words:
+                    profane_words.append(key)
+                    severity_map.setdefault(key, hit.severity)
+                    matches.append(
+                        {"word": key, "index": hit.start, "severity": hit.severity}
+                    )
+        else:
+            legacy = legacy_scan(self._legacy_context(), text)
+            profane_words = legacy.profane_words
+            severity_map = legacy.severity_map
+            matches = [
+                {"word": w, "severity": severity_map[w]}
+                for w in dict.fromkeys(profane_words)
+            ]
 
-            severity = self._evaluate_severity(dict_word, input_text)
-            if severity is not None:
-                regex = self._get_regex(dict_word)
-
-                # Find all matches
-                for match in regex.finditer(input_text):
-                    matched_word = match.group(0)
-                    match_index = match.start()
-
-                    profane_words.append(matched_word)
-                    severity_map[matched_word] = severity
-
-                    # Create match object
-                    match_obj: Match = {
-                        "word": matched_word,
-                        "index": match_index,
-                        "severity": severity,
-                    }
-
-                    # TODO: Add context analysis when implemented
-                    matches.append(match_obj)
-
-        # Log detected profanity
         if profane_words:
             self._debug_log("Detected:", profane_words)
 
-        # Process text replacement if configured
-        processed_text = text
-        if self.replace_with and profane_words:
-            unique_words = list(set(profane_words))
-            for word in unique_words:
-                escaped = re.escape(word)
-                if self.word_boundaries:
-                    replacement_regex = re.compile(rf"\b{escaped}\b", re.IGNORECASE)
-                else:
-                    replacement_regex = re.compile(escaped, re.IGNORECASE)
-                processed_text = replacement_regex.sub(
-                    self.replace_with, processed_text
-                )
-
-        # Build result
+        unique_words = list(dict.fromkeys(profane_words))
         result: CheckProfanityResult = {
             "contains_profanity": len(profane_words) > 0,
-            "profane_words": list(set(profane_words)),
+            "profane_words": unique_words,
         }
-
         if self.replace_with:
-            result["processed_text"] = processed_text
-
+            result["processed_text"] = self._redact(text, profane_words, hits)
         if self.severity_levels and severity_map:
             result["severity_map"] = severity_map
-
         if matches:
             result["matches"] = matches
-
         result["reason"] = (
             f"Found {len(matches)} potential profanity matches"
             if matches
             else "No profanity detected"
         )
 
-        # Cache the result
         self._add_to_cache(text, result)
-
         return result
 
     def check_profanity_with_min_severity(

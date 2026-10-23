@@ -26,6 +26,8 @@ from .types.types import (
     Language,
     LeetspeakLevel,
     Match,
+    ObfuscationLevel,
+    ObfuscationOptions,
     SeverityLevel,
 )
 from .utils import (
@@ -54,6 +56,8 @@ __all__ = [
     "Language",
     "LeetspeakLevel",
     "Match",
+    "ObfuscationLevel",
+    "ObfuscationOptions",
     "SeverityLevel",
     # Leetspeak utilities
     "normalize_leetspeak",
