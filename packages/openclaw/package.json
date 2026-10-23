@@ -86,7 +86,7 @@
   "devDependencies": {
     "@sinclair/typebox": "^0.34.52",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.6.5",
     "jest": "^30.0.0",
     "ts-jest": "^29.4.0",
     "tsup": "^9.0.0",
