@@ -23,3 +23,11 @@ describe('exotic leetspeak in the filter', () => {
     expect(off.isProfane('f|_|ck')).toBe(true);
   });
 });
+
+describe('separator glyphs that are also leetspeak', () => {
+  it.each(['standard', 'strict'] as const)('keeps "|" usable as l at level %s', (level) => {
+    const filter = makeFilter({ obfuscation: level });
+    expect(filter.isProfane('@$$ho|e')).toBe(true);
+    expect(filter.isProfane('@5$ho|e')).toBe(true);
+  });
+});

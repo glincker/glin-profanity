@@ -36,14 +36,17 @@ const AMBIGUOUS_GLYPH = /[\p{L}@$][|1!]+\p{L}/u;
  */
 export class ViewFactory {
   private readonly prefix: Transformer[];
+  /** Same steps without separator joining, for glyphs like `|` that are also separators. */
+  private readonly prefixWithoutSeparators: Transformer[];
   private readonly stretch: Transformer | null;
 
   constructor(private readonly cfg: ViewConfig, index: DictionaryIndex) {
     const obf = cfg.obfuscation;
-    this.prefix = [];
-    if (obf.html.enabled) this.prefix.push(htmlTransformer(obf.html));
-    if (obf.separators.enabled) this.prefix.push(separatorTransformer(index, obf.separators));
-    if (obf.masking.enabled) this.prefix.push(maskingTransformer(index, obf.masking));
+    const html = obf.html.enabled ? [htmlTransformer(obf.html)] : [];
+    const separators = obf.separators.enabled ? [separatorTransformer(index, obf.separators)] : [];
+    const masking = obf.masking.enabled ? [maskingTransformer(index, obf.masking)] : [];
+    this.prefix = [...html, ...separators, ...masking];
+    this.prefixWithoutSeparators = [...html, ...masking];
     this.stretch = obf.stretch ? stretchTransformer(index) : null;
   }
 
@@ -82,7 +85,7 @@ export class ViewFactory {
     const ambiguous =
       this.cfg.obfuscation.ambiguousLeet &&
       this.cfg.detectLeetspeak &&
-      AMBIGUOUS_GLYPH.test(prepared.text);
+      AMBIGUOUS_GLYPH.test(text);
     if (!changed && !longRun && !ambiguous) return [];
 
     const views: MappedText[] = [];
@@ -91,7 +94,12 @@ export class ViewFactory {
       views.push(runPipeline(prepared, [...this.normalizeSteps(false), ...tail]));
     }
     if (ambiguous) {
-      views.push(runPipeline(prepared, [...this.normalizeSteps(false, true), ...tail]));
+      const steps = [...this.normalizeSteps(false, true), ...tail];
+      views.push(runPipeline(prepared, steps));
+      if (this.cfg.obfuscation.separators.enabled) {
+        const unjoined = runPipeline(orig, this.prefixWithoutSeparators);
+        if (unjoined.text !== prepared.text) views.push(runPipeline(unjoined, steps));
+      }
     }
     return views;
   }
