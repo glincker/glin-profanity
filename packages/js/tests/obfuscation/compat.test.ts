@@ -62,3 +62,23 @@ describe('backward compatibility', () => {
     expect(time(fast)).toBeLessThan(time(plain) * 2);
   });
 });
+
+describe('hostile input stays fast', () => {
+  const filter = makeFilter();
+  const timeMs = (input: string) => {
+    const start = Date.now();
+    filter.isProfane(input);
+    filter.checkProfanity(input);
+    return Date.now() - start;
+  };
+
+  it.each([
+    ['unclosed comments', '<!--'.repeat(25000)],
+    ['long dotted chain', 'a.b.'.repeat(25000)],
+    ['trailing masks', 'ab** '.repeat(20000)],
+    ['stretched run', 'a'.repeat(100000)],
+    ['entity soup', '&amp;'.repeat(20000)],
+  ])('%s', (_name, input) => {
+    expect(timeMs(input)).toBeLessThan(3000);
+  });
+});

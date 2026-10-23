@@ -6,7 +6,8 @@ export interface HtmlOptions {
 }
 
 // Real tags and comments only, so "a < b" and "x <3" are left alone.
-const TAG_PATTERN = /<!--[\s\S]*?-->|<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s[^<>]*)?\/?>/g;
+// Comments are length-capped so thousands of unclosed "<!--" cannot make the scan quadratic.
+const TAG_PATTERN = /<!--[\s\S]{0,2000}?-->|<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s[^<>]*)?\/?>/g;
 const ENTITY_PATTERN = /&(?:#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6})|([a-zA-Z][a-zA-Z0-9]{1,31}));/g;
 const BLOCK_TAG = /^<\/?(?:p|div|li|ul|ol|tr|td|th|table|h[1-6]|section|article|blockquote|pre|hr)\b/i;
 

@@ -13,6 +13,7 @@ export interface MaskingOptions {
 const EDGE_PUNCTUATION = new Set(['?', '!']);
 
 /** Markdown emphasis markers that wrap a word rather than hide a letter of it. */
+const OPENER_WINDOW = 200;
 const EMPHASIS = /^([*_]*)(.*?)([*_]*)$/su;
 
 /**
@@ -26,8 +27,9 @@ function isEmphasis(raw: string, text: string, tokenStart: number, masks: Readon
   if (Array.from(inner).some((c) => masks.has(c))) return false;
   if (lead && trail) return true;
   if (!trail) return false;
-  const lineStart = text.lastIndexOf('\n', tokenStart) + 1;
-  const before = text.slice(lineStart, tokenStart);
+  // Look back a bounded window so long single-line inputs stay linear.
+  const window = text.slice(Math.max(0, tokenStart - OPENER_WINDOW), tokenStart);
+  const before = window.slice(window.lastIndexOf('\n') + 1);
   return new RegExp(`(?:^|\\s)${escapeRegExp(trail)}\\S`).test(before);
 }
 

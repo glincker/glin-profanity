@@ -7,6 +7,8 @@ export interface DictionaryIndexOptions {
   leetspeakLevel: LeetspeakLevel;
 }
 
+const NEEDS_NORMALIZING = /[^a-z]|ph|vv|(.)\1\1/;
+
 const LEET_READINGS: Record<string, string> = {
   '0': 'o', '1': 'il', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '9': 'g',
 };
@@ -83,7 +85,10 @@ export class DictionaryIndex {
   /** True when the fragment is a dictionary word, directly or after leet decoding. */
   isWord(fragment: string): boolean {
     const lower = fragment.toLowerCase();
-    return this.exact.has(lower) || this.normalized.has(this.normalize(lower));
+    if (this.exact.has(lower)) return true;
+    // Plain letters without ph, vv or triple repeats normalize to themselves.
+    if (!NEEDS_NORMALIZING.test(lower)) return false;
+    return this.normalized.has(this.normalize(lower));
   }
 
   /**
