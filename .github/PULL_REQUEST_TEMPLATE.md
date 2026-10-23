@@ -1,4 +1,4 @@
-## Pull Request Title
+## Summary
 
 ### Description
 
@@ -8,7 +8,17 @@ Please include a summary of the changes and the related issue(s) (if any). Highl
   - [ ] New feature
   - [ ] Bug fix
   - [ ] Documentation update
+  - [ ] Dictionary or language change
+  - [ ] CI or tooling
   - [ ] Other (describe)
+
+### Affected package(s)
+
+- [ ] packages/js
+- [ ] packages/py
+- [ ] packages/mcp
+- [ ] packages/openclaw
+- [ ] shared/dictionaries
 
 ### Related Issue(s)
 
@@ -25,6 +35,8 @@ Please ensure your PR meets the following criteria:
 - [ ] I have commented on my code, particularly in hard-to-understand areas.
 - [ ] I have added tests that prove my fix is effective or that my feature works.
 - [ ] New and existing unit tests pass locally with my changes.
+- [ ] Commit messages follow `<type>: <description>` (feat, fix, perf, refactor, docs, test, chore).
+- [ ] If a dictionary changed, JS and Python results stay in parity.
 - [ ] I have updated the documentation (if applicable).
 
 ### How Has This Been Tested?

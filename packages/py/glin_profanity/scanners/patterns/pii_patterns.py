@@ -211,7 +211,9 @@ _IBAN_PATTERNS: list[PiiPattern] = [
         id="PII-IBAN-001",
         type="iban",
         # Standard IBAN format: 2-letter country, 2 check digits, up to 30 alphanumeric
-        pattern=re.compile(r"\b[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}(?:[A-Z0-9]{0,16})\b"),
+        pattern=re.compile(
+            r"\b[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}(?:[A-Z0-9]{0,16})\b"
+        ),
         validator=iban_check,
     ),
     PiiPattern(

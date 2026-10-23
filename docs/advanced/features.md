@@ -32,9 +32,9 @@ const result = checkProfanity('This is a bad word');
 // }
 ```
 
-**Performance:** 21M ops/sec  
+**Performance:** ~300,000 ops/sec uncached on short text (Node 22)  
 **Languages:** 24 supported  
-**Accuracy:** 99.5%+ with leetspeak detection  
+**Accuracy:** F1 99.0% on the shootout torture set (893 English cases, authored alongside the engine, so treat as optimistic); see [benchmarks](../../benchmarks/shootout/README.md)  
 
 ### 2. Text Censorship
 
@@ -70,7 +70,6 @@ if (filter.isProfane('damn it')) {
 }
 ```
 
-**Performance:** 21M ops/sec  
 **Use Case:** FastAPI endpoints, middleware  
 
 ### 4. Batch Processing
@@ -127,9 +126,9 @@ filter.isProfane('fuuuuуck');  // true
 ```
 
 **Performance:**
-- Basic: ~15M ops/sec
-- Moderate: ~8.5M ops/sec
-- Aggressive: ~5M ops/sec
+- Moderate: ~180,000 ops/sec
+- Aggressive: ~140,000 ops/sec
+- (uncached `isProfane`, short text, Node 22)
 
 ### 2. Unicode Normalization ⭐
 
@@ -139,7 +138,6 @@ Detect homoglyphs and Unicode lookalikes.
 const filter = new Filter({ normalizeUnicode: true });
 
 // Cyrillic characters
-filter.isProfane('fսck');    // true (Armenian 'ս' → 'u')
 filter.isProfane('shіt');    // true (Cyrillic 'і' → 'i')
 
 // Greek characters
@@ -157,12 +155,12 @@ filter.isProfane('fu​ck');   // true (zero-width space)
 
 **Detects:**
 - 2,000+ homoglyph variations
-- Cyrillic, Greek, Armenian lookalikes
+- Cyrillic and Greek lookalikes (some Armenian lookalikes, such as 'ս' for 'u', are not mapped yet)
 - Full-width characters
 - Zero-width characters
 - RTL (right-to-left) text
 
-**Performance:** ~15M ops/sec
+**Performance:** ~300,000 ops/sec uncached on short text (Node 22)
 
 ### 3. Partial Word Matching
 
@@ -469,7 +467,7 @@ See [MCP Guide](./mcp-guide.md) for details.
 
 ### 1. Result Caching ⚡
 
-LRU cache for 800x performance improvement on repeated checks.
+LRU cache for repeated checks (about 80x faster on a hit for short clean text).
 
 ```typescript
 const filter = new Filter({
@@ -478,15 +476,16 @@ const filter = new Filter({
 });
 
 // First check (uncached)
-filter.checkProfanity('test');  // ~0.05ms
+filter.checkProfanity('test');  // ~0.004ms
 
 // Second check (cached)
-filter.checkProfanity('test');  // ~0.0001ms (800x faster!)
+filter.checkProfanity('test');  // ~0.00004ms
 ```
 
 **Performance:**
-- Cache hit: ~200,000,000 ops/sec
-- Cache miss: ~21,000,000 ops/sec
+- Cache hit (`checkProfanity` only): ~25,000,000 ops/sec
+- Cache miss (`checkProfanity`, clean short text): ~280,000 ops/sec
+- Profane or obfuscated text: ~17,000 to 24,000 ops/sec
 
 **Cache Management:**
 ```typescript
@@ -499,9 +498,9 @@ filter.clearCache();     // Clear all cached results
 Binary search trees for O(log n) lookups.
 
 **Performance:**
-- Single language: 21M ops/sec
-- 3 languages: 18M ops/sec
-- All 24 languages: 15M ops/sec
+- Single language: ~290,000 ops/sec
+- 3 languages: ~295,000 ops/sec
+- All 24 languages: ~140,000 ops/sec
 
 ### 3. Parallel Batch Processing
 

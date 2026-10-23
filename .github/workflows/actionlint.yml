@@ -1,0 +1,29 @@
+name: Actionlint
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: actionlint-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: Validate workflow files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Direct run instead of a reporter wrapper: the wrapper failed with an empty
+      # diff on PRs. Style-only shellcheck notes in older scripts are ignored.
+      - name: Run actionlint
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 \
+            -color -ignore 'SC2012' -ignore 'SC2086' -ignore 'SC2129' \
+            .github/workflows/*.yml

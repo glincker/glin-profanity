@@ -45,14 +45,14 @@ const filter = new Filter({
 });
 
 // Detects Cyrillic/Greek lookalikes
-filter.isProfane('fսck');  // true (Armenian 'ս')
+filter.isProfane('fυck');  // true (Greek 'υ')
 filter.isProfane('shіt');  // true (Cyrillic 'і')
 ```
 
 ### Normalization Process
 
 ```
-Input: "fսck" (with Armenian 'ս')
+Input: "fυck" (with Greek 'υ')
   ↓ Unicode Normalization
 Normalized: "fuck"
   ↓ Dictionary Lookup
@@ -247,11 +247,13 @@ const filter = new Filter({
 
 ### Performance Considerations
 
-| Config | Dictionary Size | Speed |
-|--------|----------------|-------|
-| Single language | ~500 words | 21M ops/sec |
-| 3 languages | ~1,500 words | 18M ops/sec |
-| All languages | ~8,000 words | 12M ops/sec |
+| Config | Speed (uncached `isProfane`, short text, Node 22) |
+|--------|-------|
+| Single language | ~290,000 ops/sec |
+| 3 languages | ~295,000 ops/sec |
+| All languages | ~140,000 ops/sec |
+
+Reproduce with `benchmarks/shootout/ops-claim.mjs`.
 
 ---
 

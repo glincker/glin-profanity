@@ -22,7 +22,7 @@ Complete API documentation for glin-profanity.
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `languages` | `string[]` | `['english']` | Languages to check |
-| `allLanguages` | `boolean` | `false` | Check all 23 languages |
+| `allLanguages` | `boolean` | `false` | Check all 24 languages |
 | `caseSensitive` | `boolean` | `false` | Case-sensitive matching |
 | `wordBoundaries` | `boolean` | `true` | Match whole words only |
 | `replaceWith` | `string` | `undefined` | Replacement string |
@@ -131,7 +131,7 @@ const {
 
 ## Supported Languages
 
-23 languages with unified dictionaries:
+24 languages with unified dictionaries:
 
 ```
 arabic, chinese, czech, danish, dutch, english, esperanto,

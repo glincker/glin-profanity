@@ -827,8 +827,8 @@ const guard = createProfanityGuard({
 
 | Operation | Performance | Notes |
 |-----------|-------------|-------|
-| Simple check | 21M ops/sec | Basic profanity detection |
-| With leetspeak | 8.5M ops/sec | Moderate level |
+| Simple check (uncached) | ~300,000 ops/sec | Basic profanity detection |
+| With leetspeak | ~180,000 ops/sec | Moderate level |
 | Hook overhead | < 1ms | Per message |
 | Skill invocation | < 5ms | Includes AI parsing |
 

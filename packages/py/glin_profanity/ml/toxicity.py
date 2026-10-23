@@ -31,7 +31,14 @@ ModelType = Literal["original", "unbiased", "multilingual"]
 
 # Default labels for each model type
 MODEL_LABELS: dict[ModelType, list[str]] = {
-    "original": ["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"],
+    "original": [
+        "toxic",
+        "severe_toxic",
+        "obscene",
+        "threat",
+        "insult",
+        "identity_hate",
+    ],
     "unbiased": [
         "toxicity",
         "severe_toxicity",

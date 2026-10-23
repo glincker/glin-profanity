@@ -14,7 +14,7 @@
 
 <!-- Badges Row 2: Quality & Status -->
 <p align="center">
-  <a href="https://github.com/GLINCKER/glin-profanity/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/GLINCKER/glin-profanity/ci.yml?style=flat-square&logo=github&label=CI" alt="CI Status" /></a>
+  <a href="https://github.com/GLINCKER/glin-profanity/actions/workflows/ci-js.yml"><img src="https://img.shields.io/github/actions/workflow/status/GLINCKER/glin-profanity/ci-js.yml?style=flat-square&logo=github&label=CI" alt="CI Status" /></a>
   <a href="https://bundlephobia.com/package/glin-profanity"><img src="https://img.shields.io/bundlephobia/minzip/glin-profanity?style=flat-square&logo=webpack&logoColor=white&label=bundle%20size" alt="Bundle Size" /></a>
   <a href="https://github.com/GLINCKER/glin-profanity/blob/main/LICENSE"><img src="https://img.shields.io/github/license/GLINCKER/glin-profanity?style=flat-square&label=license" alt="License" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-Ready-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
@@ -57,7 +57,7 @@ This monorepo maintains the following packages:
 
 ## Why Glin Profanity?
 
-Modern AI applications need more than a word list. Users evade filters with `f4ck`, `sh1t`, and `fսck` (Cyrillic `ս` → `u`). LLM pipelines leak PII and secrets into logs. Prompt injection slips through unguarded inboxes. Today's moderation problem is a guardrail problem — and most solutions leave you choosing between a Python-only library, a Llama-licensed model, or a paid cloud API.
+Modern AI applications need more than a word list. Users evade filters with `f4ck`, `sh1t`, `f.u.c.k`, and `fυck` (Greek `υ` → `u`). LLM pipelines leak PII and secrets into logs. Prompt injection slips through unguarded inboxes. Today's moderation problem is a guardrail problem — and most solutions leave you choosing between a Python-only library, a Llama-licensed model, or a paid cloud API.
 
 Glin Profanity is the **MIT-licensed, Node-native, MCP-first** answer. It runs entirely offline, ships a 12 KB core bundle with no mandatory cloud calls, integrates with Claude/Cursor/Windsurf via 24 MCP tools out of the box, and covers 24 languages with leetspeak and Unicode homoglyph evasion detection built in. Prompt-injection, PII, and secrets scanning are all shipped today.
 
@@ -83,17 +83,36 @@ Glin Profanity is the **MIT-licensed, Node-native, MCP-first** answer. It runs e
 
 ## Performance Benchmarks
 
-From the CI shootout gate (`benchmarks/shootout/results.md`), Node.js v22, 20-input torture-set batches:
+Measured with the reproducible harness in [`benchmarks/shootout/`](./benchmarks/shootout/README.md) (Node 22, Apple Silicon). English torture set: 893 cases, including obfuscation techniques and look-alike traps such as Scunthorpe-style words.
 
-| Library | ops/sec | F1 (accuracy) | False-Positive Rate |
-|---------|---------|---------------|---------------------|
-| glin-profanity | 990 | **80.6%** | **0.0%** |
-| obscenity | 5,112 | 79.5% | 5.9% |
-| bad-words | 241 | 54.2% | 0.0% |
-| leo-profanity | 338,407 | 34.6% | 0.0% |
-| @2toad/profanity | 839,796 | 56.7% | 0.0% |
+| Library | Precision | Recall | F1 | False-positive rate | Look-alike traps FPR | ops/sec (20-input batch) |
+|---------|-----------|--------|----|---------------------|----------------------|--------------------------|
+| glin-profanity | 99.2% | 98.7% | **99.0%** | 1.1% | 0.0% | ~7,400 |
+| allprofanity | 92.8% | 68.2% | 78.6% | 7.7% | 3.0% | ~41,000 |
+| obscenity | 83.9% | 47.5% | 60.7% | 13.2% | 8.4% | ~6,400 |
+| bad-words | 76.4% | 17.8% | 28.9% | 7.9% | 1.0% | ~260 |
+| leo-profanity | 69.6% | 9.1% | 16.1% | 5.8% | 0.7% | ~396,000 |
+| @2toad/profanity | 77.4% | 18.2% | 29.4% | 7.7% | 1.0% | ~884,000 |
 
-glin-profanity trades raw throughput for zero false positives and the highest F1 in the field. See `benchmarks/shootout/results.md` for the full per-category breakdown.
+- glin-profanity is not the fastest. The thin word-list filters are 50x to 100x faster because they do not handle obfuscation. A single uncached `isProfane()` call on a short string runs about 300,000 ops/sec (about 140,000 with aggressive leetspeak or all 24 languages loaded).
+- A `checkProfanity()` result-cache hit on an identical string reaches about 25M ops/sec. That is the cache path only; profane or obfuscated text through `checkProfanity()` is about 17,000 to 24,000 ops/sec.
+- Non-English: 302 of 302 non-English profane cases caught (native-script Russian, Arabic, Chinese, Japanese, Korean and Turkish included), with no false positives in that set.
+- 1.1% of the clean English cases are still flagged (4 cases, all context dependent: two medical or technical sentences and two dictionary-ambiguous words such as "cock" and "jackass"). Per-category and per-language breakdowns: [`benchmarks/shootout/results.md`](./benchmarks/shootout/results.md). Reproduce with `cd benchmarks/shootout && npm install && node harness.mjs`.
+
+---
+
+## How We Test
+
+The torture set (`benchmarks/shootout/torture-set.json`, generated by `generate-torture.mjs`) combines clean text, look-alike traps, and profane words disguised with leetspeak, homoglyphs, zero-width characters, separators, HTML and entities, masking, stretched letters, combining marks and mixed techniques, across English and several other languages.
+
+Limits you should know about:
+
+- The seed words and the techniques were authored by the maintainers alongside the engine, so the numbers are optimistic. They show the engine does what it was built to do, not how it fares on your traffic.
+- Some English technique buckets have few samples.
+- Non-English seeds come from the glin-profanity dictionaries, which favors it over libraries with different word lists.
+- Known misses: two-fragment space splits such as `fu ck` and `sh it`, words missing from the dictionary (`shi7e`), and some Armenian homoglyphs.
+
+Found a miss, a false positive, or a word we should add? Open a [dictionary request](https://github.com/GLINCKER/glin-profanity/issues/new?template=dictionary_request.yml) and we will add it to the set.
 
 ---
 
@@ -216,6 +235,29 @@ flowchart LR
 
 ## Detection Capabilities
 
+### Obfuscation Levels and Whitelist
+
+Obfuscation handling is on by default (`standard`). It catches separators (`f.u.c.k`), masks (`f*ck`, `sh#t`), stretched letters (`aaaasshole`), and HTML or entity-encoded words, in every language, and reports match offsets against your original text.
+
+```javascript
+new Filter();                              // obfuscation: 'standard' (default)
+new Filter({ obfuscation: 'off' });        // plain matching, as in earlier versions
+new Filter({ obfuscation: 'strict' });     // adds looser joins, more false-positive risk
+
+// Add your own safe phrases; a hit that overlaps one is ignored
+const filter = new Filter({ whitelist: ['shit happens'] });
+filter.isProfane('well, shit happens');    // false
+```
+
+| Level | What it adds |
+|-------|--------------|
+| `off` | nothing, plain matching |
+| `basic` | HTML and entities, stretched letters, built-in safe words |
+| `standard` (default) | basic plus separators, masks, and `|` `1` `!` read as `l` |
+| `strict` | standard plus looser joins (spaces inside mixed chains, shorter fragments) |
+
+Details and per-switch options: [docs/advanced/obfuscation.md](./docs/advanced/obfuscation.md). Upgrading: [docs/MIGRATION-4.0.md](./docs/MIGRATION-4.0.md).
+
 ### Leetspeak Detection
 
 ```javascript
@@ -235,7 +277,7 @@ filter.isProfane('ph.u" "ck'); // true (aggressive mode)
 ```javascript
 const filter = new Filter({ normalizeUnicode: true });
 
-filter.isProfane('fսck');   // true (Armenian 'ս' → 'u')
+filter.isProfane('fυck');   // true (Greek 'υ' → 'u')
 filter.isProfane('shіt');   // true (Cyrillic 'і' → 'i')
 filter.isProfane('ƒuck');   // true (Latin 'ƒ' → 'f')
 ```

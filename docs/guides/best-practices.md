@@ -246,7 +246,7 @@ const filter = new Filter({
 // First check: ~0.05ms
 filter.checkProfanity('test message');
 
-// Subsequent checks: ~0.0001ms (800x faster!)
+// Subsequent checks: ~0.00004ms
 filter.checkProfanity('test message');
 ```
 
@@ -526,7 +526,7 @@ describe('Profanity Filter', () => {
     });
 
     it('should detect Unicode homoglyphs', () => {
-      expect(filter.isProfane('fսck')).toBe(true);  // Armenian u
+      expect(filter.isProfane('fυck')).toBe(true);  // Greek upsilon
       expect(filter.isProfane('shіt')).toBe(true);  // Cyrillic i
     });
 

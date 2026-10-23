@@ -5,9 +5,14 @@ from .types import (
     ContextAwareConfig,
     FilterConfig,
     FilteredProfanityResult,
+    HtmlOptions,
     Language,
     LeetspeakLevel,
+    MaskingOptions,
     Match,
+    ObfuscationLevel,
+    ObfuscationOptions,
+    SeparatorOptions,
     SeverityLevel,
 )
 
@@ -18,6 +23,11 @@ __all__ = [
     "FilteredProfanityResult",
     "Language",
     "LeetspeakLevel",
+    "HtmlOptions",
+    "MaskingOptions",
     "Match",
+    "ObfuscationLevel",
+    "ObfuscationOptions",
+    "SeparatorOptions",
     "SeverityLevel",
 ]

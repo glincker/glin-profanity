@@ -79,6 +79,8 @@ export type {
   FilteredProfanityResult,
   Match,
   ContextAwareConfig,
+  ObfuscationLevel,
+  ObfuscationOptions,
 } from './types/types';
 
 // ML module types (re-exported for convenience)

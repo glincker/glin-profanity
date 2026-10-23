@@ -39,6 +39,13 @@ export interface LeetspeakOptions {
    * @default true
    */
   removeSpacedChars?: boolean;
+
+  /**
+   * Read the ambiguous glyphs `|`, `1` and `!` as `l` instead of `i`
+   * (for example `a$$ho|e`). Used to build an alternate view of the text.
+   * @default false
+   */
+  ambiguousAsL?: boolean;
 }
 
 /**
@@ -133,12 +140,15 @@ const AGGRESSIVE_MULTI_CHAR: Array<[RegExp, string]> = [
   [/\\\/\\\//g, 'w'],
   [/vv/gi, 'w'],
   // Letter X patterns
-  [/><]/g, 'x'],
+  [/></g, 'x'],
   // Letter Y patterns
   [/'\//g, 'y'],
   // Letter Z patterns
   [/7_/g, 'z'],
 ];
+
+// Longest pattern first so `|_|` (u) is not eaten by `|_` (l) and `/\/\` (m) by `/\` (a).
+AGGRESSIVE_MULTI_CHAR.sort((a, b) => b[0].source.length - a[0].source.length);
 
 /**
  * Aggressive single-character substitutions.
@@ -151,6 +161,24 @@ const AGGRESSIVE_SUBSTITUTIONS: Record<string, string> = {
   '2': 'z',
   '%': 'z',
 };
+
+/** Glyphs that can stand for either `i` or `l`. */
+const AMBIGUOUS_AS_L: Record<string, string> = { '|': 'l', '1': 'l', '!': 'l' };
+
+/** Matches 3+ single characters separated by whitespace (f u c k). */
+export const SPACED_CHARS_PATTERN =
+  /\b([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+\b/g;
+
+/** Tables the mapped (offset-tracking) normalizer shares with this module. */
+export function getLeetspeakTables(
+  level: LeetspeakLevel,
+  ambiguousAsL: boolean = false,
+): { multi: Array<[RegExp, string]>; single: Record<string, string> } {
+  return {
+    multi: level === 'aggressive' ? AGGRESSIVE_MULTI_CHAR : [],
+    single: getSubstitutionMap(level, ambiguousAsL),
+  };
+}
 
 /**
  * Normalizes leetspeak text to standard characters.
@@ -180,6 +208,7 @@ export function normalizeLeetspeak(
     collapseRepeated = true,
     maxRepeated = 2,
     removeSpacedChars = true,
+    ambiguousAsL = false,
   } = options;
 
   let normalized = text;
@@ -197,7 +226,7 @@ export function normalizeLeetspeak(
   }
 
   // Step 3: Apply single-character substitutions
-  const substitutions = getSubstitutionMap(level);
+  const substitutions = getSubstitutionMap(level, ambiguousAsL);
   normalized = normalized
     .split('')
     .map((char) => substitutions[char] || char)
@@ -217,7 +246,11 @@ export function normalizeLeetspeak(
  * @param level - The leetspeak detection level
  * @returns The character substitution map
  */
-function getSubstitutionMap(level: LeetspeakLevel): Record<string, string> {
+function getSubstitutionMap(
+  level: LeetspeakLevel,
+  ambiguousAsL: boolean = false,
+): Record<string, string> {
+  if (ambiguousAsL) return { ...getSubstitutionMap(level), ...AMBIGUOUS_AS_L };
   switch (level) {
     case 'basic':
       return BASIC_SUBSTITUTIONS;
@@ -246,9 +279,7 @@ function getSubstitutionMap(level: LeetspeakLevel): Record<string, string> {
 export function collapseSpacedCharacters(text: string): string {
   // Match sequences of single characters separated by spaces
   // At least 3 characters to avoid false positives with "I a m" etc.
-  const spacedPattern = /\b([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+\b/g;
-
-  return text.replace(spacedPattern, (match) => {
+  return text.replace(SPACED_CHARS_PATTERN, (match) => {
     // Remove all spaces between characters
     return match.replace(/\s+/g, '');
   });

@@ -1,5 +1,8 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: "💬 Ask a question on Discord"
+  - name: "Ask a question on Discord"
     url: https://discord.gg/Ar5pcaZB99
     about: "Questions and help from the community in the #glin-profanity forum."
+  - name: Security vulnerability
+    url: https://github.com/glincker/glin-profanity/security/advisories/new
+    about: "Report security issues privately, not in a public issue."
