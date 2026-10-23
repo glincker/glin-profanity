@@ -94,12 +94,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/GLINCKER/glin-profanity",
+    "url": "https://github.com/glincker/glin-profanity",
     "directory": "packages/openclaw"
   },
-  "homepage": "https://github.com/GLINCKER/glin-profanity/tree/release/packages/openclaw",
+  "homepage": "https://github.com/glincker/glin-profanity/tree/release/packages/openclaw",
   "bugs": {
-    "url": "https://github.com/GLINCKER/glin-profanity/issues"
+    "url": "https://github.com/glincker/glin-profanity/issues"
   },
   "author": "GLINR",
   "license": "MIT"
