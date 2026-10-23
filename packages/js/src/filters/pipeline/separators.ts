@@ -120,7 +120,28 @@ function acceptsJoin(
     const spelledOut = others === 0 && span.length >= 3 && span.every((p) => p.text.length === 1);
     if (!spelledOut && others < (options.allowSpace ? 1 : 2)) return false;
   }
-  return index.isWord(candidate);
+  return index.isWord(candidate) && endsAtWordEnd(pieces, to, index);
+}
+
+/** Inflections that may follow a spelled-out word ("f u c k e d"). */
+const SUFFIXES = new Set(['s', 'es', 'ed', 'er', 'ers', 'ing', 'y']);
+
+/**
+ * "a s s i g n m e n t" must not join at the dictionary prefix "ass": when single
+ * letters keep going with the same separator, the rest has to be a word or an
+ * inflection of its own.
+ */
+function endsAtWordEnd(pieces: Piece[], to: number, index: DictionaryIndex): boolean {
+  const sep = pieces[to - 1].sep;
+  let rest = '';
+  let k = to + 1;
+  while (k < pieces.length && pieces[k].text.length === 1 && pieces[k - 1].sep === sep) {
+    rest += pieces[k].text;
+    k++;
+  }
+  if (rest === '') return true;
+  // The run must end where the chain does, or at a different separator.
+  return SUFFIXES.has(rest.toLowerCase()) || index.isWord(rest);
 }
 
 function addEdits(pieces: Piece[], from: number, to: number, source: string, edits: Edit[]): void {

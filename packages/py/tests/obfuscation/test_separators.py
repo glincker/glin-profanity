@@ -102,3 +102,29 @@ class TestSeparatorsInFilter:
         assert not make_filter().is_profane("a.ss")
         monkeypatch.setenv("GLIN_SEPARATOR_MIN_JOIN", "3")
         assert make_filter().is_profane("a.ss")
+
+
+class TestWordEndBoundary:
+    """A chain is joined at a dictionary word only where the chain really ends."""
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "a s s i g n m e n t",
+            "c.o.c.k.p.i.t",
+            "h.e.l.l.o.w.o.r.l.d",
+            "c-l-a-s-s-r-o-o-m",
+            "a s s e m b l y",
+        ],
+    )
+    def test_prefix_of_longer_chain_is_clean(self, text: str) -> None:
+        f = make_filter(replace_with="*", obfuscation={"builtin_whitelist": False})
+        assert not f.is_profane(text)
+        assert f.check_profanity(text).get("processed_text") == text
+
+    @pytest.mark.parametrize(
+        "text",
+        ["f.u.c.k", "s h i t", "f.u.c.k.s.h.i.t", "you a s s", "f u c k e d", "f.u.c.k.you"],
+    )
+    def test_real_chains_still_flagged(self, text: str) -> None:
+        assert make_filter(replace_with="*").is_profane(text)

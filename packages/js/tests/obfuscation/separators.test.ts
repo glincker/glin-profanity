@@ -92,3 +92,29 @@ describe('separators in the filter', () => {
     expect(makeFilter({ obfuscation: 'off' }).isProfane('f.u.c.k')).toBe(false);
   });
 });
+
+describe('separator chains join only at a word end', () => {
+  const filter = makeFilter({ replaceWith: '*', obfuscation: { builtinWhitelist: false } });
+
+  it.each([
+    'a s s i g n m e n t',
+    'c.o.c.k.p.i.t',
+    'h.e.l.l.o.w.o.r.l.d',
+    'c-l-a-s-s-r-o-o-m',
+    'a s s e m b l y',
+  ])('does not flag %s', (input) => {
+    expect(filter.isProfane(input)).toBe(false);
+    expect(filter.checkProfanity(input).processedText).toBe(input);
+  });
+
+  it.each([
+    ['f.u.c.k', '*'],
+    ['s h i t', '*'],
+    ['f.u.c.k.s.h.i.t', '*'],
+    ['you a s s', 'you *'],
+    ['f u c k e d', '*'],
+    ['f.u.c.k.you', '*you'],
+  ])('still flags %s', (input) => {
+    expect(filter.isProfane(input)).toBe(true);
+  });
+});

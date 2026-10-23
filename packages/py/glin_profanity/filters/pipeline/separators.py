@@ -109,7 +109,7 @@ def _collect_joins(
                     min_others,
                 )
             ):
-                if index.is_word(candidate):
+                if index.is_word(candidate) and _ends_at_word_end(pieces, j, index):
                     joined_to = j
             if piece.sep == " ":
                 spaces += 1
@@ -120,6 +120,28 @@ def _collect_joins(
             continue
         _add_edits(pieces, i, joined_to, source, edits, taken)
         i = joined_to + 1
+
+
+# Inflections that may follow a spelled-out word ("f u c k e d").
+_SUFFIXES = frozenset({"s", "es", "ed", "er", "ers", "ing", "y"})
+
+
+def _ends_at_word_end(pieces: list[_Piece], to: int, index: DictionaryIndex) -> bool:
+    """Refuse a dictionary prefix of a longer chain ("a s s i g n m e n t").
+
+    When single letters keep going with the same separator, the rest has to be a
+    word or an inflection of its own.
+    """
+    sep = pieces[to - 1].sep
+    rest: list[str] = []
+    k = to + 1
+    while k < len(pieces) and len(pieces[k].text) == 1 and pieces[k - 1].sep == sep:
+        rest.append(pieces[k].text)
+        k += 1
+    if not rest:
+        return True
+    tail = "".join(rest)
+    return tail.lower() in _SUFFIXES or index.is_word(tail)
 
 
 def _span_allowed(
