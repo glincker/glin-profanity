@@ -5,15 +5,15 @@ from .types import (
     ContextAwareConfig,
     FilterConfig,
     FilteredProfanityResult,
+    HtmlOptions,
     Language,
     LeetspeakLevel,
-    HtmlOptions,
     MaskingOptions,
     Match,
     ObfuscationLevel,
     ObfuscationOptions,
-    SeverityLevel,
     SeparatorOptions,
+    SeverityLevel,
 )
 
 __all__ = [

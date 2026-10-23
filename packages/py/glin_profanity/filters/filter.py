@@ -356,7 +356,7 @@ class Filter:
         elif self._scanner is not None:
             hits = self._scanner.scan(text, "full")
             for hit in hits:
-                # Original view reports the matched text, derived views the dictionary word.
+                # Original view: matched text; derived views: dictionary word.
                 key = hit.text if hit.view == "orig" else hit.word
                 if hit.view == "orig" or key not in profane_words:
                     profane_words.append(key)

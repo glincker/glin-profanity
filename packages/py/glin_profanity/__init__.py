@@ -98,7 +98,7 @@ __all__ = [
     "worst_decision",
 ]
 
-from .scanners.base import Scanner, ScanDecision, ScanMatch, ScanResult
+from .scanners.base import ScanDecision, ScanMatch, Scanner, ScanResult
 from .scanners.composite import scan_all, worst_decision
 from .scanners.pii import PiiOptions, PiiScanner, scan_pii
 from .scanners.prompt_injection import (
