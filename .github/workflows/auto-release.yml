@@ -407,7 +407,7 @@ jobs:
           fi
           
           # Generate changelog from recent commits
-          CHANGELOG=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD | grep -E "^- (feat|fix|docs|perf|refactor)" | head -10)
+          CHANGELOG=$(git log --pretty=format:"- %s" "$(git describe --tags --abbrev=0 HEAD^)..HEAD" | grep -E "^- (feat|fix|docs|perf|refactor)" | head -10)
           
           cat > release_notes.md << EOF
           ## $EMOJI $TYPE_DESC v$VERSION
