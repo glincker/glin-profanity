@@ -80,12 +80,54 @@ class ContextAwareConfig(TypedDict, total=False):
 LeetspeakLevel = Literal["basic", "moderate", "aggressive"]
 
 
+# Shortcut for the obfuscation pipeline:
+# off (plain matching), basic (html, stretch, safe words), standard (plus separators,
+# masks and `|`/`1`/`!` read as l), strict (looser joins).
+ObfuscationLevel = Literal["off", "basic", "standard", "strict"]
+
+
+class HtmlOptions(TypedDict, total=False):
+    """Entity decoding passes, so `&amp;#117;` (double encoded) resolves."""
+
+    decode_depth: int
+
+
+class SeparatorOptions(TypedDict, total=False):
+    """Characters that may sit between the letters of one word."""
+
+    chars: str
+    allow_space: bool
+    min_two_piece_length: int
+
+
+class MaskingOptions(TypedDict, total=False):
+    """Characters that can stand in for one hidden letter."""
+
+    chars: str
+    min_visible: int
+
+
+class ObfuscationOptions(TypedDict, total=False):
+    """Fine-grained switches for the obfuscation pipeline. Each overrides the level."""
+
+    level: ObfuscationLevel
+    html: bool | HtmlOptions
+    separators: bool | SeparatorOptions
+    masking: bool | MaskingOptions
+    stretch: bool
+    ambiguous_leet: bool
+    builtin_whitelist: bool
+
+
 class FilterConfig(ContextAwareConfig, total=False):
     """Main filter configuration options - unified with JavaScript."""
 
     languages: list[Language] | None
     all_languages: bool
     case_sensitive: bool
+    # Whole-word matching; defaults to `not allow_obfuscated_match`. `obfuscation`
+    # options and the built-in whitelist apply only when on. Off runs the legacy
+    # fuzzy scan, which honors `ignore_words` and the user `whitelist`.
     word_boundaries: bool
     custom_words: list[str] | None
     replace_with: str | None
@@ -97,20 +139,25 @@ class FilterConfig(ContextAwareConfig, total=False):
 
     # Leetspeak detection options
     detect_leetspeak: bool  # Enable leetspeak detection (e.g., "f4ck" -> "fuck")
-    leetspeak_level: LeetspeakLevel  # Detection intensity: 'basic', 'moderate', 'aggressive'
+    leetspeak_level: (
+        LeetspeakLevel  # Detection intensity: 'basic', 'moderate', 'aggressive'
+    )
 
     # Unicode normalization options
     normalize_unicode: bool  # Enable Unicode normalization to detect homoglyphs
+
+    # Obfuscation pipeline: a level or fine-grained switches (default "standard")
+    obfuscation: ObfuscationLevel | ObfuscationOptions
+
+    # Extra safe words or phrases; a hit fully inside one is ignored, neighbours
+    # are still checked. Also applies with word_boundaries off.
+    whitelist: list[str]
 
     # Caching options
     cache_results: bool  # Cache profanity check results for repeated strings
     max_cache_size: int  # Maximum cache size when caching is enabled
 
-    # Performance options
-    disable_aho_corasick: bool  # Force legacy regex path (testing / debugging)
 
-    # Evasion normalization
-    enable_evasion_normalization: bool  # HTML/separators/masking pipeline
 
 
 class FilteredProfanityResult(TypedDict):

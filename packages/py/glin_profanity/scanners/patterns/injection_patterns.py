@@ -114,7 +114,7 @@ INJECTION_PATTERNS: list[InjectionPattern] = [
         ),
         category="instruction_override",
         severity="high",
-        description="Claiming to reveal the model's \"true\" instructions",
+        description='Claiming to reveal the model\'s "true" instructions',
     ),
     InjectionPattern(
         id="PI-007",

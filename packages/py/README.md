@@ -139,6 +139,12 @@ mypy glin_profanity
 ruff check glin_profanity tests
 ```
 
+## Community
+
+Join the [GLINR Discord](https://discord.gg/Ar5pcaZB99) and drop by the `#glin-profanity` forum for questions and discussion.
+
+<a href="https://discord.gg/Ar5pcaZB99"><img src="https://discord.com/api/guilds/829168897080557579/widget.png?style=banner2" alt="Join the GLINR Discord" /></a>
+
 ## License
 
 MIT License - see [LICENSE](../../LICENSE)

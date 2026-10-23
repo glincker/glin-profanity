@@ -601,7 +601,7 @@ console.log(`Check took ${duration.toFixed(2)}ms`);
 const testCases = [
   { text: 'fuck', expected: true },
   { text: 'f4ck', expected: true },
-  { text: 'fսck', expected: true },  // Armenian u
+  { text: 'fυck', expected: true },  // Greek upsilon
   { text: 'hello', expected: false },
   { text: 'Scunthorpe', expected: false }  // Should not flag
 ];

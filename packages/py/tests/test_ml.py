@@ -5,7 +5,6 @@ Actual ML inference tests require installing optional dependencies
 (detoxify, torch, profanity-check).
 """
 
-import pytest
 
 
 class TestMLModuleImports:
@@ -14,12 +13,7 @@ class TestMLModuleImports:
     def test_import_types(self) -> None:
         """Should import type definitions without dependencies."""
         from glin_profanity.ml.types import (
-            CombinationMode,
-            HybridAnalysisResult,
-            MLAnalysisResult,
-            MLDetectorConfig,
             ToxicityLabel,
-            ToxicityPrediction,
         )
 
         # Verify enum values

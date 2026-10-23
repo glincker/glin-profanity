@@ -8,167 +8,222 @@ import re
 import unicodedata
 from typing import TypedDict
 
-# Homoglyph mapping: visually similar Unicode characters to ASCII equivalents.
-# Kept in sync with packages/js/src/utils/unicode.ts (HOMOGLYPHS) so both
-# implementations normalize identically.
+# Homoglyph mapping: visually similar Unicode characters to ASCII equivalents
 HOMOGLYPHS: dict[str, str] = {
-    # Cyrillic homoglyphs (look like Latin)
-    "а": "a",  # Cyrillic small a
-    "А": "A",  # Cyrillic capital A
-    "е": "e",  # Cyrillic small e
-    "Е": "E",  # Cyrillic capital E
-    "к": "k",  # Cyrillic small ka
-    "К": "K",  # Cyrillic capital Ka
-    "о": "o",  # Cyrillic small o
-    "О": "O",  # Cyrillic capital O
-    "р": "p",  # Cyrillic small er
-    "Р": "P",  # Cyrillic capital Er
-    "с": "c",  # Cyrillic small es
-    "С": "C",  # Cyrillic capital Es
-    "у": "u",  # Cyrillic small u (map to u, not y)
-    "У": "U",  # Cyrillic capital U
-    "х": "x",  # Cyrillic small ha
-    "Х": "X",  # Cyrillic capital Ha
-    "і": "i",  # Cyrillic small i (Ukrainian)
-    "І": "I",  # Cyrillic capital I (Ukrainian)
-    "ј": "j",  # Cyrillic small je
-    "Ј": "J",  # Cyrillic capital Je
-    "ѕ": "s",  # Cyrillic small dze
-    "Ѕ": "S",  # Cyrillic capital Dze
-    # Currency and special symbols that look like letters
-    "¢": "c",  # Cent sign
-    "ƒ": "f",  # Latin small f with hook (florin)
-    # Greek homoglyphs
-    "α": "a",  # Greek small alpha
-    "Α": "A",  # Greek capital Alpha
-    "β": "b",  # Greek small beta (sort of)
-    "Β": "B",  # Greek capital Beta
-    "ε": "e",  # Greek small epsilon
-    "Ε": "E",  # Greek capital Epsilon
-    "η": "n",  # Greek small eta
-    "Η": "H",  # Greek capital Eta
-    "ι": "i",  # Greek small iota
-    "Ι": "I",  # Greek capital Iota
-    "κ": "k",  # Greek small kappa
-    "Κ": "K",  # Greek capital Kappa
-    "ν": "v",  # Greek small nu (looks like v)
-    "Ν": "N",  # Greek capital Nu
-    "ο": "o",  # Greek small omicron
-    "Ο": "O",  # Greek capital Omicron
-    "ρ": "p",  # Greek small rho
-    "Ρ": "P",  # Greek capital Rho
-    "τ": "t",  # Greek small tau
-    "Τ": "T",  # Greek capital Tau
-    "υ": "u",  # Greek small upsilon
-    "Ս": "U",  # Armenian capital seh (looks like U)
-    "ս": "u",  # Armenian small seh (looks like u)
-    "Υ": "Y",  # Greek capital Upsilon
-    "χ": "x",  # Greek small chi
-    "Χ": "X",  # Greek capital Chi
-    # Mathematical symbols
-    "ℂ": "C",  # Double-struck capital C
-    "ℍ": "H",  # Double-struck capital H
-    "ℕ": "N",  # Double-struck capital N
-    "ℙ": "P",  # Double-struck capital P
-    "ℚ": "Q",  # Double-struck capital Q
-    "ℝ": "R",  # Double-struck capital R
-    "ℤ": "Z",  # Double-struck capital Z
-    # Subscript/superscript
-    "ᵃ": "a", "ᵇ": "b", "ᶜ": "c", "ᵈ": "d", "ᵉ": "e",
-    "ᶠ": "f", "ᵍ": "g", "ʰ": "h", "ⁱ": "i", "ʲ": "j",
-    "ᵏ": "k", "ˡ": "l", "ᵐ": "m", "ⁿ": "n", "ᵒ": "o",
-    "ᵖ": "p", "ʳ": "r", "ˢ": "s", "ᵗ": "t", "ᵘ": "u",
-    "ᵛ": "v", "ʷ": "w", "ˣ": "x", "ʸ": "y", "ᶻ": "z",
-    # Small caps
-    "ᴀ": "A", "ʙ": "B", "ᴄ": "C", "ᴅ": "D", "ᴇ": "E",
-    "ꜰ": "F", "ɢ": "G", "ʜ": "H", "ɪ": "I", "ᴊ": "J",
-    "ᴋ": "K", "ʟ": "L", "ᴍ": "M", "ɴ": "N", "ᴏ": "O",
-    "ᴘ": "P", "ǫ": "Q", "ʀ": "R", "ꜱ": "S", "ᴛ": "T",
-    "ᴜ": "U", "ᴠ": "V", "ᴡ": "W", "ʏ": "Y", "ᴢ": "Z",
-    # Circled letters
-    "ⓐ": "a", "ⓑ": "b", "ⓒ": "c", "ⓓ": "d", "ⓔ": "e",
-    "ⓕ": "f", "ⓖ": "g", "ⓗ": "h", "ⓘ": "i", "ⓙ": "j",
-    "ⓚ": "k", "ⓛ": "l", "ⓜ": "m", "ⓝ": "n", "ⓞ": "o",
-    "ⓟ": "p", "ⓠ": "q", "ⓡ": "r", "ⓢ": "s", "ⓣ": "t",
-    "ⓤ": "u", "ⓥ": "v", "ⓦ": "w", "ⓧ": "x", "ⓨ": "y",
+    "а": "a",
+    "А": "A",
+    "е": "e",
+    "Е": "E",
+    "к": "k",
+    "К": "K",
+    "о": "o",
+    "О": "O",
+    "р": "p",
+    "Р": "P",
+    "с": "c",
+    "С": "C",
+    "у": "u",
+    "У": "U",
+    "х": "x",
+    "Х": "X",
+    "і": "i",
+    "І": "I",
+    "ј": "j",
+    "Ј": "J",
+    "ѕ": "s",
+    "Ѕ": "S",
+    "¢": "c",
+    "ƒ": "f",
+    "α": "a",
+    "Α": "A",
+    "β": "b",
+    "Β": "B",
+    "ε": "e",
+    "Ε": "E",
+    "η": "n",
+    "Η": "H",
+    "ι": "i",
+    "Ι": "I",
+    "κ": "k",
+    "Κ": "K",
+    "ν": "v",
+    "Ν": "N",
+    "ο": "o",
+    "Ο": "O",
+    "ρ": "p",
+    "Ρ": "P",
+    "τ": "t",
+    "Τ": "T",
+    "υ": "u",
+    "Υ": "Y",
+    "χ": "x",
+    "Χ": "X",
+    "ℂ": "C",
+    "ℍ": "H",
+    "ℕ": "N",
+    "ℙ": "P",
+    "ℚ": "Q",
+    "ℝ": "R",
+    "ℤ": "Z",
+    "ᵃ": "a",
+    "ᵇ": "b",
+    "ᶜ": "c",
+    "ᵈ": "d",
+    "ᵉ": "e",
+    "ᶠ": "f",
+    "ᵍ": "g",
+    "ʰ": "h",
+    "ⁱ": "i",
+    "ʲ": "j",
+    "ᵏ": "k",
+    "ˡ": "l",
+    "ᵐ": "m",
+    "ⁿ": "n",
+    "ᵒ": "o",
+    "ᵖ": "p",
+    "ʳ": "r",
+    "ˢ": "s",
+    "ᵗ": "t",
+    "ᵘ": "u",
+    "ᵛ": "v",
+    "ʷ": "w",
+    "ˣ": "x",
+    "ʸ": "y",
+    "ᶻ": "z",
+    "ᴀ": "A",
+    "ʙ": "B",
+    "ᴄ": "C",
+    "ᴅ": "D",
+    "ᴇ": "E",
+    "ꜰ": "F",
+    "ɢ": "G",
+    "ʜ": "H",
+    "ɪ": "I",
+    "ᴊ": "J",
+    "ᴋ": "K",
+    "ʟ": "L",
+    "ᴍ": "M",
+    "ɴ": "N",
+    "ᴏ": "O",
+    "ᴘ": "P",
+    "ǫ": "Q",
+    "ʀ": "R",
+    "ꜱ": "S",
+    "ᴛ": "T",
+    "ᴜ": "U",
+    "ᴠ": "V",
+    "ᴡ": "W",
+    "ʏ": "Y",
+    "ᴢ": "Z",
+    "ⓐ": "a",
+    "ⓑ": "b",
+    "ⓒ": "c",
+    "ⓓ": "d",
+    "ⓔ": "e",
+    "ⓕ": "f",
+    "ⓖ": "g",
+    "ⓗ": "h",
+    "ⓘ": "i",
+    "ⓙ": "j",
+    "ⓚ": "k",
+    "ⓛ": "l",
+    "ⓜ": "m",
+    "ⓝ": "n",
+    "ⓞ": "o",
+    "ⓟ": "p",
+    "ⓠ": "q",
+    "ⓡ": "r",
+    "ⓢ": "s",
+    "ⓣ": "t",
+    "ⓤ": "u",
+    "ⓥ": "v",
+    "ⓦ": "w",
+    "ⓧ": "x",
+    "ⓨ": "y",
     "ⓩ": "z",
-    # Full-width letters
-    "ａ": "a", "ｂ": "b", "ｃ": "c", "ｄ": "d", "ｅ": "e",
-    "ｆ": "f", "ｇ": "g", "ｈ": "h", "ｉ": "i", "ｊ": "j",
-    "ｋ": "k", "ｌ": "l", "ｍ": "m", "ｎ": "n", "ｏ": "o",
-    "ｐ": "p", "ｑ": "q", "ｒ": "r", "ｓ": "s", "ｔ": "t",
-    "ｕ": "u", "ｖ": "v", "ｗ": "w", "ｘ": "x", "ｙ": "y",
+    "ａ": "a",
+    "ｂ": "b",
+    "ｃ": "c",
+    "ｄ": "d",
+    "ｅ": "e",
+    "ｆ": "f",
+    "ｇ": "g",
+    "ｈ": "h",
+    "ｉ": "i",
+    "ｊ": "j",
+    "ｋ": "k",
+    "ｌ": "l",
+    "ｍ": "m",
+    "ｎ": "n",
+    "ｏ": "o",
+    "ｐ": "p",
+    "ｑ": "q",
+    "ｒ": "r",
+    "ｓ": "s",
+    "ｔ": "t",
+    "ｕ": "u",
+    "ｖ": "v",
+    "ｗ": "w",
+    "ｘ": "x",
+    "ｙ": "y",
     "ｚ": "z",
-    # Mirrored/rotated
-    "ɐ": "a", "ɔ": "c", "ǝ": "e", "ɟ": "j", "ɥ": "h",
-    "ɯ": "m", "ɹ": "r", "ʇ": "t", "ʌ": "v", "ʍ": "w",
-    # Common lookalikes
-    "ł": "l", "Ł": "L",
-    "ø": "o", "Ø": "O",
-    "đ": "d", "Đ": "D",
-    "ħ": "h", "Ħ": "H",
-    "ı": "i", "İ": "I",
+    "ɐ": "a",
+    "ɔ": "c",
+    "ǝ": "e",
+    "ɟ": "j",
+    "ɥ": "h",
+    "ɯ": "m",
+    "ɹ": "r",
+    "ʇ": "t",
+    "ʌ": "v",
+    "ʍ": "w",
+    "ł": "l",
+    "Ł": "L",
+    "ø": "o",
+    "Ø": "O",
+    "đ": "d",
+    "Đ": "D",
+    "ħ": "h",
+    "Ħ": "H",
+    "ı": "i",
+    "İ": "I",
     "ĸ": "k",
-    "ŀ": "l", "Ŀ": "L",
-    "ŋ": "n", "Ŋ": "N",
-    "œ": "oe", "Œ": "OE",
+    "ŀ": "l",
+    "Ŀ": "L",
+    "ŋ": "n",
+    "Ŋ": "N",
+    "œ": "oe",
+    "Œ": "OE",
     "ſ": "s",
-    "ŧ": "t", "Ŧ": "T",
+    "ŧ": "t",
+    "Ŧ": "T",
 }
+
+_COMBINING_DIACRITICS = re.compile("[\u0300-\u036f]")
 
 # Zero-width and invisible characters to remove
 ZERO_WIDTH_CHARS = [
-    "\u200B",  # Zero-width space
-    "\u200C",  # Zero-width non-joiner
-    "\u200D",  # Zero-width joiner
-    "\u200E",  # Left-to-right mark
-    "\u200F",  # Right-to-left mark
+    "\u200b",  # Zero-width space
+    "\u200c",  # Zero-width non-joiner
+    "\u200d",  # Zero-width joiner
+    "\u200e",  # Left-to-right mark
+    "\u200f",  # Right-to-left mark
     "\u2060",  # Word joiner
     "\u2061",  # Function application
     "\u2062",  # Invisible times
     "\u2063",  # Invisible separator
     "\u2064",  # Invisible plus
-    "\uFEFF",  # Byte order mark / zero-width no-break space
-    "\u00AD",  # Soft hyphen
-    "\u034F",  # Combining grapheme joiner
-    "\u061C",  # Arabic letter mark
-    "\u180E",  # Mongolian vowel separator
+    "\ufeff",  # Byte order mark
+    "\u00ad",  # Soft hyphen
+    "\u034f",  # Combining grapheme joiner
+    "\u061c",  # Arabic letter mark
+    "\u115f",  # Hangul choseong filler
+    "\u1160",  # Hangul jungseong filler
+    "\u17b4",  # Khmer inherent vowel aq
+    "\u17b5",  # Khmer inherent vowel aa
+    "\u180e",  # Mongolian vowel separator
+    "\u3164",  # Hangul filler
 ]
-
-# Combining Japanese (han)dakuten. These are nonspacing marks (category 'Mn')
-# but encode a phonemic kana distinction, so they must survive diacritic folding.
-_KANA_VOICED_SOUND_MARKS = frozenset(("\u3099", "\u309A"))
-
-
-def is_latin_script_letter(char: str) -> bool:
-    """Return True for Basic Latin and Latin Extended letters (not Cyrillic/CJK/etc.)."""
-    if not char or not char.isalpha():
-        return False
-    code = ord(char)
-    return code <= 0x024F or 0x1E00 <= code <= 0x1EFF
-
-
-def text_should_skip_latin_obfuscation_normalization(text: str) -> bool:
-    """
-    Skip homoglyph and leetspeak normalization when text contains non-Latin letters.
-
-    Preserves Spanish/Portuguese accented Latin while avoiding Cyrillic→Latin
-    homoglyph false positives (e.g. поспал → pocpal matching ``oc``).
-    Mixed Latin obfuscation (e.g. ``fսck`` with one Armenian homoglyph) still
-    normalizes because Latin letters dominate.
-    """
-    latin_letters = 0
-    non_latin_letters = 0
-    for char in text:
-        if not char.isalpha():
-            continue
-        if is_latin_script_letter(char):
-            latin_letters += 1
-        else:
-            non_latin_letters += 1
-    if non_latin_letters == 0:
-        return False
-    return non_latin_letters >= latin_letters
 
 
 def normalize_unicode(
@@ -266,11 +321,6 @@ def convert_full_width(text: str) -> str:
     return "".join(result)
 
 
-def homoglyph_to_ascii(char: str) -> str:
-    """Return the ASCII lookalike for a single homoglyph character."""
-    return HOMOGLYPHS.get(char, char)
-
-
 def convert_homoglyphs(text: str) -> str:
     """
     Convert homoglyph characters to their ASCII equivalents.
@@ -310,18 +360,8 @@ def normalize_nfkd(text: str, remove_diacritics: bool = True) -> str:
     normalized = unicodedata.normalize("NFKD", text)
 
     if remove_diacritics:
-        # Remove combining diacritical marks (category 'Mn' = Mark, Nonspacing),
-        # but keep Japanese voiced/semi-voiced sound marks: ソ vs ゾ (and ハ/バ/パ)
-        # is a phonemic distinction, not a foldable diacritic. Dropping it makes
-        # クソ match ゾクゾク (ゾ→ソ) and ビッチ collapse to ヒッチ. Recompose with
-        # NFC afterwards so the kept marks fold back into precomposed kana
-        # (ソ + ゙ -> ゾ).
-        normalized = "".join(
-            c
-            for c in normalized
-            if unicodedata.category(c) != "Mn" or c in _KANA_VOICED_SOUND_MARKS
-        )
-        normalized = unicodedata.normalize("NFC", normalized)
+        # Only U+0300 to U+036F, so other scripts (Hindi) keep their marks.
+        normalized = _COMBINING_DIACRITICS.sub("", normalized)
 
     return normalized
 

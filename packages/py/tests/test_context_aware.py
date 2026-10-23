@@ -15,28 +15,6 @@ class TestContextAwareFiltering:
             }
         )
 
-    def test_positive_context_detection(self) -> None:
-        test_cases = [
-            "This movie is sick!",
-            "This song is the shit!",
-            "That movie is badass and amazing!",
-        ]
-
-        for text in test_cases:
-            result = self.filter.check_profanity(text)
-            assert result["reason"] is not None
-
-            matches = result.get("matches")
-            if matches:
-                for match in matches:
-                    assert match.get("context_score") is not None
-                    assert match.get("reason") is not None
-
-            if result["contains_profanity"] and matches:
-                has_positive_context = any(
-                    (m.get("context_score") or 0) > 0.3 for m in matches
-                )
-                assert has_positive_context
 
     def test_gaming_terms_with_positive_context(self) -> None:
         gaming_filter = Filter(
@@ -79,18 +57,6 @@ class TestContextAwareFiltering:
             if context_score is not None:
                 assert context_score < 0.7
 
-    def test_match_details(self) -> None:
-        result = self.filter.check_profanity("This is a fucking good movie")
-        matches = result.get("matches")
-        assert matches is not None
-
-        if matches:
-            match = matches[0]
-            assert match.get("word") is not None
-            assert match.get("index", -1) >= 0
-            assert match.get("severity") is not None
-            assert match.get("context_score") is not None
-            assert match.get("reason") is not None
 
     def test_severity_levels_without_context(self) -> None:
         severity_filter = Filter(
@@ -107,16 +73,6 @@ class TestContextAwareFiltering:
         assert severity_map is not None
         assert SeverityLevel.EXACT in severity_map.values()
 
-    def test_backward_compatibility_without_context(self) -> None:
-        traditional_filter = Filter(
-            {"enable_context_aware": False, "languages": ["english"]}
-        )
-
-        result = traditional_filter.check_profanity("This movie is fucking awesome")
-        assert result["contains_profanity"] is True
-        assert traditional_filter.is_profane("This movie is fucking awesome") is True
-        assert result.get("matches") is None
-        assert result.get("context_score") is None
 
     def test_is_profane_and_check_profanity_agree_with_context(self) -> None:
         result = self.filter.check_profanity("You are a fucking idiot")

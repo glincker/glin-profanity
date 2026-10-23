@@ -36,7 +36,7 @@ Your AI agent uses GPT, Claude, or Gemini. Why pay for profanity checking?
 
 | Feature | Description |
 |---------|-------------|
-| **24 Languages** | English, Spanish, French, German, Portuguese, Italian, Dutch, Russian, Chinese, Japanese, Korean, Arabic, Hindi, Turkish, Polish, Vietnamese, Thai, Swedish, Norwegian, Danish, Finnish, Czech, Hungarian, Greek |
+| **24 Languages** | English, Spanish, French, German, Portuguese, Italian, Dutch, Russian, Chinese, Japanese, Korean, Arabic, Hindi, Turkish, Polish, Thai, Swedish, Norwegian, Danish, Finnish, Czech, Hungarian, Persian, Esperanto |
 | **Evasion Detection** | Catches leetspeak (`f4ck`, `sh1t`), Unicode tricks (`fսck`), character spacing (`f u c k`), symbols (`f*ck`) |
 | **Multiple Integrations** | Skills, Hooks, Plugin API, MCP, Direct API |
 | **Platform Support** | WhatsApp, Telegram, Discord, Slack, iMessage, Teams, Matrix, Signal |
@@ -371,6 +371,14 @@ async function smartModeration(message, agent) {
 - **Documentation**: [Integration Guide](https://github.com/GLINCKER/glin-profanity/tree/release/packages/openclaw)
 - **Live Demo**: [glincker.com/tools/glin-profanity](https://www.glincker.com/tools/glin-profanity)
 - **Tutorial**: [OpenClaw Profanity Filter Guide](https://dev.to/glincker/how-to-add-profanity-filtering-to-your-openclawmoltbotclawdbot-agent)
+
+---
+
+## Community
+
+Join the [GLINR Discord](https://discord.gg/Ar5pcaZB99) and drop by the `#glin-profanity` forum for questions and discussion.
+
+<a href="https://discord.gg/Ar5pcaZB99"><img src="https://discord.com/api/guilds/829168897080557579/widget.png?style=banner2" alt="Join the GLINR Discord" /></a>
 
 ---
 

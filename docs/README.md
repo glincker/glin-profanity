@@ -1,6 +1,6 @@
 ---
 title: "glin-profanity Documentation - Complete Guide"
-description: "Complete documentation for glin-profanity: the fastest profanity detection library with 24 languages, AI integrations, and MCP support for Claude, Cursor, and Windsurf"
+description: "Complete documentation for glin-profanity: an obfuscation-aware profanity detection library with 24 languages, AI integrations, and MCP support for Claude, Cursor, and Windsurf"
 keywords: 
   - profanity filter
   - content moderation
@@ -47,7 +47,7 @@ ai_integrations:
   - Windsurf (MCP)
   - OpenClaw
 languages_supported: 24
-performance: "21M ops/sec"
+performance: "~300,000 ops/sec uncached, ~25M ops/sec on result-cache hits"
 version: "3.1.4"
 last_updated: "2026-01-31"
 author: "GLINR"
@@ -64,7 +64,7 @@ mcp_enabled: true
 # Documentation Index
 
 
-Complete, AI-friendly documentation for glin-profanity - the fastest, most comprehensive profanity detection library.
+Complete, AI-friendly documentation for glin-profanity - an accurate, obfuscation-aware profanity detection library.
 
 > **📊 Quick Stats:** 31 docs | ~18,000 lines | 6 AI integrations | 24 languages | ⭐⭐⭐⭐⭐
 

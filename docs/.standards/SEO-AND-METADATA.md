@@ -142,7 +142,7 @@ Use tables for structured information:
 | Feature | Value | Details |
 |---------|-------|---------|
 | Languages | 24 | English, Spanish, French, etc. |
-| Performance | 21M ops/sec | Fastest in market |
+| Accuracy | F1 99.0% (English shootout set) | Measured, reproducible harness |
 | MCP Tools | 19 | Complete profanity detection |
 ```
 
@@ -329,7 +329,7 @@ Include structured data AI can parse:
 ```markdown
 **Supported Platforms:** macOS, Windows, Linux
 **Languages:** 24 (English, Spanish, French, German, etc.)
-**Performance:** 21M operations/second
+**Accuracy:** F1 99.0%, 1.1% false positives (English shootout set); ~300,000 ops/sec uncached
 **MCP Tools:** 19 detection tools
 **MCP Resources:** 23 documentation resources
 ```

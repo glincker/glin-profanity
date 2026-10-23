@@ -18,12 +18,12 @@ __version__ = "3.4.0"
 __author__ = "glinr"
 __email__ = "contact@glincker.com"
 
-from .filters.filter import Filter
 from .core.filter_pool import (
     clear_filter_pool,
     create_filter_config,
     get_pooled_filter,
 )
+from .filters.filter import Filter
 from .types.types import (
     CheckProfanityResult,
     FilterConfig,
@@ -31,6 +31,8 @@ from .types.types import (
     Language,
     LeetspeakLevel,
     Match,
+    ObfuscationLevel,
+    ObfuscationOptions,
     SeverityLevel,
 )
 from .utils import (
@@ -62,6 +64,8 @@ __all__ = [
     "Language",
     "LeetspeakLevel",
     "Match",
+    "ObfuscationLevel",
+    "ObfuscationOptions",
     "SeverityLevel",
     # Leetspeak utilities
     "normalize_leetspeak",
@@ -102,7 +106,7 @@ __all__ = [
     "worst_decision",
 ]
 
-from .scanners.base import Scanner, ScanDecision, ScanMatch, ScanResult
+from .scanners.base import ScanDecision, ScanMatch, Scanner, ScanResult
 from .scanners.composite import scan_all, worst_decision
 from .scanners.pii import PiiOptions, PiiScanner, scan_pii
 from .scanners.prompt_injection import (

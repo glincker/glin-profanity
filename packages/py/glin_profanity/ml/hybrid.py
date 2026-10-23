@@ -378,7 +378,11 @@ class HybridFilter:
             elif ml_detected:
                 return (True, ml_score, f"ML detected: {', '.join(ml_categories)}")
             else:
-                return (False, 1 - ml_score if ml_result else 0.8, "No toxicity detected")
+                return (
+                    False,
+                    1 - ml_score if ml_result else 0.8,
+                    "No toxicity detected",
+                )
 
     def get_rule_filter(self) -> Filter:
         """Get the underlying rule-based filter."""

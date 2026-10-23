@@ -1,0 +1,42 @@
+name: Feature Request
+description: Suggest an improvement or new capability
+labels: ["enhancement"]
+title: "Feature: "
+
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - "glin-profanity (JavaScript / TypeScript)"
+        - "glin-profanity (Python)"
+        - "MCP server"
+        - "OpenClaw plugin"
+        - "Dictionaries"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that is hard or impossible today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: API shape, options or behavior you have in mind
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

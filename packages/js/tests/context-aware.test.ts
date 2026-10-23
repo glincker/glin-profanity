@@ -214,6 +214,7 @@ describe('Context-Aware Filtering', () => {
       const acFilter = new Filter({
         languages: ['english'],
         detectLeetspeak: true,
+        enableContextAware: true,
       });
       const result = acFilter.checkProfanity('fuuuuuck');
       expect(result.reason).toBe('Found 1 potential profanity matches');
@@ -234,7 +235,7 @@ describe('Context-Aware Filtering', () => {
       });
       const result = leetFilter.checkProfanity('fuuuuuck');
       expect(result.containsProfanity).toBe(true);
-      expect(result.profaneWords).toEqual(['fuuuuuck']);
+      expect(result.profaneWords).toEqual(['fuck']);
       expect(result.reason).toBe('Found 1 potential profanity matches');
       expect(leetFilter.isProfane('fuuuuuck')).toBe(result.containsProfanity);
     });

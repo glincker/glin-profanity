@@ -1,65 +1,4 @@
 import { Filter } from '../src/filters/Filter';
-import type { FilterConfig } from '../src/types/types';
-import {
-  classifyWordScript,
-  hasCjkWordBoundary,
-  hasLatinWordBoundary,
-  isCjkCharacter,
-} from '../src/utils/wordScript';
-
-describe('wordScript utilities', () => {
-  test('isCjkCharacter detects CJK scripts', () => {
-    expect(isCjkCharacter('你')).toBe(true);
-    expect(isCjkCharacter('エ')).toBe(true);
-    expect(isCjkCharacter('병')).toBe(true);
-    expect(isCjkCharacter('a')).toBe(false);
-  });
-
-  test('classifyWordScript uses characters not language', () => {
-    expect(classifyWordScript('他妈的')).toBe('cjk');
-    expect(classifyWordScript('エッチ')).toBe('cjk');
-    expect(classifyWordScript('sm')).toBe('latin');
-    expect(classifyWordScript('fuck')).toBe('latin');
-  });
-
-  test('hasLatinWordBoundary matches Unicode \\w semantics', () => {
-    expect(hasLatinWordBoundary('hello fuck world', 6, 10)).toBe(true);
-    expect(hasLatinWordBoundary('scunthorpe', 5, 9)).toBe(false);
-    expect(hasLatinWordBoundary('classic', 2, 5)).toBe(false);
-    expect(hasLatinWordBoundary('Ok cuántos quieres tener', 3, 5)).toBe(false);
-    expect(hasLatinWordBoundary('por fin adiós', 8, 11)).toBe(false);
-  });
-
-  test('hasLatinWordBoundary treats CJK neighbors as boundary', () => {
-    expect(hasLatinWordBoundary('我的jb大', 2, 4)).toBe(true);
-    expect(hasLatinWordBoundary('SM部屋', 0, 2)).toBe(true);
-    expect(hasLatinWordBoundary('passion', 1, 4)).toBe(false);
-  });
-
-  test('hasCjkWordBoundary allows substring matches including ASCII adjacency', () => {
-    expect(hasCjkWordBoundary('你他妈的', 1, 4)).toBe(true);
-    expect(hasCjkWordBoundary('hello操world', 5, 6)).toBe(true);
-    expect(hasCjkWordBoundary('hello他妈的', 5, 8)).toBe(true);
-    expect(hasCjkWordBoundary('123エッチ456', 3, 6)).toBe(true);
-  });
-
-  test('hasCjkWordBoundary rejects single char inside compound', () => {
-    expect(hasCjkWordBoundary('性格', 0, 1)).toBe(false);
-    expect(hasCjkWordBoundary('明るい性格', 4, 5)).toBe(false);
-    expect(hasCjkWordBoundary('性', 0, 1)).toBe(true);
-  });
-
-  test('hasCjkWordBoundary allows unambiguous single profanity between CJK', () => {
-    expect(hasCjkWordBoundary('挨肏', 1, 2)).toBe(true);
-    expect(hasCjkWordBoundary('肏她', 0, 1)).toBe(true);
-    expect(hasCjkWordBoundary('被我肏屄的', 2, 3)).toBe(true); // 肏
-    expect(hasCjkWordBoundary('被我肏屄的', 3, 4)).toBe(true); // 屄
-    // Ambiguous single chars keep the strict neighbor rule.
-    expect(hasCjkWordBoundary('骚扰', 0, 1)).toBe(false);
-    expect(hasCjkWordBoundary('逼近', 0, 1)).toBe(false);
-    expect(hasCjkWordBoundary('淫雨', 0, 1)).toBe(false);
-  });
-});
 
 describe('CJK automatic matching strategy', () => {
   const chineseFilter = new Filter({ languages: ['chinese'] });
@@ -91,7 +30,8 @@ describe('CJK automatic matching strategy', () => {
 
     test('detects CJK profanity wrapped in or adjacent to ASCII', () => {
       expect(chineseFilter.isProfane('hello他妈的')).toBe(true);
-      expect(chineseFilter.isProfane('x乳x')).toBe(true);
+      // 乳 alone is ambiguous (milk), so it is not flagged between Latin letters.
+      expect(chineseFilter.isProfane('x乳x')).toBe(false);
       expect(chineseFilter.isProfane('123他妈的456')).toBe(true);
       expect(japaneseFilter.isProfane('abcエッチdef')).toBe(true);
     });
@@ -119,33 +59,6 @@ describe('CJK automatic matching strategy', () => {
       expect(mixedFilter.isProfane('hello fuck')).toBe(true);
       expect(mixedFilter.isProfane('你他妈的')).toBe(true);
     });
-  });
-
-  describe('AC and legacy parity for CJK', () => {
-    const cases = ['你他妈的', '他妈的', 'エッチ', '병신', 'hello fuck', 'scunthorpe', 'hello他妈的', 'x乳x', 'abcエッチdef'];
-
-    const configs: FilterConfig[] = [
-      { languages: ['chinese'] },
-      { languages: ['japanese'] },
-      { languages: ['korean'] },
-      { languages: ['english', 'chinese'] },
-    ];
-
-    for (const config of configs) {
-      describe(JSON.stringify(config), () => {
-        const fast = new Filter(config);
-        const legacy = new Filter({ ...config, disableAhoCorasick: true });
-
-        for (const text of cases) {
-          test(`parity for ${JSON.stringify(text)}`, () => {
-            expect(fast.isProfane(text)).toBe(legacy.isProfane(text));
-            expect(fast.checkProfanity(text).containsProfanity).toBe(
-              legacy.checkProfanity(text).containsProfanity,
-            );
-          });
-        }
-      });
-    }
   });
 
   describe('replacement with CJK words', () => {

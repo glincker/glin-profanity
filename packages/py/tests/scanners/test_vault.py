@@ -2,10 +2,8 @@
 Tests for Vault — ported from JS vault.test.ts on release.
 """
 
-import pytest
 
 from glin_profanity.scanners.vault import Vault
-
 
 # ---------------------------------------------------------------------------
 # Basic store / restore

@@ -5,12 +5,10 @@ IMPORTANT: All test fixtures use obvious-fake placeholder content that matches
 regex format but will NOT trip GitHub Push Protection.
 """
 
-import pytest
 
 from glin_profanity.scanners.base import ScanDecision
 from glin_profanity.scanners.secrets import SecretsScanner, scan_secrets
 from glin_profanity.scanners.vault import Vault
-
 
 # ---------------------------------------------------------------------------
 # AWS

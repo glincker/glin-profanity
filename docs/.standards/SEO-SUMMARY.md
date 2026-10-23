@@ -116,7 +116,7 @@ description: "Quick start guide for glin-profanity: install, configure, and impl
 - bad-words alternative
 - leo-profanity alternative
 - better than bad-words
-- fastest profanity filter
+- obfuscation-aware profanity filter
 
 ---
 
@@ -156,7 +156,7 @@ import { Filter } from 'glin-profanity';
 | Feature | Value | Details |
 |---------|-------|---------|
 | Languages | 24 | Multi-language support |
-| Performance | 21M ops/sec | Fastest available |
+| Accuracy | F1 99.0% | Measured on the shootout set, not a speed claim |
 ```
 
 ### 5. Clear Labels

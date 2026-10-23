@@ -39,6 +39,13 @@ export interface LeetspeakOptions {
    * @default true
    */
   removeSpacedChars?: boolean;
+
+  /**
+   * Read the ambiguous glyphs `|`, `1` and `!` as `l` instead of `i`
+   * (for example `a$$ho|e`). Used to build an alternate view of the text.
+   * @default false
+   */
+  ambiguousAsL?: boolean;
 }
 
 /**
@@ -60,7 +67,7 @@ const BASIC_SUBSTITUTIONS: Record<string, string> = {
  * Moderate character substitution map (numbers + common symbols).
  * Includes symbol substitutions that are commonly used in profanity evasion.
  */
-const MODERATE_SUBSTITUTIONS: Record<string, string> = {
+export const MODERATE_SUBSTITUTIONS: Record<string, string> = {
   ...BASIC_SUBSTITUTIONS,
   '@': 'a',
   '$': 's',
@@ -133,24 +140,60 @@ const AGGRESSIVE_MULTI_CHAR: Array<[RegExp, string]> = [
   [/\\\/\\\//g, 'w'],
   [/vv/gi, 'w'],
   // Letter X patterns
-  [/><]/g, 'x'],
+  [/></g, 'x'],
   // Letter Y patterns
   [/'\//g, 'y'],
   // Letter Z patterns
   [/7_/g, 'z'],
 ];
 
+// Longest pattern first so `|_|` (u) is not eaten by `|_` (l) and `/\/\` (m) by `/\` (a).
+AGGRESSIVE_MULTI_CHAR.sort((a, b) => b[0].source.length - a[0].source.length);
+
 /**
  * Aggressive single-character substitutions.
  * Includes less common substitutions that may cause some false positives.
  */
-const AGGRESSIVE_SUBSTITUTIONS: Record<string, string> = {
+export const AGGRESSIVE_SUBSTITUTIONS: Record<string, string> = {
   ...MODERATE_SUBSTITUTIONS,
   '|': 'i',
   '6': 'g',
   '2': 'z',
   '%': 'z',
 };
+
+/** Glyphs that can stand for either `i` or `l`. */
+const AMBIGUOUS_AS_L: Record<string, string> = { '|': 'l', '1': 'l', '!': 'l' };
+
+/** Matches 3+ single characters separated by whitespace (f u c k). */
+export const SPACED_CHARS_PATTERN =
+  /\b([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+\b/g;
+
+/** Digit + one Latin letter ("5m") is a measurement, so its digits must not turn into letters. */
+const MEASUREMENT_LIKE = /(?<![A-Za-z])\d+[A-Za-z](?![A-Za-z])/g;
+
+/** Indices of digits that belong to a measurement-like token such as `5m`. */
+export function measurementDigitIndices(text: string): Set<number> {
+  const keep = new Set<number>();
+  for (const match of text.matchAll(MEASUREMENT_LIKE)) {
+    const start = match.index ?? 0;
+    for (let i = start; i < start + match[0].length; i++) {
+      if (text[i] >= '0' && text[i] <= '9') keep.add(i);
+    }
+  }
+  return keep;
+}
+
+/** Tables the mapped (offset-tracking) normalizer shares with this module. */
+export function getLeetspeakTables(
+  level: LeetspeakLevel,
+  ambiguousAsL: boolean = false,
+): { multi: Array<[RegExp, string]>; single: Record<string, string> } {
+  return {
+    multi: level === 'aggressive' ? AGGRESSIVE_MULTI_CHAR : [],
+    single: getSubstitutionMap(level, ambiguousAsL),
+  };
+}
 
 /**
  * Normalizes leetspeak text to standard characters.
@@ -171,117 +214,6 @@ const AGGRESSIVE_SUBSTITUTIONS: Record<string, string> = {
  * normalizeLeetspeak('fuuuuck');  // Returns: 'fuck'
  * ```
  */
-const AGGRESSIVE_VOWEL_SUBSTITUTIONS: Record<string, string> = {
-  ...AGGRESSIVE_SUBSTITUTIONS,
-  '@': 'u',
-};
-
-export { MODERATE_SUBSTITUTIONS, AGGRESSIVE_SUBSTITUTIONS };
-
-/** Digit + single Latin letter (e.g. 5m) — keep digits to avoid 5→s + m → "sm". */
-const MEASUREMENT_LIKE = /(?<![A-Za-z])\d+[A-Za-z](?![A-Za-z])/g;
-
-function digitSubstitutionSkipIndices(text: string): Set<number> {
-  const skip = new Set<number>();
-  for (const match of text.matchAll(MEASUREMENT_LIKE)) {
-    const start = match.index ?? 0;
-    const end = start + match[0].length;
-    for (let index = start; index < end; index++) {
-      const char = text[index];
-      if (char !== undefined && char >= '0' && char <= '9') {
-        skip.add(index);
-      }
-    }
-  }
-  return skip;
-}
-
-function applyCharSubstitutionsWithMap(
-  text: string,
-  substitutions: Record<string, string>,
-): string {
-  const skip = digitSubstitutionSkipIndices(text);
-  const chars: string[] = [];
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i]!;
-    if (substitutions[char] !== undefined && !skip.has(i)) {
-      chars.push(substitutions[char]!);
-    } else {
-      chars.push(char);
-    }
-  }
-  return chars.join('');
-}
-
-function applyLeetspeakPreCollapseWithMap(
-  text: string,
-  options: Pick<LeetspeakOptions, 'level' | 'removeSpacedChars'>,
-  substitutions: Record<string, string>,
-): string {
-  const { level = 'moderate', removeSpacedChars = true } = options;
-  let normalized = text;
-
-  if (removeSpacedChars) {
-    normalized = collapseSpacedCharacters(normalized);
-  }
-
-  if (level === 'aggressive') {
-    for (const [pattern, replacement] of AGGRESSIVE_MULTI_CHAR) {
-      normalized = normalized.replace(pattern, replacement);
-    }
-  }
-
-  return applyCharSubstitutionsWithMap(normalized, substitutions);
-}
-
-/**
- * Applies leetspeak steps 1–3 (spacing, multi-char, char substitutions) without
- * collapsing repeated characters. Used to derive normal/aggressive variants in one pass.
- */
-function applyLeetspeakPreCollapse(
-  text: string,
-  options: Pick<LeetspeakOptions, 'level' | 'removeSpacedChars'> = {},
-): string {
-  const { level = 'moderate', removeSpacedChars = true } = options;
-  let normalized = text;
-
-  if (removeSpacedChars) {
-    normalized = collapseSpacedCharacters(normalized);
-  }
-
-  if (level === 'aggressive') {
-    for (const [pattern, replacement] of AGGRESSIVE_MULTI_CHAR) {
-      normalized = normalized.replace(pattern, replacement);
-    }
-  }
-
-  return applyCharSubstitutionsWithMap(normalized, getSubstitutionMap(level));
-}
-
-/**
- * Normalizes leetspeak with both standard and aggressive repeat collapsing in one pass.
- */
-export function normalizeLeetspeakVariants(
-  text: string,
-  options: Omit<LeetspeakOptions, 'maxRepeated'> = {},
-): { normal: string; aggressive: string } {
-  const { level = 'moderate', collapseRepeated = true } = options;
-  const preCollapsed = applyLeetspeakPreCollapse(text, options);
-  const vowelPreCollapsed =
-    level === 'aggressive'
-      ? applyLeetspeakPreCollapseWithMap(text, options, AGGRESSIVE_VOWEL_SUBSTITUTIONS)
-      : preCollapsed;
-
-  if (!collapseRepeated) {
-    return { normal: preCollapsed, aggressive: vowelPreCollapsed };
-  }
-
-  return {
-    normal: collapseRepeatedCharacters(preCollapsed, 2),
-    aggressive: collapseRepeatedCharacters(vowelPreCollapsed, 1),
-  };
-}
-
 export function normalizeLeetspeak(
   text: string,
   options: LeetspeakOptions = {}
@@ -291,10 +223,32 @@ export function normalizeLeetspeak(
     collapseRepeated = true,
     maxRepeated = 2,
     removeSpacedChars = true,
+    ambiguousAsL = false,
   } = options;
 
-  let normalized = applyLeetspeakPreCollapse(text, { level, removeSpacedChars });
+  let normalized = text;
 
+  // Step 1: Handle spaced characters (f u c k → fuck)
+  if (removeSpacedChars) {
+    normalized = collapseSpacedCharacters(normalized);
+  }
+
+  // Step 2: Apply multi-character patterns first (aggressive only)
+  if (level === 'aggressive') {
+    for (const [pattern, replacement] of AGGRESSIVE_MULTI_CHAR) {
+      normalized = normalized.replace(pattern, replacement);
+    }
+  }
+
+  // Step 3: Apply single-character substitutions
+  const substitutions = getSubstitutionMap(level, ambiguousAsL);
+  const keepDigits = measurementDigitIndices(normalized);
+  normalized = normalized
+    .split('')
+    .map((char, index) => (keepDigits.has(index) ? char : substitutions[char] || char))
+    .join('');
+
+  // Step 4: Collapse repeated characters (fuuuuck → fuck)
   if (collapseRepeated) {
     normalized = collapseRepeatedCharacters(normalized, maxRepeated);
   }
@@ -308,7 +262,11 @@ export function normalizeLeetspeak(
  * @param level - The leetspeak detection level
  * @returns The character substitution map
  */
-function getSubstitutionMap(level: LeetspeakLevel): Record<string, string> {
+function getSubstitutionMap(
+  level: LeetspeakLevel,
+  ambiguousAsL: boolean = false,
+): Record<string, string> {
+  if (ambiguousAsL) return { ...getSubstitutionMap(level), ...AMBIGUOUS_AS_L };
   switch (level) {
     case 'basic':
       return BASIC_SUBSTITUTIONS;
@@ -337,9 +295,7 @@ function getSubstitutionMap(level: LeetspeakLevel): Record<string, string> {
 export function collapseSpacedCharacters(text: string): string {
   // Match sequences of single characters separated by spaces
   // At least 3 characters to avoid false positives with "I a m" etc.
-  const spacedPattern = /\b([a-zA-Z0-9@$!#])\s+([a-zA-Z0-9@$!#])(\s+[a-zA-Z0-9@$!#])+\b/g;
-
-  return text.replace(spacedPattern, (match) => {
+  return text.replace(SPACED_CHARS_PATTERN, (match) => {
     // Remove all spaces between characters
     return match.replace(/\s+/g, '');
   });

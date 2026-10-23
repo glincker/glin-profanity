@@ -43,7 +43,7 @@ export interface UnicodeNormalizationOptions {
  * Homoglyph mapping: visually similar Unicode characters to ASCII equivalents.
  * Organized by the ASCII character they resemble.
  */
-const HOMOGLYPHS: Record<string, string> = {
+export const HOMOGLYPHS: Record<string, string> = {
   // Cyrillic homoglyphs (look like Latin)
   'а': 'a', // Cyrillic small a
   'А': 'A', // Cyrillic capital A
@@ -160,7 +160,7 @@ const HOMOGLYPHS: Record<string, string> = {
 /**
  * Zero-width and invisible characters to remove.
  */
-const ZERO_WIDTH_CHARS = [
+export const ZERO_WIDTH_CHARS = [
   '\u200B', // Zero-width space
   '\u200C', // Zero-width non-joiner
   '\u200D', // Zero-width joiner

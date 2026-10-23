@@ -33,7 +33,7 @@ class TestFilterPool:
         assert english is not spanish
 
     def test_evicts_oldest_entry_when_pool_is_full(self) -> None:
-        configs = [{"languages": [f"english"], "custom_words": [f"word{i}"]} for i in range(FILTER_POOL_MAX + 1)]
+        configs = [{"languages": ["english"], "custom_words": [f"word{i}"]} for i in range(FILTER_POOL_MAX + 1)]
         instances = [get_pooled_filter(config) for config in configs]
         oldest = instances[0]
         newest = instances[-1]

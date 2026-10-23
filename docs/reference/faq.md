@@ -9,11 +9,11 @@ Common questions about glin-profanity answered.
 glin-profanity goes beyond simple word matching:
 
 1. **Leetspeak Detection**: Catches `f4ck`, `5h1t`, `@$$`
-2. **Unicode Normalization**: Detects`fսck` (Armenian), `shіt` (Cyrillic)
+2. **Unicode Normalization**: Detects `fυck` (Greek), `shіt` (Cyrillic)
 3. **ML-Powered**: Optional TensorFlow.js toxicity detection
 4. **24 Languages**: Most comprehensive multi-language support
 5. **Context-Aware**: Understands context, not just keywords
-6. **Performance**: 21M ops/sec vs competitors' 650K-1.2M
+6. **Accuracy**: F1 99.0% with 1.1% false positives on the English shootout set (see `benchmarks/shootout/README.md`). Throughput is about 300,000 ops/sec uncached, slower than the thin word-list filters
 
 ### Is it free?
 
@@ -66,29 +66,30 @@ Yes! Works in:
 
 ### How fast is it?
 
-**JavaScript:**
-- Simple check: ~21M ops/sec
-- With leetspeak: ~8.5M ops/sec
-- Multi-language: ~18M ops/sec
+**JavaScript** (uncached `isProfane`, short text, Node 22, Apple Silicon, reproduce with `benchmarks/shootout/ops-claim.mjs`):
+- Simple check: ~300,000 ops/sec
+- With leetspeak (moderate): ~180,000 ops/sec
+- With leetspeak (aggressive): ~140,000 ops/sec
+- 3 languages: ~300,000 ops/sec
+- All 24 languages: ~140,000 ops/sec
+- `checkProfanity()` result-cache hit: ~25M ops/sec (cache path only)
 
-**Python:**
-- Simple check: ~500K ops/sec
-- With leetspeak: ~200K ops/sec
+**Python:** not re-measured for this release; benchmark on your own workload.
 
 ### Does it cache results?
 
-Yes! LRU cache enabled by default (1000 entries). Configurable:
+Optional. The LRU cache is off by default (`cacheResults: false`) and only `checkProfanity()` uses it. Enable it:
 
 ```javascript
 const filter = new Filter({
   cacheResults: true,
-  cacheSize: 10000
+  maxCacheSize: 10000
 });
 ```
 
 ### How can I optimize performance?
 
-1. Enable caching (default)
+1. Enable caching (`cacheResults: true`) if you see repeated strings
 2. Use single language instead of multiple
 3. Disable features you don't need
 4. Use batch processing for multiple texts

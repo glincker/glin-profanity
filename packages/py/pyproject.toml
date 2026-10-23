@@ -54,7 +54,6 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "typing-extensions>=4.0.0",
-    "pyahocorasick>=2.0.0",
 ]
 
 [project.optional-dependencies]

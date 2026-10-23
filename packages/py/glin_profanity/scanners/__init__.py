@@ -8,10 +8,10 @@ from .base import (
     allow_result,
     block_result,
 )
+from .composite import scan_all, worst_decision
 from .patterns.injection_patterns import INJECTION_PATTERNS, InjectionPattern
 from .patterns.pii_patterns import PII_PATTERNS, PiiPattern
 from .patterns.secret_patterns import SECRET_PATTERNS, SecretPattern
-from .composite import scan_all, worst_decision
 from .pii import PiiOptions, PiiScanner, scan_pii
 from .prompt_injection import (
     PromptInjectionScanner,

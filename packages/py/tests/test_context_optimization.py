@@ -12,8 +12,6 @@ class TestContextOptimization:
             }
         )
 
-    def test_uses_aho_corasick_for_candidate_discovery(self) -> None:
-        assert self.filter.dictionary_matcher is not None
 
     def test_is_profane_applies_context_filtering(self) -> None:
         assert self.filter.is_profane("This movie is the bomb") is False

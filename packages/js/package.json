@@ -305,19 +305,18 @@
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^30.0.0",
-    "@types/react": "^18.3.3",
+    "@types/react": "^19.3.0",
     "@types/react-dom": "^18.3.0",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.3.1",
     "semantic-release": "^24.2.7",
     "ts-jest": "^29.4.0",
-    "tsup": "^8.2.3",
+    "tsup": "^9.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "modern-ahocorasick": "^2.0.4"
   }
 }

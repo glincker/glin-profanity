@@ -31,9 +31,9 @@ class DictionaryLoader:
         "portuguese": "portuguese.json",
         "russian": "russian.json",
         "spanish": "spanish.json",
+        "turkish": "turkish.json",
         "swedish": "swedish.json",
         "thai": "thai.json",
-        "turkish": "turkish.json",
     }
 
     def __init__(self) -> None:
@@ -98,10 +98,12 @@ class DictionaryLoader:
         for language in self.LANGUAGE_FILES:
             self._load_dictionary(language)
 
-        all_words = []
-        for words in self._dictionaries.values():
-            all_words.extend(words)
-        return list(set(all_words))  # Remove duplicates
+        # Same language order as the JS package, duplicates removed in first-seen order,
+        # so hits and reports come out in the same order in both.
+        all_words: dict[str, None] = {}
+        for language in self.LANGUAGE_FILES:
+            all_words.update(dict.fromkeys(self._dictionaries.get(language, [])))
+        return list(all_words)
 
     @property
     def available_languages(self) -> list[str]:

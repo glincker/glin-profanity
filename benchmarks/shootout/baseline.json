@@ -1,7 +1,30 @@
 {
-  "glin-profanity": { "f1": 1.0, "fpr": 0.0, "opsPerSec": 2000 },
-  "obscenity":      { "f1": 0.795, "fpr": 0.059 },
-  "@2toad/profanity": { "f1": 0.567 },
-  "bad-words":      { "f1": 0.542 },
-  "leo-profanity":  { "f1": 0.346 }
+  "glin-profanity": {
+    "f1": 0.9896,
+    "precision": 0.9924,
+    "recall": 0.9867,
+    "fpr": 0.011,
+    "fprStrict": 0,
+    "opsPerSec": 7362
+  },
+  "allprofanity": {
+    "f1": 0.786,
+    "fpr": 0.0767
+  },
+  "obscenity": {
+    "f1": 0.607,
+    "fpr": 0.1315
+  },
+  "bad-words": {
+    "f1": 0.2888,
+    "fpr": 0.0795
+  },
+  "leo-profanity": {
+    "f1": 0.1608,
+    "fpr": 0.0575
+  },
+  "@2toad/profanity": {
+    "f1": 0.2945,
+    "fpr": 0.0767
+  }
 }

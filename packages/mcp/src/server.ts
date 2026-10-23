@@ -2129,7 +2129,7 @@ export function registerAllResources(server: McpServer): void {
               directMatch: {
                 description: 'Dictionary lookup',
                 catches: ['fuck', 'shit'],
-                performance: 'Fastest',
+                performance: 'Single dictionary lookup, cheapest layer',
               },
               leetspeakDetection: {
                 description: 'Character substitutions',
@@ -2373,8 +2373,8 @@ interface FilterConfig {
   preserveLength?: boolean;                  // Default: true
   
   // Performance
-  cacheResults?: boolean;                    // Default: true
-  cacheSize?: number;                        // Default: 1000
+  cacheResults?: boolean;                    // Default: false
+  maxCacheSize?: number;                        // Default: 1000
   
   // Advanced
   customDictionary?: Map<string, number>;
@@ -2400,7 +2400,7 @@ new Filter({ detectLeetspeak: true, leetspeakLevel :'aggressive' })
 \`\`\`
 
 ### normalizeUnicode
-Detect homoglyphs (fսck with Armenian 'ս', shіt with Cyrillic 'і').
+Detect homoglyphs (fυck with Greek 'υ', shіt with Cyrillic 'і').
 
 \`\`\`javascript
 new Filter({ normalizeUnicode: true })
@@ -2548,7 +2548,7 @@ Total: ${SUPPORTED_LANGUAGES.length} languages`,
 ## General
 
 **Q: What makes glin-profanity different?**
-A: Leetspeak detection, Unicode normalization, ML toxicity detection, 24 languages, and 21M ops/sec performance.
+A: Leetspeak detection, Unicode normalization, ML toxicity detection, 24 languages, and an obfuscation pipeline (separators, masking, HTML, stretched letters).
 
 **Q: Is it free?**
 A: Yes, MIT license. Free for personal and commercial use.
@@ -2570,7 +2570,7 @@ A: Works in all modern browsers (Chrome 90+, Firefox 88+, Safari 14+).
 ## Performance
 
 **Q: How fast is it?**
-A: JavaScript: ~21M ops/sec simple, ~8.5M with leetspeak. Python: ~500K ops/sec.
+A: JavaScript: about 300,000 ops/sec uncached on short text (about 140,000 with aggressive leetspeak); a checkProfanity result-cache hit is about 25M ops/sec. Measure Python on your own workload.
 
 **Q: Does it cache results?**
 A: Yes, LRU cache enabled by default (configurable size).
@@ -3361,7 +3361,7 @@ const filter = new Filter({
   languages: process.env.GLIN_PROFANITY_LANGUAGES?.split(','),
   detectLeetspeak: process.env.GLIN_PROFANITY_LEETSPEAK === 'true',
   cacheResults: true,
-  cacheSize: parseInt(process.env.GLIN_PROFANITY_CACHE_SIZE || '5000')
+  maxCacheSize: parseInt(process.env.GLIN_PROFANITY_CACHE_SIZE || '5000')
 });
 \`\`\`
 
@@ -3507,17 +3507,17 @@ Complete list of all glin-profanity features.
 
 ### Profanity Detection
 - 24 languages supported
-- 21M ops/sec performance
-- 99.5%+ accuracy
+- About 300,000 ops/sec uncached on short text
+- F1 99.0% on the English shootout set (authored alongside the engine, so optimistic)
 
 ### Leetspeak Detection ⭐
 - Three levels: basic, moderate, aggressive
 - Detects: f4ck, 5h1t, @ss, etc.
-- 8.5M ops/sec with moderate level
+- About 180,000 ops/sec with moderate level
 
 ### Unicode Normalization ⭐
 - Detects 2,000+ homoglyph variations
-- Cyrillic/Greek/Armenian lookalikes
+- Cyrillic/Greek lookalikes
 - Zero-width and full-width characters
 
 ### Context-Aware Detection
@@ -3563,11 +3563,11 @@ const result = await analyzer.analyze(text);
 \`\`\`typescript
 const filter = new Filter({
   cacheResults: true,
-  cacheSize: 5000
+  maxCacheSize: 5000
 });
 \`\`\`
 
-**Performance:** 800x faster on repeated checks
+**Performance:** cache hits skip detection (about 25M ops/sec on a hit)
 
 ### Batch Processing
 \`\`\`typescript

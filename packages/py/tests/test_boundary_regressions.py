@@ -1,7 +1,6 @@
 """Regression tests for boundary and normalization fixes (P0/P1/P2)."""
 
 from glin_profanity import Filter
-from glin_profanity.utils.unicode import text_should_skip_latin_obfuscation_normalization
 
 
 class TestLatinUnicodeBoundaries:
@@ -39,22 +38,6 @@ class TestLatinUnicodeBoundaries:
         assert result["contains_profanity"] is False
 
 
-class TestNonLatinObfuscationSkip:
-    def test_russian_text_skips_homoglyph_leetspeak(self) -> None:
-        text = "Если ты это хочешь, то как бы и не против, но я все же поспал бы"
-        assert text_should_skip_latin_obfuscation_normalization(text) is True
-        result = Filter(
-            {
-                "languages": ["russian"],
-                "detect_leetspeak": True,
-                "normalize_unicode": True,
-            }
-        ).check_profanity(text)
-        assert result["contains_profanity"] is False
-
-    def test_spanish_still_normalizes_latin_obfuscation(self) -> None:
-        text = "cuántos"
-        assert text_should_skip_latin_obfuscation_normalization(text) is False
 
 
 class TestCjkMinLengthBoundary:
@@ -77,7 +60,8 @@ class TestCjkMinLengthBoundary:
     def test_standalone_cjk_profanity_still_detected(self) -> None:
         chinese = Filter({"languages": ["chinese"]})
         assert chinese.is_profane("你他妈的") is True
-        assert chinese.is_profane("x乳x") is True
+        # 乳 alone is ambiguous (milk), so Latin neighbours do not make it a hit.
+        assert chinese.is_profane("x乳x") is False
 
 
 class TestMeasurementLeetspeakFalsePositive:

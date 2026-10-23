@@ -4,13 +4,6 @@
  */
 
 export {
-  normalizeEvasion,
-  stripHtmlAndDecodeEntities,
-  collapseSeparatedCharacters,
-  normalizeMaskedProfanity,
-} from './evasion';
-
-export {
   normalizeLeetspeak,
   collapseSpacedCharacters,
   collapseRepeatedCharacters,
@@ -30,12 +23,3 @@ export {
   detectCharacterSets,
   type UnicodeNormalizationOptions,
 } from './unicode';
-
-export {
-  classifyWordScript,
-  hasCjkWordBoundary,
-  hasLatinWordBoundary,
-  isCjkCharacter,
-  matchHasWordBoundary,
-  type WordScript,
-} from './wordScript';

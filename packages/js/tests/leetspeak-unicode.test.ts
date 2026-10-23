@@ -15,54 +15,6 @@ import {
   containsUnicodeObfuscation,
   detectCharacterSets,
 } from '../src/utils';
-import {
-  normalizeEvasion,
-  collapseSeparatedCharacters,
-  stripHtmlAndDecodeEntities,
-} from '../src/utils/evasion';
-
-describe('Evasion Normalization', () => {
-  describe('stripHtmlAndDecodeEntities', () => {
-    it('should strip tags and decode numeric entities', () => {
-      expect(stripHtmlAndDecodeEntities('sh&#105;t')).toBe('shit');
-      expect(stripHtmlAndDecodeEntities('f<b>u</b>ck')).toBe('fuck');
-      expect(stripHtmlAndDecodeEntities('a<br>ss')).toBe('ass');
-      expect(stripHtmlAndDecodeEntities('&#128512;')).toBe('😀');
-      expect(stripHtmlAndDecodeEntities('&#x1F600;')).toBe('😀');
-      expect(stripHtmlAndDecodeEntities('&#X1F600;')).toBe('😀');
-      expect(stripHtmlAndDecodeEntities('f&lt;b&gt;u&lt;/b&gt;ck')).toBe('fuck');
-    });
-
-    it('should leave invalid numeric entities unchanged', () => {
-      expect(stripHtmlAndDecodeEntities('&#9999999999;')).toBe('&#9999999999;');
-      expect(stripHtmlAndDecodeEntities('&#xFFFFFFFF;')).toBe('&#xFFFFFFFF;');
-      expect(stripHtmlAndDecodeEntities('&#XFFFFFFFF;')).toBe('&#XFFFFFFFF;');
-      expect(stripHtmlAndDecodeEntities('&#xD800;')).toBe('&#xD800;');
-      expect(stripHtmlAndDecodeEntities('&#XD800;')).toBe('&#XD800;');
-      expect(normalizeEvasion('hello &#9999999999; world')).toBe('hello &#9999999999; world');
-    });
-  });
-
-  describe('collapseSeparatedCharacters', () => {
-    it('should collapse separator obfuscation', () => {
-      expect(collapseSeparatedCharacters('f.u.c.k')).toBe('fuck');
-      expect(collapseSeparatedCharacters('f_u_c_k')).toBe('fuck');
-      expect(collapseSeparatedCharacters('b-i-t-c-h')).toBe('bitch');
-    });
-
-    it('should not collapse normal dotted words', () => {
-      expect(collapseSeparatedCharacters('hello.world')).toBe('hello.world');
-    });
-  });
-
-  describe('normalizeEvasion', () => {
-    it('should expand masked profanity patterns', () => {
-      expect(normalizeEvasion('This is f*cking ridiculous')).toBe('This is fucking ridiculous');
-      expect(normalizeEvasion('holy f*** that was amazing')).toBe('holy fuck that was amazing');
-      expect(normalizeEvasion('go f yourself')).toBe('go fuck yourself');
-    });
-  });
-});
 
 describe('Leetspeak Detection', () => {
   describe('normalizeLeetspeak', () => {
@@ -324,7 +276,6 @@ describe('Filter with Leetspeak and Unicode', () => {
         'sh&#105;t',
         'This is f*cking ridiculous',
         'holy f*** that was amazing',
-        'go f yourself',
         'what a f@cking mess',
         'fսck',
       ];

@@ -8,7 +8,6 @@ from glin_profanity.scanners.base import ScanDecision
 from glin_profanity.scanners.composite import scan_all, worst_decision
 from glin_profanity.scanners.vault import Vault
 
-
 # ---------------------------------------------------------------------------
 # Default behaviour (all three scanners)
 # ---------------------------------------------------------------------------

@@ -73,7 +73,7 @@
     "@tensorflow/tfjs-backend-webgl": "^4.22.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
+    "@babel/core": "^8.0.9",
     "@babel/preset-env": "^7.25.3",
     "@babel/preset-react": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
@@ -99,7 +99,7 @@
     "prettier": "^3.3.3",
     "typescript": "^5.5.4",
     "webpack": "^5.93.0",
-    "webpack-cli": "^5.1.4",
+    "webpack-cli": "^7.2.3",
     "webpack-dev-server": "^5.0.4"
   },
   "lint-staged": {

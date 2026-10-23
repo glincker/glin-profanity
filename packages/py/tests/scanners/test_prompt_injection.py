@@ -12,7 +12,6 @@ from glin_profanity.scanners.prompt_injection import (
     default_prompt_injection_scanner,
 )
 
-
 # ─── Known jailbreak inputs — should BLOCK ───────────────────────────────────
 # Strict mode: normalizer=1.0, so any critical-severity match → score=1.0 → BLOCK
 
