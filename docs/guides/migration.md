@@ -20,7 +20,7 @@ Complete guide for migrating from other profanity detection libraries to glin-pr
 
 | Feature | glin-profanity | bad-words | leo-profanity | obscenity |
 |---------|----------------|-----------|---------------|-----------|
-| **Performance** | 21M ops/sec | 890K ops/sec | 1.2M ops/sec | 650K ops/sec |
+| **Throughput** | ~300,000 ops/sec uncached (slower than the thin filters, see [benchmarks](../../benchmarks/shootout/README.md)) | faster, no obfuscation handling | faster, no obfuscation handling | similar order of magnitude |
 | **Leetspeak Detection** | ✅ 3 levels | ❌ | ❌ | ⚠️ Partial |
 | **Unicode Normalization** | ✅ 2,000+ variants | ❌ | ❌ | ❌ |
 | **Languages** | 24 | 1 (English) | 14 | 1 (English) |
@@ -130,7 +130,7 @@ console.log(result.severityMap);  // { damn: 0.3, shit: 0.7 }
 // Caching for performance (not in bad-words)
 const filter = new Filter({
   cacheResults: true,
-  cacheSize: 5000  // 800x faster on repeated content
+  maxCacheSize: 5000  // cache hits skip detection entirely
 });
 ```
 
@@ -326,10 +326,7 @@ console.log(result.processedText);  // Done automatically
 
 ### Performance Improvement
 
-| Operation | obscenity | glin-profanity | Speedup |
-|-----------|-----------|----------------|---------|
-| Simple check | 650K ops/sec | 21M ops/sec | **32x faster** |
-| With transformers | ~400K ops/sec | 8.5M ops/sec (leetspeak) | **21x faster** |
+Throughput is not an improvement. In the shootout harness (20 inputs per iteration, Node 22) obscenity measured about 6,400 ops/sec and glin-profanity about 7,400, so they are comparable. The gain is detection quality: F1 99.0% vs 60.7% on the English torture set (see `benchmarks/shootout/results.md`).
 
 ### Additional Features
 
@@ -393,8 +390,8 @@ const censor = (text: string) => filter.censorText(text).processedText;
 - ✅ 24 languages instead of 1
 - ✅ Detects leetspeak (f4ck, sh1t, @ss)
 - ✅ Unicode normalization (homoglyphs)
-- ✅ Built-in caching (800x faster)
-- ✅ No false positives (Scunthorpe problem)
+- ✅ Optional result caching (`cacheResults: true`)
+- ✅ Handles the Scunthorpe problem (1.1% false positives on the English shootout set, 0.0% on look-alike traps)
 - ✅ Severity levels
 - ✅ TypeScript support
 
@@ -427,7 +424,7 @@ const hasProfanity = (text: string) => filter.isProfane(text);
 **Improvements:**
 - ✅ **24x more languages** (24 vs 1)
 - ✅ **Evasion detection** (leetspeak, Unicode)
-- ✅ **21x faster** (21M ops/sec vs ~1M ops/sec)
+- ✅ **More accurate** (F1 99.0% vs 28.9% to 78.6% for the other filters on the shootout set; not faster)
 - ✅ **Smarter matching** (handles compound words)
 - ✅ **No manual updates** (maintained dictionaries)
 
@@ -513,14 +510,16 @@ function checkProfanity(text: string) {
 
 ### Benchmark Results
 
-Tested on Node.js 20, M1 MacBook Pro:
+Node 22, Apple Silicon, 20 inputs per iteration (`benchmarks/shootout/results.md`, reproduce with `benchmarks/shootout/harness.mjs`):
 
-| Library | Simple Check | With Transformers | Multi-Language |
-|---------|--------------|-------------------|----------------|
-| **glin-profanity** | **21M ops/sec** | **8.5M ops/sec** | **18M ops/sec** |
-| bad-words | 890K ops/sec | N/A | N/A |
-| leo-profanity | 1.2M ops/sec | N/A | 400K ops/sec |
-| obscenity | 650K ops/sec | ~400K ops/sec | N/A |
+| Library | ops/sec | F1 (English) |
+|---------|---------|--------------|
+| @2toad/profanity | ~884,000 | 29.4% |
+| leo-profanity | ~396,000 | 16.1% |
+| allprofanity | ~41,000 | 78.6% |
+| **glin-profanity** | ~7,400 | **99.0%** |
+| obscenity | ~6,400 | 60.7% |
+| bad-words | ~260 | 28.9% |
 
 ### Real-World Impact
 
@@ -608,4 +607,4 @@ const filter = new Filter({
 
 **Welcome to glin-profanity!** 🎉
 
-You've just upgraded to the fastest, most feature-rich profanity detection library. Enjoy better performance, more features, and excellent documentation!
+You've just upgraded to a more accurate, more feature-rich profanity detection library. Enjoy better performance, more features, and excellent documentation!

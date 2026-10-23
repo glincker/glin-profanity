@@ -264,9 +264,9 @@ for (const [i, msg] of messages.entries()) {
 
 | Operation | Performance | When to Use |
 |-----------|-------------|-------------|
-| Simple check | 21M ops/sec | Basic detection |
-| With leetspeak | 8.5M ops/sec | Real-world |
-| With cache (hit) | 200M+ ops/sec | Repeated content |
+| Simple check (uncached) | ~300,000 ops/sec | Basic detection |
+| With leetspeak (moderate) | ~180,000 ops/sec | Real-world |
+| `checkProfanity()` cache hit | ~25M ops/sec | Repeated identical strings |
 | ML detection | 50-200ms | Advanced detection |
 
 ### Optimization
