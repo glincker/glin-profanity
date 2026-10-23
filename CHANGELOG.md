@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ScanMatch.category` now carries pattern family (e.g. `"stripe"`, `"aws_access_key"`) instead of severity
 
 ### Fixed
+- Word-boundary matching no longer uses an ASCII-only `\b` for dictionary words that start or end with a non-ASCII letter. Russian, Arabic, Chinese, Korean, Japanese, Thai, Persian and edge letters in Turkish, Finnish, Polish and others now match with the default `wordBoundaries: true` (JS and Python); see docs/MIGRATION-4.0.md
 - PI-034 missing `/i` flag (only matched ALL-CAPS variants)
 - PI-036 removed negative lookbehind for broader runtime support (Safari, older Node)
 - Overlapping match range deduplication in secrets redaction

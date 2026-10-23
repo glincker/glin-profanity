@@ -33,6 +33,19 @@ A built-in safe list removes dictionary hits that overlap known innocent words a
 
 Multi-character aggressive leetspeak patterns are now applied longest first (so `|_|` reads as `u` and `/\/\` as `m`), and the broken `><]` pattern for `x` is now `><`. With the `standard` level, `|`, `1` and `!` are also tried as `l` (for example `a$$ho|e`).
 
+### Native-script languages now match
+
+With the default `wordBoundaries: true`, 3.x never matched dictionary words that start or end with a non-ASCII letter, because the boundary check was an ASCII-only `\b`. Russian, Arabic, Chinese, Korean, Japanese and others therefore did not match: measured on the dictionary words themselves, Russian 69/152, Arabic 18/153, Chinese 0/294, Korean 0/72, Japanese 5/183, Thai 0/31, Persian 0/45 and Turkish 986/1034 (the words with a non-ASCII edge letter, such as an o-umlaut or dotless i, were the ones missing). `new Filter({ languages: ['russian'] }).isProfane('блядство')` was `false`. They now all match, standing alone and inside sentences, and the JS and Python packages agree.
+
+The rules, per word edge:
+
+- ASCII edge letters keep the exact old behavior (`\b`), so `éasshole` is still caught.
+- Other letters (Cyrillic, Arabic, Hangul, Thai, Turkish letters and so on) may not touch another letter, digit or underscore. A listed Russian word inside a longer unrelated word is not flagged (`бугор` is, `бугорок` is not).
+- Han characters have no word spacing, so a Han word of two or more characters also matches inside a longer run (`他说你傻逼然后走了`). One-character Han words only match when standing alone (`乳` is flagged, `牛乳` is not).
+- Katakana words match next to hiragana or Han but not inside a longer katakana run (`グロ` is flagged, `グローバル` is not). Hiragana-only words and Hangul words need a separator on both sides.
+
+Consequences to expect: Korean words with attached particles (`병신이`) and Thai words inside running text are not found unless the exact form is listed. Han substring matching can flag clean words that contain a listed word (`你妈妈`, `性交通`). On 274 clean Chinese, Japanese and Korean sentences written for this change, 4 of 109 Chinese, 9 of 93 Japanese and 4 of 72 Korean were flagged, almost all because the clean word is itself a listed entry. `wordBoundaries: false` behaves exactly as before.
+
 ## Restoring old behavior
 
 ```ts

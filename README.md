@@ -96,7 +96,7 @@ Measured with the reproducible harness in [`benchmarks/shootout/`](./benchmarks/
 
 - glin-profanity is not the fastest. The thin word-list filters are 50x to 100x faster because they do not handle obfuscation. A single uncached `isProfane()` call on a short string runs about 300,000 ops/sec (about 140,000 with aggressive leetspeak or all 24 languages loaded).
 - A `checkProfanity()` result-cache hit on an identical string reaches about 25M ops/sec. That is the cache path only; profane or obfuscated text through `checkProfanity()` is about 17,000 to 24,000 ops/sec.
-- Non-English: 224 of 224 non-English profane cases caught, with no false positives in that set.
+- Non-English: 302 of 302 non-English profane cases caught (native-script Russian, Arabic, Chinese, Japanese, Korean and Turkish included), with no false positives in that set.
 - 1.1% of the clean English cases are still flagged (4 cases, all context dependent: two medical or technical sentences and two dictionary-ambiguous words such as "cock" and "jackass"). Per-category and per-language breakdowns: [`benchmarks/shootout/results.md`](./benchmarks/shootout/results.md). Reproduce with `cd benchmarks/shootout && npm install && node harness.mjs`.
 
 ---
