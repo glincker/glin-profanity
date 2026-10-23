@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-23T17:20:43.560Z",
+  "generatedAt": "2026-10-23T17:57:52.417Z",
   "node": "v22.22.2",
   "cases": {
-    "total": 1153,
+    "total": 1246,
     "english": 893,
-    "nonEnglish": 260
+    "nonEnglish": 353
   },
   "libraries": [
     {
@@ -14,7 +14,7 @@
       "f1": 0.9896,
       "fpr": 0.011,
       "fprStrict": 0,
-      "opsPerSec": 7362,
+      "opsPerSec": 7033,
       "counts": {
         "tp": 521,
         "fp": 4,
@@ -1809,10 +1809,10 @@
           "fprStrict": 0
         },
         "tr": {
-          "tp": 18,
+          "tp": 30,
           "fp": 0,
           "fn": 0,
-          "tn": 4,
+          "tn": 6,
           "precision": 1,
           "recall": 1,
           "f1": 1,
@@ -1831,10 +1831,10 @@
           "fprStrict": 0
         },
         "ru": {
-          "tp": 18,
+          "tp": 30,
           "fp": 0,
           "fn": 0,
-          "tn": 4,
+          "tn": 7,
           "precision": 1,
           "recall": 1,
           "f1": 1,
@@ -1846,6 +1846,50 @@
           "fp": 0,
           "fn": 0,
           "tn": 4,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0
+        },
+        "ar": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0
+        },
+        "zh": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0
+        },
+        "ja": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "fpr": 0,
+          "fprStrict": 0
+        },
+        "ko": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2,
           "precision": 1,
           "recall": 1,
           "f1": 1,
@@ -1951,7 +1995,7 @@
       "f1": 0.786,
       "fpr": 0.0767,
       "fprStrict": 0.0304,
-      "opsPerSec": 40825,
+      "opsPerSec": 39432,
       "counts": {
         "tp": 360,
         "fp": 28,
@@ -5393,7 +5437,7 @@
       "f1": 0.607,
       "fpr": 0.1315,
       "fprStrict": 0.0845,
-      "opsPerSec": 6422,
+      "opsPerSec": 5972,
       "counts": {
         "tp": 251,
         "fp": 48,
@@ -9742,7 +9786,7 @@
       "f1": 0.2888,
       "fpr": 0.0795,
       "fprStrict": 0.0101,
-      "opsPerSec": 256,
+      "opsPerSec": 227,
       "counts": {
         "tp": 94,
         "fp": 29,
@@ -15195,7 +15239,7 @@
       "f1": 0.1608,
       "fpr": 0.0575,
       "fprStrict": 0.0068,
-      "opsPerSec": 395855,
+      "opsPerSec": 381091,
       "counts": {
         "tp": 48,
         "fp": 21,
@@ -20952,7 +20996,7 @@
       "f1": 0.2945,
       "fpr": 0.0767,
       "fprStrict": 0.0101,
-      "opsPerSec": 883718,
+      "opsPerSec": 851006,
       "counts": {
         "tp": 96,
         "fp": 28,

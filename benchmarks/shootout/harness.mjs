@@ -34,6 +34,7 @@ const tortureCases = JSON.parse(
 const LANG_DICT = {
   fr: 'french', de: 'german', es: 'spanish', pt: 'portuguese', it: 'italian',
   tr: 'turkish', nl: 'dutch', ru: 'russian', pl: 'polish',
+  ar: 'arabic', zh: 'chinese', ja: 'japanese', ko: 'korean',
 };
 
 // ---------------------------------------------------------------------------

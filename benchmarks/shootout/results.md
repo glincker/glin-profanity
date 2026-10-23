@@ -1,6 +1,6 @@
 # Benchmark Results: glin-profanity Shootout
 
-_Generated: 2026-10-23  |  Torture-set: 1153 cases (893 English, 260 non-English)  |  Node v22.22.2_
+_Generated: 2026-10-23  |  Torture-set: 1246 cases (893 English, 353 non-English)  |  Node v22.22.2_
 
 ## Accuracy (English cases)
 
@@ -187,27 +187,31 @@ Only libraries with non-English dictionaries are scored; the rest are English-on
 | es | 31 | 27/27 | 0/4 | 27/27 | 0/4 |
 | pt | 31 | 27/27 | 0/4 | 18/27 | 0/4 |
 | it | 31 | 27/27 | 0/4 | N/A | N/A |
-| tr | 22 | 18/18 | 0/4 | N/A | N/A |
+| tr | 36 | 30/30 | 0/6 | N/A | N/A |
 | nl | 31 | 27/27 | 0/4 | N/A | N/A |
-| ru | 22 | 18/18 | 0/4 | N/A | N/A |
+| ru | 37 | 30/30 | 0/7 | N/A | N/A |
 | pl | 30 | 26/26 | 0/4 | N/A | N/A |
+| ar | 14 | 12/12 | 0/2 | N/A | N/A |
+| zh | 18 | 15/15 | 0/3 | N/A | N/A |
+| ja | 18 | 15/15 | 0/3 | N/A | N/A |
+| ko | 14 | 12/12 | 0/2 | N/A | N/A |
 
 ## Performance (ops/sec, 20 inputs per iteration)
 
 | Library | ops/sec | avg latency |
 |---------|---------|-------------|
-| glin-profanity | 7,362 | 136.4 us |
-| allprofanity | 40,825 | 25.0 us |
-| obscenity | 6,422 | 156.3 us |
-| bad-words | 256 | 3915.3 us |
-| leo-profanity | 395,855 | 2.6 us |
-| @2toad/profanity (fastest) | 883,718 | 1.1 us |
+| glin-profanity | 7,033 | 143.8 us |
+| allprofanity | 39,432 | 25.9 us |
+| obscenity | 5,972 | 175.8 us |
+| bad-words | 227 | 4588.2 us |
+| leo-profanity | 381,091 | 2.7 us |
+| @2toad/profanity (fastest) | 851,006 | 1.2 us |
 
 ## Bundle Size (unminified JS dist)
 
 | Library | Size |
 |---------|------|
-| glin-profanity | 141.1 KB |
+| glin-profanity | 143.4 KB |
 | allprofanity | 90.6 KB |
 | obscenity | 1.8 KB |
 | bad-words | 2.8 KB |

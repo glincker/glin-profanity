@@ -21,6 +21,7 @@ const suite = runnable ? describe : describe.skip;
 const LANG_DICT = {
   fr: 'french', de: 'german', es: 'spanish', pt: 'portuguese', it: 'italian',
   tr: 'turkish', nl: 'dutch', ru: 'russian', pl: 'polish',
+  ar: 'arabic', zh: 'chinese', ja: 'japanese', ko: 'korean',
 };
 const BASE = { detectLeetspeak: true, leetspeakLevel: 'aggressive', normalizeUnicode: true };
 
@@ -154,5 +155,36 @@ suite('obfuscation parity between JS and Python', () => {
     jobs.forEach((job, i) => {
       expect({ job, flag: jsFor(job.config).isProfane(job.text) }).toEqual({ job, flag: py[i].flag });
     });
+  });
+
+  test('dictionary words in every script agree: alone, in a sentence, glued to CJK text', () => {
+    const dictDir = path.join(root, 'shared/dictionaries');
+    const names = fs.readdirSync(dictDir)
+      .filter((f) => f.endsWith('.json') && f !== 'globalWhitelist.json')
+      .map((f) => f.slice(0, -5).toLowerCase());
+    const forms = [
+      (w) => w,
+      (w) => `He said "${w}", then left.`,
+      (w) => `他说${w}然后走了`,
+    ];
+    const jobs = [];
+    for (const name of names) {
+      const file = fs.existsSync(path.join(dictDir, `${name}.json`)) ? name : 'Norwegian';
+      const words = JSON.parse(fs.readFileSync(path.join(dictDir, `${file}.json`), 'utf8')).words;
+      const config = { languages: [name], replaceWith: '*' };
+      for (const w of words) for (const form of forms) jobs.push({ text: form(w), config });
+    }
+    const py = runPython(jobs);
+    const disagreements = [];
+    jobs.forEach((job, i) => {
+      const f = jsFor(job.config);
+      const result = f.checkProfanity(job.text);
+      const js = { flag: f.isProfane(job.text), words: [...result.profaneWords].sort(), processed: result.processedText };
+      if (js.flag !== py[i].flag || JSON.stringify(js.words) !== JSON.stringify(py[i].words) || js.processed !== py[i].processed) {
+        disagreements.push({ text: job.text, lang: job.config.languages[0], js, py: py[i] });
+      }
+    });
+    expect(disagreements.slice(0, 5)).toEqual([]);
+    expect(disagreements).toHaveLength(0);
   });
 });

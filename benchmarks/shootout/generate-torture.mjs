@@ -462,6 +462,50 @@ for (const [lang, list] of Object.entries(FP_LANG)) {
 }
 
 // ---------------------------------------------------------------------------
+// 5. Native-script words (dictionary words in their own script)
+// ---------------------------------------------------------------------------
+// Word-boundary matching used an ASCII \b, so words starting or ending with a
+// non-ASCII letter never matched. These cases pin the Unicode-aware edges.
+const NATIVE_SEEDS = {
+  ru: { dict: 'russian', words: ['дерьмо', 'говнюк', 'блядство'],
+    sentence: 'Честно говоря, это полное {w} и все это знают' },
+  ar: { dict: 'arabic', words: ['عاهرة', 'لواط', 'سكس'],
+    sentence: 'بصراحة هذا {w} وكل الناس يعرفون ذلك' },
+  zh: { dict: 'chinese', words: ['他妈的', '傻逼', '下贱'], spaced: false, glue: ['他说', '然后走了'],
+    sentence: '老实说你这个{w}真让人受不了' },
+  ja: { dict: 'japanese', words: ['変態', 'エッチ', 'エロティック'], spaced: false, glue: ['彼は', 'と言った'],
+    sentence: '正直に言って、あの人は{w}だと思う' },
+  ko: { dict: 'korean', words: ['병신', '씨발', '개새끼'],
+    sentence: '솔직히 말해서 그건 {w} 같은 짓이야' },
+  tr: { dict: 'turkish', words: ['gerizekalı', 'götü', 'iğrenç'],
+    sentence: 'Dürüst olmak gerekirse bu tam bir {w} ve herkes biliyor' },
+};
+for (const [lang, { dict, words, sentence, glue }] of Object.entries(NATIVE_SEEDS)) {
+  const dictWords = new Set(JSON.parse(readFileSync(join(DICT_DIR, `${dict}.json`), 'utf8')).words.map((x) => x.toLowerCase()));
+  for (const w of words) {
+    if (!dictWords.has(w)) throw new Error(`native seed "${w}" missing from ${dict}.json`);
+    const n = (t) => `seed: ${w} (${dict}, native script). ${t}`;
+    pos('native-script', 'native-plain', w, lang, n('Word standing alone'));
+    pos('native-script', 'native-sentence', sentence.replace('{w}', w), lang, n('Embedded in a native sentence'));
+    pos('native-script', 'native-punctuation', `...${w}!!! ?`, lang, n('Surrounded by punctuation'));
+    pos('native-script', 'native-quoted', `"${w}", he said`, lang, n('Inside quotes'));
+    if (glue) pos('native-script', 'native-unspaced', glue[0] + w + glue[1], lang, n('Glued to neighbours with no spaces'));
+  }
+}
+
+const NATIVE_CLEAN = {
+  ru: ['Сегодня очень хорошая погода', 'Встреча перенесена на завтра', 'На поле виден небольшой бугорок'],
+  ar: ['الطقس جميل اليوم', 'تم تأجيل الاجتماع إلى الغد'],
+  zh: ['今天天气很好，我们去公园散步', '会议改到明天下午三点', '乳酸菌饮料对肠胃有好处'],
+  ja: ['今日は天気がいいので公園へ行きましょう', '会議は明日の午後に変更されました', 'グローバル化が進んでいます'],
+  ko: ['오늘은 날씨가 정말 좋아요', '회의가 내일로 연기되었습니다'],
+  tr: ['Bugün hava çok güzel', 'Toplantı yarın sabah dokuzda'],
+};
+for (const [lang, list] of Object.entries(NATIVE_CLEAN)) {
+  for (const text of list) neg('native-script-clean', 'native-clean', text, lang, 'Ordinary native-script sentence or look-alike substring, should not flag');
+}
+
+// ---------------------------------------------------------------------------
 // Output
 // ---------------------------------------------------------------------------
 const out = '[\n' + cases.map((c) => '  ' + JSON.stringify(c)).join(',\n') + '\n]\n';
