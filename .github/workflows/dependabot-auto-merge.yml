@@ -1,0 +1,54 @@
+name: Dependabot auto-merge
+
+# Enables native auto-merge on safe Dependabot PRs. GitHub only merges once
+# required status checks pass, so branch protection is the real gate.
+#
+# Auto-merged: patch, minor, any dev-only dependency (incl. majors) and
+# GitHub Actions bumps. Production majors get a needs-review label instead.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Classify and enable auto-merge
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && !github.event.pull_request.draft
+    steps:
+      - name: Fetch dependency metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge on safe updates
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+          steps.meta.outputs.update-type == 'version-update:semver-minor' ||
+          steps.meta.outputs.dependency-type == 'direct:development' ||
+          steps.meta.outputs.package-ecosystem == 'github_actions' ||
+          steps.meta.outputs.package-ecosystem == 'github-actions'
+        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Flag production majors for manual review
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-major' &&
+          steps.meta.outputs.dependency-type == 'direct:production'
+        run: |
+          gh label create "needs-review" \
+            --color "fbca04" \
+            --description "Dependabot production major bump; needs human review" \
+            --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+          gh pr edit "$PR_URL" --add-label "needs-review"
+          gh pr comment "$PR_URL" --body "Major bump on a production dependency. Not auto-merging, the release notes are worth a read first."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
