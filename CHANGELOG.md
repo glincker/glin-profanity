@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Obfuscation pipeline (`obfuscation`: off | basic | standard | strict) and `whitelist` option; see docs/MIGRATION-4.0.md
 - Unified Scanner interface for pluggable detectors (`Scanner`, `ScanResult`, `ScanDecision`)
 - `PromptInjectionScanner` — 50 patterns across 6 attack categories, decision-based output (ALLOW / HITL / BLOCK)
 - `SecretsScanner` — 110 patterns across AWS, GCP, Azure, GitHub, Slack, Stripe, OpenAI, Anthropic, and more; Shannon entropy detection for high-entropy tokens
@@ -21,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Benchmark shootout CI gate (`benchmarks/shootout/`) — F1 regression guard vs obscenity, bad-words, leo-profanity, @2toad/profanity
 
 ### Changed
+- Documentation throughput claims replaced with reproducible figures (uncached about 300,000 ops/sec; result-cache hit about 25M ops/sec)
+- Default scan now catches separators, masks, stretched letters and HTML-encoded words; `matches[].index` refers to the original input
 - Scanner implementations live at `glin-profanity/scanners` subpath export to keep core bundle unchanged; root entry exports types only
 - `ScanMatch.category` now carries pattern family (e.g. `"stripe"`, `"aws_access_key"`) instead of severity
 
