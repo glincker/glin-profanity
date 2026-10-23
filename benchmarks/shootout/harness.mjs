@@ -65,7 +65,7 @@ const obscenityMatcher = new RegExpMatcher({
   ...englishRecommendedTransformers,
 });
 
-// bad-words — CJS package, use createRequire
+// bad-words, CJS package, use createRequire
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const BadWords = require('bad-words');
