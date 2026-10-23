@@ -1,7 +1,7 @@
 /**
  * ops-claim.mjs
  *
- * Measures single-call throughput of glin-profanity so the "21M ops/sec" style
+ * Measures single-call throughput of glin-profanity so the throughput
  * claims in the docs can be checked against a reproducible number.
  * One "op" is one isProfane() call on one short string.
  *

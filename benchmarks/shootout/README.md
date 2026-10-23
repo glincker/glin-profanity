@@ -1,6 +1,6 @@
 # glin-profanity Competitive Shootout
 
-Head-to-head accuracy and performance comparison of Node.js profanity-filtering libraries against a generated torture-set of 1,153 labelled cases (893 English, 260 non-English). The goal is an honest baseline: the set deliberately includes techniques glin-profanity currently misses.
+Head-to-head accuracy and performance comparison of Node.js profanity-filtering libraries against a generated torture-set of 1,153 labelled cases (893 English, 260 non-English). The goal is an honest baseline: the set includes look-alike traps and obfuscation techniques, and the remaining misses are listed in results.json.
 
 ## Libraries compared
 
@@ -78,18 +78,34 @@ Full tables, including the per-technique breakdown, are in [results.md](./result
 
 | Library | Precision | Recall | F1 | FPR (all) | FPR (traps only) |
 |---------|-----------|--------|----|-----------|------------------|
-| glin-profanity | 92.3% | 68.2% | 78.4% | 8.2% | 3.0% |
+| glin-profanity | 99.2% | 98.7% | 99.0% | 1.1% | 0.0% |
 | allprofanity | 92.8% | 68.2% | 78.6% | 7.7% | 3.0% |
-| obscenity | 84.0% | 47.5% | 60.7% | 13.2% | 8.5% |
-| bad-words | 76.4% | 17.8% | 28.9% | 8.0% | 1.0% |
+| obscenity | 83.9% | 47.5% | 60.7% | 13.2% | 8.4% |
+| bad-words | 76.4% | 17.8% | 28.9% | 7.9% | 1.0% |
 | leo-profanity | 69.6% | 9.1% | 16.1% | 5.8% | 0.7% |
 | @2toad/profanity | 77.4% | 18.2% | 29.4% | 7.7% | 1.0% |
 
-Perf, 20 inputs per iteration, Node 22: @2toad/profanity 830,969 ops/sec, leo-profanity 374,483, allprofanity 36,931, obscenity 5,686, glin-profanity 1,141, bad-words 222. See the throughput note below before quoting any glin-profanity ops/sec figure.
+Non-English: glin-profanity catches 224 of 224 non-English profane cases with 0 false positives on the non-English clean set.
+
+Perf, 20 inputs per iteration, Node 22: @2toad/profanity 883,718 ops/sec, leo-profanity 395,855, allprofanity 40,825, glin-profanity 7,362, obscenity 6,422, bad-words 256. glin-profanity is not the fastest; the thin filters do less work. See the throughput note below before quoting any single-call figure.
+
+The remaining glin-profanity misses are `shi7e` (not in the dictionary), an Armenian homoglyph, `go f yourself`, and four two-fragment space splits (`fu ck`, `sh it`, `bi tch`, `bas tard`). The 4 false positives are two medical or technical sentences and two dictionary-ambiguous words (`cock`, `jackass`). The seeds were authored alongside the engine, so treat these numbers as optimistic.
 
 ### Throughput claims
 
-`node ops-claim.mjs` on Node 22 (Apple Silicon): glin-profanity does roughly 13,000 to 25,000 single-call `isProfane()` / `checkProfanity()` operations per second on a short string, across default, leetspeak and unicode settings. Only a `checkProfanity()` result-cache hit on an identical string reaches the tens of millions per second (about 25M). The docs' "21M ops/sec" for a simple check matches the cache-hit path, not an uncached check.
+`node ops-claim.mjs` on Node 22 (Apple Silicon), one call per op on a short string:
+
+| Case | ops/sec |
+|------|---------|
+| `isProfane`, default, clean text | ~295,000 |
+| `isProfane`, default, profane text | ~330,000 |
+| `isProfane`, leetspeak moderate / aggressive | ~177,000 / ~137,000 |
+| `isProfane`, 3 languages | ~294,000 |
+| `isProfane`, all 24 languages | ~142,000 |
+| `checkProfanity`, no cache, clean text | ~284,000 |
+| `checkProfanity`, result-cache hit | ~24.6M |
+
+The cache-hit figure is the cache path only: it applies to `checkProfanity()` with `cacheResults: true` on an identical string. Profane or obfuscated text through `checkProfanity()` runs about 17,000 to 24,000 ops/sec. Earlier docs quoted "21M ops/sec" for a simple check; that matched the cache-hit path, not an uncached check.
 
 ## Files
 
