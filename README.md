@@ -14,7 +14,7 @@
 
 <!-- Badges Row 2: Quality & Status -->
 <p align="center">
-  <a href="https://github.com/GLINCKER/glin-profanity/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/GLINCKER/glin-profanity/ci.yml?style=flat-square&logo=github&label=CI" alt="CI Status" /></a>
+  <a href="https://github.com/GLINCKER/glin-profanity/actions/workflows/ci-js.yml"><img src="https://img.shields.io/github/actions/workflow/status/GLINCKER/glin-profanity/ci-js.yml?style=flat-square&logo=github&label=CI" alt="CI Status" /></a>
   <a href="https://bundlephobia.com/package/glin-profanity"><img src="https://img.shields.io/bundlephobia/minzip/glin-profanity?style=flat-square&logo=webpack&logoColor=white&label=bundle%20size" alt="Bundle Size" /></a>
   <a href="https://github.com/GLINCKER/glin-profanity/blob/main/LICENSE"><img src="https://img.shields.io/github/license/GLINCKER/glin-profanity?style=flat-square&label=license" alt="License" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-Ready-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
