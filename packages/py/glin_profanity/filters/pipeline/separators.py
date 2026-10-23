@@ -135,7 +135,12 @@ def _ends_at_word_end(pieces: list[_Piece], to: int, index: DictionaryIndex) -> 
     sep = pieces[to - 1].sep
     rest: list[str] = []
     k = to + 1
-    while k < len(pieces) and len(pieces[k].text) == 1 and pieces[k - 1].sep == sep:
+    while (
+        k < len(pieces)
+        and len(pieces[k].text) == 1
+        and pieces[k - 1].sep == sep
+        and len(rest) <= index.max_word_length
+    ):
         rest.append(pieces[k].text)
         k += 1
     if not rest:

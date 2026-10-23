@@ -14,16 +14,24 @@ const EDGE_PUNCTUATION = new Set(['?', '!']);
 
 /** Markdown emphasis markers that wrap a word rather than hide a letter of it. */
 const OPENER_WINDOW = 200;
-const EMPHASIS = /^([*_]*)(.*?)([*_]*)$/su;
+const EMPHASIS_CHARS = new Set(['*', '_']);
+
+/** Splits a token into leading markers, inner text and trailing markers in one pass. */
+function splitEmphasis(raw: string): [string, string, string] {
+  let lead = 0;
+  while (lead < raw.length && EMPHASIS_CHARS.has(raw[lead])) lead++;
+  if (lead === raw.length) return [raw, '', ''];
+  let end = raw.length;
+  while (end > lead && EMPHASIS_CHARS.has(raw[end - 1])) end--;
+  return [raw.slice(0, lead), raw.slice(lead, end), raw.slice(end)];
+}
 
 /**
  * True for `**bold**`, `__init__` and a closing `bold**` whose opener sits earlier
  * on the line, where the mask characters only wrap the word.
  */
 function isEmphasis(raw: string, text: string, tokenStart: number, masks: ReadonlySet<string>): boolean {
-  const parts = EMPHASIS.exec(raw);
-  if (!parts) return false;
-  const [, lead, inner, trail] = parts;
+  const [lead, inner, trail] = splitEmphasis(raw);
   if (Array.from(inner).some((c) => masks.has(c))) return false;
   if (lead && trail) return true;
   if (!trail) return false;

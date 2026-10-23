@@ -101,3 +101,24 @@ class TestHostileInputStaysFast:
         self.filter.is_profane(value)
         self.filter.check_profanity(value)
         assert time.perf_counter() - start < 3
+
+
+class TestQuadraticInputIsBounded:
+    filter = make_filter()
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "x." * 40000,
+            "x " * 40000,
+            "a" + "*" * 80000 + "b",
+            "a" + "_" * 80000 + "b",
+            "f.u.c.k" + ".x" * 40000,
+        ],
+        ids=["dots", "spaces", "mask run", "underscore run", "chain after word"],
+    )
+    def test_finishes_quickly(self, value: str) -> None:
+        start = time.perf_counter()
+        self.filter.is_profane(value)
+        self.filter.check_profanity(value)
+        assert time.perf_counter() - start < 1.5

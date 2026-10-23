@@ -45,12 +45,14 @@ export function separatorTransformer(
   return (input) => {
     if (!quick.test(input.text)) return input;
     const edits: Edit[] = [];
+    // One set for the whole call: rebuilding it per join is quadratic on long chains.
+    const taken = new Set<number>();
     chain.lastIndex = 0;
     let match: RegExpExecArray | null;
     while ((match = chain.exec(input.text)) !== null) {
       const pieces = splitPieces(match[0], match.index, sepSet);
       if (pieces.length < 2) continue;
-      collectJoins(pieces, input.text, index, options, edits);
+      collectJoins(pieces, input.text, index, options, edits, taken);
     }
     edits.sort((a, b) => a.start - b.start);
     return applyEdits(input, edits);
@@ -82,6 +84,7 @@ function collectJoins(
   index: DictionaryIndex,
   options: SeparatorOptions,
   edits: Edit[],
+  taken: Set<number>,
 ): void {
   let i = 0;
   while (i < pieces.length) {
@@ -96,7 +99,7 @@ function collectJoins(
       i++;
       continue;
     }
-    addEdits(pieces, i, joinedTo, source, edits);
+    addEdits(pieces, i, joinedTo, source, edits, taken);
     i = joinedTo + 1;
   }
 }
@@ -135,17 +138,28 @@ function endsAtWordEnd(pieces: Piece[], to: number, index: DictionaryIndex): boo
   const sep = pieces[to - 1].sep;
   let rest = '';
   let k = to + 1;
-  while (k < pieces.length && pieces[k].text.length === 1 && pieces[k - 1].sep === sep) {
+  while (
+    k < pieces.length &&
+    pieces[k].text.length === 1 &&
+    pieces[k - 1].sep === sep &&
+    rest.length <= index.maxWordLength
+  ) {
     rest += pieces[k].text;
     k++;
   }
   if (rest === '') return true;
-  // The run must end where the chain does, or at a different separator.
+  // A run longer than any word cannot be one; the scan above stops there to stay linear.
   return SUFFIXES.has(rest.toLowerCase()) || index.isWord(rest);
 }
 
-function addEdits(pieces: Piece[], from: number, to: number, source: string, edits: Edit[]): void {
-  const taken = new Set(edits.map((e) => e.start));
+function addEdits(
+  pieces: Piece[],
+  from: number,
+  to: number,
+  source: string,
+  edits: Edit[],
+  taken: Set<number>,
+): void {
   const push = (edit: Edit) => {
     if (!taken.has(edit.start)) {
       taken.add(edit.start);

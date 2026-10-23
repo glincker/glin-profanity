@@ -82,3 +82,20 @@ describe('hostile input stays fast', () => {
     expect(timeMs(input)).toBeLessThan(3000);
   });
 });
+
+describe('quadratic hostile input is bounded', () => {
+  const filter = makeFilter();
+
+  it.each([
+    ['single letters and dots', 'x.'.repeat(40000)],
+    ['spelled-out letters', 'x '.repeat(40000)],
+    ['mask run then a letter', 'a' + '*'.repeat(80000) + 'b'],
+    ['underscore run then a letter', 'a' + '_'.repeat(80000) + 'b'],
+    ['long chain after a word', 'f.u.c.k' + '.x'.repeat(40000)],
+  ])('%s', (_name, input) => {
+    const start = Date.now();
+    filter.isProfane(input);
+    filter.checkProfanity(input);
+    expect(Date.now() - start).toBeLessThan(1500);
+  });
+});

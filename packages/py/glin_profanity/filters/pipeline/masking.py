@@ -11,15 +11,25 @@ from .mapped import Edit, MappedText, Transformer, apply_edits
 _EDGE_PUNCTUATION = frozenset("?!")
 _OPENER_WINDOW = 200
 # Markdown emphasis markers wrap a word rather than hide a letter of it.
-_EMPHASIS = re.compile(r"([*_]*)(.*?)([*_]*)", re.DOTALL)
+_EMPHASIS_CHARS = frozenset("*_")
+
+
+def _split_emphasis(raw: str) -> tuple[str, str, str]:
+    """Leading markers, inner text and trailing markers, found in one pass."""
+    lead = 0
+    while lead < len(raw) and raw[lead] in _EMPHASIS_CHARS:
+        lead += 1
+    if lead == len(raw):
+        return raw, "", ""
+    end = len(raw)
+    while end > lead and raw[end - 1] in _EMPHASIS_CHARS:
+        end -= 1
+    return raw[:lead], raw[lead:end], raw[end:]
 
 
 def _is_emphasis(raw: str, text: str, token_start: int, masks: frozenset[str]) -> bool:
     """True for `**bold**`, `__init__` and a closing `bold**` with an earlier opener."""
-    parts = _EMPHASIS.fullmatch(raw)
-    if parts is None:
-        return False
-    lead, inner, trail = parts.groups()
+    lead, inner, trail = _split_emphasis(raw)
     if any(c in masks for c in inner):
         return False
     if lead and trail:
