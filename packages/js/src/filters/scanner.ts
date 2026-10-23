@@ -9,6 +9,8 @@ import { escapeRegExp } from './replacement';
 import { wordEdges, headSource, tailSource, EdgeKind } from './wordEdges';
 
 const NON_ASCII = /[\u0080-\uffff]/;
+const ASCII_WORD = /^[a-z0-9_]+$/;
+const ASCII_TOKEN = /[a-z0-9_]+/g;
 
 export type ViewKind = 'orig' | 'norm' | 'aggr' | 'enhanced';
 
@@ -44,6 +46,8 @@ export class Scanner {
   readonly index: DictionaryIndex;
   private readonly views: ViewFactory;
   private readonly activeWords: string[];
+  /** Plain ASCII words are found by token lookup; the rest always get their regex run. */
+  private readonly tokenWords: Set<string>;
   /** Prefilter regexes, grouped by edge rule so ASCII words keep one tight alternation. */
   private readonly asciiAny: RegExp[];
   private readonly nativeAny: RegExp[];
@@ -53,6 +57,7 @@ export class Scanner {
     this.activeWords = Array.from(cfg.words.keys()).filter(
       (word) => !cfg.ignoreWords.has(word.toLowerCase()),
     );
+    this.tokenWords = new Set(this.activeWords.filter((word) => ASCII_WORD.test(word)));
     this.index = new DictionaryIndex(this.activeWords, {
       leetspeak: cfg.detectLeetspeak,
       leetspeakLevel: cfg.leetspeakLevel,
@@ -80,6 +85,15 @@ export class Scanner {
       else native.push(new RegExp(source, `${flags}u`));
     }
     return [ascii, native];
+  }
+
+  /** Dictionary words that occur as whole ASCII tokens, so other words skip their regex. */
+  private tokensIn(lower: string): Set<string> {
+    const found = new Set<string>();
+    for (const token of lower.match(ASCII_TOKEN) ?? []) {
+      if (this.tokenWords.has(token)) found.add(token);
+    }
+    return found;
   }
 
   private hasCandidate(text: string): boolean {
@@ -132,11 +146,15 @@ export class Scanner {
     add('aggr', legacy.aggr);
     for (const view of enhanced) add('enhanced', view);
 
-    const live = views.filter((v) => this.hasCandidate(v.lower));
+    const live = views
+      .filter((v) => this.hasCandidate(v.lower))
+      .map((v) => ({ ...v, tokens: this.tokensIn(v.lower) }));
     const hits: ScanHit[] = [];
     const seen = new Set<string>();
     for (const word of this.activeWords) {
-      for (const { kind, view, lower } of live) {
+      const isToken = this.tokenWords.has(word);
+      for (const { kind, view, lower, tokens } of live) {
+        if (isToken && !tokens.has(word)) continue;
         const regex = this.cfg.matcher.getRegex(word);
         let match: RegExpExecArray | null;
         while ((match = regex.exec(lower)) !== null) {

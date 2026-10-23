@@ -3,11 +3,12 @@ import { Language, CheckProfanityResult, SeverityLevel, Match, FilterConfig, Lee
 import { ContextAnalyzer } from '../nlp/contextAnalyzer';
 import { normalizeForMatching } from './normalizeText';
 import { WordMatcher } from './wordMatcher';
-import { replaceWords, replaceSpans } from './replacement';
+import { redactText } from './redact';
+import { uniqueSpans, summarizeHits } from './hitSummary';
 import { legacyIsProfane, legacyScan, legacyContextHits, LegacyScanContext } from './legacyScan';
 import { Scanner, ScanHit } from './scanner';
 import { resolveObfuscation, obfuscationEnabled } from './obfuscation';
-import { Whitelist, protectedSpans, blankProtected } from './whitelist';
+import { Whitelist, Interval, protectedSpans, blankProtected } from './whitelist';
 
 export type { FilterConfig };
 
@@ -300,35 +301,13 @@ class Filter {
     return this.cache.get(key);
   }
 
-  /**
-   * Masks by scan hit offsets, so whitelisted spans stay intact. Without hits
-   * (legacy scan, fuzzy matching) every occurrence of each word is masked.
-   */
-  private redact(
-    text: string,
-    profaneWords: string[],
-    hits?: ScanHit[],
-    safeSpans: Array<[number, number]> = [],
-  ): string {
+  private redact(text: string, profaneWords: string[], hits?: ScanHit[], safeSpans: Interval[] = []): string {
     if (!this.replaceWith) return text;
-    if (hits) {
-      const spans = hits.map((h): [number, number] => [h.start, h.end]);
-      return replaceSpans(text, spans, this.replaceWith);
-    }
-    if (profaneWords.length === 0) return text;
-    // Safe spans of the legacy path are left out of the word replacement.
-    let out = '';
-    let cursor = 0;
-    for (const [start, end] of safeSpans) {
-      out += replaceWords(text.slice(cursor, start), profaneWords, this.replaceWith, this.wordBoundaries);
-      out += text.slice(start, end);
-      cursor = end;
-    }
-    return out + replaceWords(text.slice(cursor), profaneWords, this.replaceWith, this.wordBoundaries);
+    return redactText(text, profaneWords, this.replaceWith, this.wordBoundaries, hits, safeSpans);
   }
 
   /** Safe spans of the text on the legacy path, and the text with them blanked. */
-  private legacySafe(text: string): { spans: Array<[number, number]>; text: string } {
+  private legacySafe(text: string): { spans: Interval[]; text: string } {
     if (!this.legacyWhitelist) return { spans: [], text };
     const spans = protectedSpans(this.legacyWhitelist, text);
     return { spans, text: spans.length > 0 ? blankProtected(text, spans) : text };
@@ -510,32 +489,6 @@ class Filter {
 
     return { filteredWords, result };
   }
-}
-
-/** Drops repeat hits of the same word and span (original view wins). */
-function uniqueSpans(hits: ScanHit[]): ScanHit[] {
-  const seen = new Set<string>();
-  return hits.filter((h) => {
-    const key = `${h.word}|${h.start}|${h.end}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-/** Folds scanner hits into the legacy words and severity map shape. */
-function summarizeHits(hits: ScanHit[]): { profaneWords: string[]; severityMap: Record<string, SeverityLevel> } {
-  const profaneWords: string[] = [];
-  const severityMap: Record<string, SeverityLevel> = {};
-  for (const hit of hits) {
-    // The original view reports the matched text, derived views the dictionary word.
-    const key = hit.view === 'orig' ? hit.text : hit.word;
-    if (hit.view === 'orig' || !profaneWords.includes(key)) {
-      profaneWords.push(key);
-      if (severityMap[key] === undefined) severityMap[key] = hit.severity;
-    }
-  }
-  return { profaneWords, severityMap };
 }
 
 export { Filter };
