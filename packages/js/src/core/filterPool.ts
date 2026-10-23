@@ -34,21 +34,21 @@ function normalizeConfigForKey(config: FilterConfig): FilterConfig {
   const normalized: FilterConfig = { ...config };
 
   if (normalized.languages) {
-    normalized.languages = [...normalized.languages].sort();
+    normalized.languages = [...normalized.languages].sort((a, b) => a.localeCompare(b));
   }
   if (normalized.ignoreWords) {
-    normalized.ignoreWords = [...normalized.ignoreWords].sort();
+    normalized.ignoreWords = [...normalized.ignoreWords].sort((a, b) => a.localeCompare(b));
   }
   if (normalized.customWords) {
-    normalized.customWords = [...normalized.customWords].sort();
+    normalized.customWords = [...normalized.customWords].sort((a, b) => a.localeCompare(b));
   }
   if (normalized.domainWhitelists) {
     const source = normalized.domainWhitelists;
     normalized.domainWhitelists = Object.keys(source)
-      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      .sort((a, b) => a.localeCompare(b))
       .reduce(
         (acc, lang) => {
-          acc[lang as Language] = [...(source[lang as Language] ?? [])].sort();
+          acc[lang as Language] = [...(source[lang as Language] ?? [])].sort((a, b) => a.localeCompare(b));
           return acc;
         },
         {} as typeof source,
@@ -62,7 +62,7 @@ function configCacheKey(config: FilterConfig): string {
   const normalized = normalizeConfigForKey(config);
   // Stable key regardless of object insertion order (matches Python sort_keys=True).
   const sortedEntries = Object.keys(normalized)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .map((key) => [key, normalized[key as keyof FilterConfig]] as const);
   return JSON.stringify(Object.fromEntries(sortedEntries));
 }

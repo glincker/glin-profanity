@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   PACKAGE_DIR: './packages/js'
 
 # Global environment variables for consistent caching
@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [20, 22]
     
     outputs:
       coverage-percentage: ${{ steps.coverage.outputs.percentage }}
@@ -116,7 +116,7 @@ jobs:
             
       - name: 💾 Upload build artifacts
         uses: actions/upload-artifact@v6
-        if: matrix.node-version == 18  # Only upload once
+        if: matrix.node-version == 20  # Only upload once
         with:
           name: js-build-artifacts-${{ github.sha }}
           path: |
