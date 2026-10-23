@@ -5,8 +5,8 @@
  *
  * Usage: node compare-baseline.mjs results.json baseline.json
  *
- * Exit 0 — all checks pass
- * Exit 1 — regression detected
+ * Exit 0, all checks pass
+ * Exit 1, regression detected
  */
 
 import { readFileSync } from 'node:fs';
@@ -55,7 +55,7 @@ if (glin.fpr > FPR_MAX) {
 // --- Check 3: ops/sec is informational-only ---
 // CI runners are significantly slower than dev machines (often 2x+), so ops/sec
 // is reported in the summary table for visibility but does not gate the PR.
-// F1/FPR are the reliable correctness signals — perf is tracked locally.
+// F1/FPR are the reliable correctness signals, perf is tracked locally.
 
 // --- Check 4: glin must beat obscenity's baseline F1 ---
 const currentObscenity = current['obscenity'];
@@ -68,7 +68,7 @@ if (glin.f1 < obscenityF1) {
 
 // --- Summary table ---
 const col = (s, w) => String(s).padEnd(w);
-console.log('\nBenchmark Regression Guard — Summary');
+console.log('\nBenchmark Regression Guard, Summary');
 console.log('='.repeat(60));
 console.log(col('Check', 42) + col('Result', 18));
 console.log('-'.repeat(60));
