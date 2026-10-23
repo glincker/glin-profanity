@@ -313,7 +313,7 @@
     "react-dom": "^18.3.1",
     "semantic-release": "^24.2.7",
     "ts-jest": "^29.4.0",
-    "tsup": "^8.2.3",
+    "tsup": "^9.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3"
   }
