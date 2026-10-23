@@ -7,14 +7,14 @@ import {
 import { MappedText, Transformer, applyEdits, replaceRegex, mapChars, Edit } from './mapped';
 
 const ZERO_WIDTH_PATTERN = new RegExp(`[${ZERO_WIDTH_CHARS.join('')}]`, 'g');
-const ASCII_ONLY = /^[\x00-\x7F]*$/;
+const NON_ASCII = /[\u0080-\uffff]/;
 
 /**
  * Offset-tracking twin of `normalizeUnicode`. A test pins the output text to
  * the plain function so the two cannot drift.
  */
 export const unicodeTransformer: Transformer = (input) => {
-  if (ASCII_ONLY.test(input.text)) return input;
+  if (!NON_ASCII.test(input.text)) return input;
 
   let m = replaceRegex(input, ZERO_WIDTH_PATTERN, () => '');
   m = replaceRegex(m, /[！-～]/g, (match) =>

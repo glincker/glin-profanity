@@ -1,11 +1,12 @@
 import dictionary from '../data/dictionary';
 import { Language, CheckProfanityResult, SeverityLevel, Match, FilterConfig, LeetspeakLevel } from '../types/types';
 import { ContextAnalyzer } from '../nlp/contextAnalyzer';
-import { normalizeLeetspeak } from '../utils/leetspeak';
-import { normalizeUnicode } from '../utils/unicode';
+import { normalizeForMatching } from './normalizeText';
 import { WordMatcher } from './wordMatcher';
-import { replaceWords } from './replacement';
+import { replaceWords, replaceSpans } from './replacement';
 import { legacyIsProfane, legacyScan, legacyContextHits, LegacyScanContext } from './legacyScan';
+import { Scanner, ScanHit } from './scanner';
+import { resolveObfuscation, obfuscationEnabled } from './obfuscation';
 
 export type { FilterConfig };
 
@@ -51,6 +52,9 @@ class Filter {
   private maxCacheSize: number;
   private cache: Map<string, CheckProfanityResult>;
   private matcher: WordMatcher;
+  private obfuscationOption: FilterConfig['obfuscation'];
+  private whitelistWords: string[];
+  private scanner?: Scanner;
 
   /**
    * Creates a new Filter instance with the specified configuration.
@@ -123,6 +127,9 @@ class Filter {
       fuzzyToleranceLevel: this.fuzzyToleranceLevel,
     });
 
+    this.obfuscationOption = config?.obfuscation;
+    this.whitelistWords = config?.whitelist ?? [];
+
     // Build word dictionary
     let words: string[] = [];
 
@@ -145,6 +152,30 @@ class Filter {
     }
 
     this.words = new Map(words.map((word) => [word.toLowerCase(), 1]));
+    this.scanner = this.createScanner();
+  }
+
+  /**
+   * The obfuscation-aware scanner needs word boundaries; fuzzy matching
+   * (wordBoundaries off) and `obfuscation: 'off'` keep the legacy scan.
+   */
+  private createScanner(): Scanner | undefined {
+    const obfuscation = resolveObfuscation(this.obfuscationOption);
+    if (!this.wordBoundaries) return undefined;
+    if (!obfuscationEnabled(obfuscation) && this.whitelistWords.length === 0) return undefined;
+    return new Scanner({
+      words: this.words,
+      ignoreWords: this.ignoreWords,
+      matcher: this.matcher,
+      normalizeText: (text, aggressive) => this.normalizeText(text, aggressive),
+      detectLeetspeak: this.detectLeetspeak,
+      leetspeakLevel: this.leetspeakLevel,
+      normalizeUnicode: this.normalizeUnicodeEnabled,
+      allowObfuscatedMatch: this.allowObfuscatedMatch,
+      obfuscation,
+      whitelist: this.whitelistWords,
+      caseSensitive: this.caseSensitive,
+    });
   }
 
   private debugLog(...args: unknown[]) {
@@ -154,55 +185,16 @@ class Filter {
   }
 
   /**
-   * Normalizes text for profanity detection using all enabled normalization methods.
-   * Applies Unicode normalization, leetspeak detection, and obfuscation handling.
-   *
-   * @param text - The input text to normalize
-   * @param aggressive - If true, collapses to single chars (for repeated char detection)
-   * @returns The normalized text
+   * Normalizes text with every enabled method (Unicode, leetspeak, legacy
+   * obfuscation). `aggressive` collapses repeated characters to one.
    */
   private normalizeText(text: string, aggressive: boolean = false): string {
-    let normalized = text;
-
-    // Step 1: Apply Unicode normalization (handles homoglyphs, diacritics, etc.)
-    if (this.normalizeUnicodeEnabled) {
-      normalized = normalizeUnicode(normalized);
-    }
-
-    // Step 2: Apply leetspeak normalization
-    if (this.detectLeetspeak) {
-      normalized = normalizeLeetspeak(normalized, {
-        level: this.leetspeakLevel,
-        collapseRepeated: true,
-        // Keep double letters like "ss" for normal check, collapse all for aggressive
-        maxRepeated: aggressive ? 1 : 2,
-        removeSpacedChars: true,
-      });
-    }
-
-    // Step 3: Apply legacy obfuscation handling (for backward compatibility)
-    if (this.allowObfuscatedMatch && !this.detectLeetspeak) {
-      normalized = this.normalizeObfuscated(normalized);
-    }
-
-    return normalized;
-  }
-
-  /**
-   * Legacy obfuscation normalization method (for backward compatibility).
-   * @deprecated Use normalizeText() with detectLeetspeak option instead.
-   */
-  private normalizeObfuscated(text: string): string {
-    let normalized = text.replace(/([a-zA-Z])\1{1,}/g, '$1$1');
-    const charMap: { [key: string]: string } = {
-      '@': 'a',
-      $: 's',
-      '!': 'i',
-      '1': 'i',
-      '*': '',
-    };
-    normalized = normalized.replace(/[@$!1*]/g, (m) => charMap[m] || m);
-    return normalized;
+    return normalizeForMatching(text, aggressive, {
+      normalizeUnicode: this.normalizeUnicodeEnabled,
+      detectLeetspeak: this.detectLeetspeak,
+      leetspeakLevel: this.leetspeakLevel,
+      allowObfuscatedMatch: this.allowObfuscatedMatch,
+    });
   }
 
   /**
@@ -263,6 +255,8 @@ class Filter {
       normalizeUnicode: this.normalizeUnicodeEnabled,
       cacheResults: this.cacheResults,
       maxCacheSize: this.maxCacheSize,
+      obfuscation: this.obfuscationOption,
+      whitelist: this.whitelistWords,
     };
   }
 
@@ -301,6 +295,16 @@ class Filter {
     return this.cache.get(key);
   }
 
+  /** Masks obfuscated spans by offset, then plain dictionary words by pattern. */
+  private redact(text: string, profaneWords: string[], hits?: ScanHit[]): string {
+    if (profaneWords.length === 0 || !this.replaceWith) return text;
+    const spans = (hits ?? [])
+      .filter((h) => h.view !== 'orig' && text.slice(h.start, h.end).toLowerCase() !== h.word)
+      .map((h): [number, number] => [h.start, h.end]);
+    const spanned = replaceSpans(text, spans, this.replaceWith);
+    return replaceWords(spanned, profaneWords, this.replaceWith, this.wordBoundaries);
+  }
+
   private legacyContext(): LegacyScanContext {
     return {
       words: this.words,
@@ -327,6 +331,7 @@ class Filter {
    * ```
    */
   isProfane(value: string): boolean {
+    if (this.scanner) return this.scanner.isProfane(value);
     return legacyIsProfane(this.legacyContext(), value);
   }
 
@@ -369,14 +374,14 @@ class Filter {
 
     // Backward compatibility: if not context-aware, run old logic
     if (!this.enableContextAware) {
-      const { profaneWords, severityMap } = legacyScan(this.legacyContext(), text);
+      const hits = this.scanner ? this.scanner.scan(text, 'full') : undefined;
+      const { profaneWords, severityMap } = hits
+        ? summarizeHits(hits)
+        : legacyScan(this.legacyContext(), text);
       const result: CheckProfanityResult = {
         containsProfanity: profaneWords.length > 0,
         profaneWords: Array.from(new Set(profaneWords)),
-        processedText:
-          this.replaceWith && profaneWords.length > 0
-            ? replaceWords(text, profaneWords, this.replaceWith, this.wordBoundaries)
-            : this.replaceWith ? text : undefined,
+        processedText: this.replaceWith ? this.redact(text, profaneWords, hits) : undefined,
         severityMap:
           this.severityLevels && Object.keys(severityMap).length > 0
             ? severityMap
@@ -392,7 +397,10 @@ class Filter {
     const severityMap: Record<string, SeverityLevel> = {};
     const matches: Match[] = [];
 
-    for (const hit of legacyContextHits(this.legacyContext(), text)) {
+    const contextHits = this.scanner
+      ? this.scanner.scan(text, 'context').map((h) => ({ word: h.text, index: h.start, severity: h.severity }))
+      : legacyContextHits(this.legacyContext(), text);
+    for (const hit of contextHits) {
       const matchObj: Match = { word: hit.word, index: hit.index, severity: hit.severity };
       if (this.contextAnalyzer) {
         const contextResult = this.contextAnalyzer.analyzeContext(
@@ -414,10 +422,7 @@ class Filter {
     if (profaneWords.length > 0) {
       this.debugLog('Detected:', profaneWords);
     }
-    const processedText =
-      this.replaceWith && profaneWords.length > 0
-        ? replaceWords(text, profaneWords, this.replaceWith, this.wordBoundaries)
-        : text;
+    const processedText = this.redact(text, profaneWords);
     let contextScore: number | undefined;
     if (this.enableContextAware && matches.length > 0) {
       const totalScore = matches.reduce((sum, match) =>
@@ -463,6 +468,21 @@ class Filter {
 
     return { filteredWords, result };
   }
+}
+
+/** Folds scanner hits into the legacy words and severity map shape. */
+function summarizeHits(hits: ScanHit[]): { profaneWords: string[]; severityMap: Record<string, SeverityLevel> } {
+  const profaneWords: string[] = [];
+  const severityMap: Record<string, SeverityLevel> = {};
+  for (const hit of hits) {
+    // The original view reports the matched text, derived views the dictionary word.
+    const key = hit.view === 'orig' ? hit.text : hit.word;
+    if (hit.view === 'orig' || !profaneWords.includes(key)) {
+      profaneWords.push(key);
+      if (severityMap[key] === undefined) severityMap[key] = hit.severity;
+    }
+  }
+  return { profaneWords, severityMap };
 }
 
 export { Filter };
