@@ -246,7 +246,7 @@ const filter = new Filter({
 // First check: ~0.05ms
 filter.checkProfanity('test message');
 
-// Subsequent checks: ~0.0001ms (800x faster!)
+// Subsequent checks: ~0.00004ms
 filter.checkProfanity('test message');
 ```
 

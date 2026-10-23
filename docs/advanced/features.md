@@ -467,7 +467,7 @@ See [MCP Guide](./mcp-guide.md) for details.
 
 ### 1. Result Caching ⚡
 
-LRU cache for 800x performance improvement on repeated checks.
+LRU cache for repeated checks (about 80x faster on a hit for short clean text).
 
 ```typescript
 const filter = new Filter({

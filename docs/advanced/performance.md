@@ -128,7 +128,7 @@ async function benchmarkRealWorld() {
 
 ### 1. Enable Caching ⚡
 
-**Impact:** 800x faster on repeated content
+**Impact:** about 80x faster on repeated short clean strings, more on obfuscated text
 
 ```typescript
 const filter = new Filter({

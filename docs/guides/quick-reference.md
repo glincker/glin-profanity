@@ -103,7 +103,7 @@ const gaming = new Filter({
 | **Multi-Language** | `languages: ['english', 'spanish']` | Check multiple languages |
 | **Custom Words** | `customDictionary: Map` | Add your own words |
 | **Exclusions** | `excludeWords: ['damn']` | Whitelist specific words |
-| **Caching** | `cacheResults: true` | 800x faster on repeats |
+| **Caching** | `cacheResults: true` | ~80x+ faster on repeats |
 
 ---
 

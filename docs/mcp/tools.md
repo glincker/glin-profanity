@@ -431,7 +431,7 @@ Step 3: If severe → track_violations (monitoring)
 
 ### 3. Use Caching
 
-The MCP server automatically caches results. Repeated checks are 800x faster!
+The MCP server automatically caches results. Repeated checks hit the cache (about 80x faster on short clean text, more on obfuscated text).
 
 ---
 
