@@ -1,4 +1,5 @@
 import { SeverityLevel } from '../types/types';
+import { boundedPattern } from './wordEdges';
 
 export interface WordMatcherOptions {
   caseSensitive: boolean;
@@ -30,10 +31,14 @@ export class WordMatcher {
       cached.lastIndex = 0;
       return cached;
     }
-    const flags = this.opts.caseSensitive ? 'g' : 'gi';
-    const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const boundary = this.opts.wordBoundaries ? '\\b' : '';
-    const regex = new RegExp(`${boundary}${escapedWord}${boundary}`, flags);
+    const baseFlags = this.opts.caseSensitive ? 'g' : 'gi';
+    let regex: RegExp;
+    if (this.opts.wordBoundaries) {
+      const { source, unicode } = boundedPattern(word);
+      regex = new RegExp(source, unicode ? `${baseFlags}u` : baseFlags);
+    } else {
+      regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), baseFlags);
+    }
     this.regexCache.set(word, regex);
     return regex;
   }

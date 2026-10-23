@@ -1,3 +1,5 @@
+import { boundedPattern } from './wordEdges';
+
 /** Escapes a string for literal use inside a RegExp. */
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -16,9 +18,13 @@ export function replaceWords(
   let processed = text;
   for (const word of new Set(words)) {
     const escaped = escapeRegExp(word);
-    const pattern = wordBoundaries
-      ? new RegExp(`\\b${escaped}\\b`, 'gi')
-      : new RegExp(escaped, 'gi');
+    let pattern: RegExp;
+    if (wordBoundaries) {
+      const { source, unicode } = boundedPattern(word);
+      pattern = new RegExp(source, unicode ? 'giu' : 'gi');
+    } else {
+      pattern = new RegExp(escaped, 'gi');
+    }
     processed = processed.replace(pattern, replaceWith);
   }
   return processed;

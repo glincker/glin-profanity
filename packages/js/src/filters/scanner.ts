@@ -6,6 +6,9 @@ import { ViewFactory, ViewConfig, LegacyViews } from './pipeline/views';
 import { WordMatcher } from './wordMatcher';
 import { Whitelist, overlaps, Interval } from './whitelist';
 import { escapeRegExp } from './replacement';
+import { wordEdges, headSource, tailSource, EdgeKind } from './wordEdges';
+
+const NON_ASCII = /[\u0080-\uffff]/;
 
 export type ViewKind = 'orig' | 'norm' | 'aggr' | 'enhanced';
 
@@ -41,7 +44,9 @@ export class Scanner {
   readonly index: DictionaryIndex;
   private readonly views: ViewFactory;
   private readonly activeWords: string[];
-  private readonly any: RegExp | null;
+  /** Prefilter regexes, grouped by edge rule so ASCII words keep one tight alternation. */
+  private readonly asciiAny: RegExp[];
+  private readonly nativeAny: RegExp[];
   private readonly whitelist: Whitelist;
 
   constructor(private readonly cfg: ScannerConfig) {
@@ -54,17 +59,33 @@ export class Scanner {
     });
     this.views = new ViewFactory(cfg, this.index);
     this.whitelist = new Whitelist(cfg.whitelist, cfg.obfuscation.builtinWhitelist);
-    this.any =
-      this.activeWords.length === 0
-        ? null
-        : new RegExp(
-            `\\b(?:${this.activeWords.map(escapeRegExp).join('|')})\\b`,
-            cfg.caseSensitive ? '' : 'i',
-          );
+    [this.asciiAny, this.nativeAny] = this.buildPrefilters();
+  }
+
+  private buildPrefilters(): [RegExp[], RegExp[]] {
+    const groups = new Map<string, { head: EdgeKind; tail: EdgeKind; words: string[] }>();
+    for (const word of this.activeWords) {
+      const { head, tail } = wordEdges(word);
+      const key = `${head}|${tail}`;
+      const group = groups.get(key) ?? { head, tail, words: [] };
+      group.words.push(word);
+      groups.set(key, group);
+    }
+    const flags = this.cfg.caseSensitive ? '' : 'i';
+    const ascii: RegExp[] = [];
+    const native: RegExp[] = [];
+    for (const { head, tail, words } of groups.values()) {
+      const source = `${headSource(head)}(?:${words.map(escapeRegExp).join('|')})${tailSource(tail)}`;
+      if (head === 'ascii' && tail === 'ascii') ascii.push(new RegExp(source, flags));
+      else native.push(new RegExp(source, `${flags}u`));
+    }
+    return [ascii, native];
   }
 
   private hasCandidate(text: string): boolean {
-    return this.any !== null && this.any.test(text);
+    if (this.asciiAny.some((regex) => regex.test(text))) return true;
+    // Native-edge words cannot occur in pure ASCII text.
+    return this.nativeAny.length > 0 && NON_ASCII.test(text) && this.nativeAny.some((regex) => regex.test(text));
   }
 
   /**

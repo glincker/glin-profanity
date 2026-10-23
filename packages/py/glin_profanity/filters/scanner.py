@@ -13,7 +13,7 @@ from .pipeline.dictionary_index import DictionaryIndex
 from .pipeline.mapped import MappedText, to_original_span
 from .pipeline.views import LegacyViews, ViewConfig, ViewFactory
 from .whitelist import Interval, Whitelist, overlaps
-from .word_matcher import WordMatcher, word_pattern
+from .word_matcher import WordMatcher, is_token_word, word_pattern
 
 ViewKind = Literal["orig", "norm", "aggr", "enhanced"]
 ScanMode = Literal["full", "context"]
@@ -80,7 +80,7 @@ class Scanner:
         self._native_words = {
             w
             for w in self.active_words
-            if w.isalnum() and not any(c.isascii() for c in w)
+            if w.isalnum() and not any(c.isascii() for c in w) and is_token_word(w)
         }
         self._pure = self._ascii_words | self._native_words
         self._rest = [w for w in self.active_words if w not in self._pure]
