@@ -132,3 +132,27 @@ describe('whitelist protects only the ambiguous word', () => {
     expect(custom.checkProfanity('shit happens fuck').profaneWords).toEqual(['fuck']);
   });
 });
+
+describe('user whitelist edges follow the word edge rules', () => {
+  it.each([
+    ['über', 'das ist über gut', 'ÜBER'],
+    ['тест', 'это тест системы', 'ТЕСТ'],
+    ['اختبار', 'هذا اختبار جيد', 'اختبار'],
+    ['c++', 'c++ is fun', 'C++'],
+  ])('whitelists %s', (entry, text, upper) => {
+    const word = entry === 'c++' ? 'c' : entry;
+    const plain = makeFilter({ customWords: [word] });
+    expect(plain.isProfane(text)).toBe(true);
+    const safe = makeFilter({ customWords: [word], whitelist: [entry] });
+    expect(safe.isProfane(text)).toBe(false);
+    expect(safe.checkProfanity(text).containsProfanity).toBe(false);
+    if (entry !== 'اختبار') expect(safe.isProfane(text.replace(entry, upper))).toBe(false);
+  });
+
+  it('does not match inside a longer word', () => {
+    const safe = makeFilter({ customWords: ['тест'], whitelist: ['тест'] });
+    expect(safe.isProfane('это контест системы')).toBe(false);
+    const filter = makeFilter({ customWords: ['тест'], whitelist: ['тес'] });
+    expect(filter.isProfane('это тест системы')).toBe(true);
+  });
+});

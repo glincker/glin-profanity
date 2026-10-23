@@ -146,3 +146,31 @@ class TestProtectedRange:
         f = make_filter(whitelist=["shit happens"])
         assert f.check_profanity("fuck shit happens")["profane_words"] == ["fuck"]
         assert f.check_profanity("shit happens fuck")["profane_words"] == ["fuck"]
+
+
+class TestUserWhitelistEdges:
+    """User entries use the same word edge rules as dictionary words."""
+
+    @pytest.mark.parametrize(
+        ("entry", "text", "upper"),
+        [
+            ("über", "das ist über gut", "ÜBER"),
+            ("тест", "это тест системы", "ТЕСТ"),
+            ("اختبار", "هذا اختبار جيد", "اختبار"),
+            ("c++", "c++ is fun", "C++"),
+        ],
+    )
+    def test_entry_matches(self, entry: str, text: str, upper: str) -> None:
+        word = "c" if entry == "c++" else entry
+        assert make_filter(custom_words=[word]).is_profane(text)
+        safe = make_filter(custom_words=[word], whitelist=[entry])
+        assert not safe.is_profane(text)
+        assert not safe.check_profanity(text)["contains_profanity"]
+        if entry != "اختبار":
+            assert not safe.is_profane(text.replace(entry, upper))
+
+    def test_no_match_inside_longer_word(self) -> None:
+        safe = make_filter(custom_words=["тест"], whitelist=["тест"])
+        assert not safe.is_profane("это контест системы")
+        other = make_filter(custom_words=["тест"], whitelist=["тес"])
+        assert other.is_profane("это тест системы")
