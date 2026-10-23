@@ -22,12 +22,12 @@ A built-in safe list removes dictionary hits that overlap known innocent words a
 - `Moby Dick`, `Dick Van Dyke`, `Twatt Orkney`
 - `cum laude`, `pussy willow`, `cock the hammer back`
 
-`Dick Head` is still flagged. Add your own safe phrases with `whitelist: ['...']`. A hit is dropped only when it overlaps a safe span; the dictionary itself is untouched.
+`Dick Head` is still flagged. Add your own safe phrases with `whitelist: ['...']`. A hit is dropped only when it lies fully inside the protected word of a safe phrase (`Dick` in `Moby Dick`), so `Fuck Dick` still reports `fuck`; the dictionary itself is untouched.
 
 ### Offsets and replacement
 
 - `matches[].index` now refers to the original input, not the normalized text.
-- `replaceWith` masks obfuscated spans by offset, so `so f.u.c.k you` becomes `so * you` with `replaceWith: '*'`.
+- `replaceWith` masks every reported hit by offset (whitelisted names stay readable), so `so f.u.c.k you` becomes `so * you` with `replaceWith: '*'`.
 
 ### Leetspeak glyph order
 
@@ -46,11 +46,17 @@ The rules, per word edge:
 
 Consequences to expect: Korean words with attached particles (`병신이`) and Thai words inside running text are not found unless the exact form is listed. Han substring matching can flag clean words that contain a listed word (`你妈妈`, `性交通`). On 274 clean Chinese, Japanese and Korean sentences written for this change, 4 of 109 Chinese, 9 of 93 Japanese and 4 of 72 Korean were flagged, almost all because the clean word is itself a listed entry. `wordBoundaries: false` behaves exactly as before.
 
+### Context-aware mode
+
+`enableContextAware` now scans the same views as the plain path (original, normalized, aggressive and obfuscation views), so it finds a superset of 3.x hits and masks obfuscated matches in `processedText`. In Python the flag used to be a no-op; it still adds no scoring there, so results equal the plain path. In JS the `ContextAnalyzer` can still drop hits by score.
+
+`allowObfuscatedMatch: true` turns `wordBoundaries` off by default, which keeps the legacy fuzzy scan: the `obfuscation` options and the built-in whitelist do not apply there. Set `wordBoundaries: true` explicitly to combine them.
+
 ## Restoring old behavior
 
 ```ts
 new Filter({ obfuscation: 'off' });      // plain scan, as in 3.x
-new Filter({ wordBoundaries: false });   // legacy fuzzy scan, ignores the obfuscation options
+new Filter({ wordBoundaries: false });   // legacy fuzzy scan, ignores the obfuscation options (still honors whitelist and ignoreWords)
 ```
 
 `obfuscation` also accepts `basic`, `standard` (default) and `strict`, or an object of per-switch options. See [obfuscation](./advanced/obfuscation.md).

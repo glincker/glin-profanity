@@ -125,6 +125,9 @@ class FilterConfig(ContextAwareConfig, total=False):
     languages: list[Language] | None
     all_languages: bool
     case_sensitive: bool
+    # Whole-word matching; defaults to `not allow_obfuscated_match`. `obfuscation`
+    # options and the built-in whitelist apply only when on. Off runs the legacy
+    # fuzzy scan, which honors `ignore_words` and the user `whitelist`.
     word_boundaries: bool
     custom_words: list[str] | None
     replace_with: str | None
@@ -146,7 +149,8 @@ class FilterConfig(ContextAwareConfig, total=False):
     # Obfuscation pipeline: a level or fine-grained switches (default "standard")
     obfuscation: ObfuscationLevel | ObfuscationOptions
 
-    # Extra safe words or phrases; a dictionary hit overlapping one is ignored
+    # Extra safe words or phrases; a hit fully inside one is ignored, neighbours
+    # are still checked. Also applies with word_boundaries off.
     whitelist: list[str]
 
     # Caching options

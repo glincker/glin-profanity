@@ -1,6 +1,6 @@
 import { BUILTIN_WHITELIST, WhitelistEntry } from './builtinWhitelist';
 import { escapeRegExp } from './replacement';
-import { MappedText, toOriginalSpan } from './pipeline/mapped';
+import { MappedText, fromText, toOriginalSpan } from './pipeline/mapped';
 import { EdgeKind, headSource, tailSource, wordEdges } from './wordEdges';
 
 export type Interval = [number, number];
@@ -69,6 +69,29 @@ export class Whitelist {
     }
     return found;
   }
+}
+
+/** Merged protected spans of a plain string, sorted by start. */
+export function protectedSpans(whitelist: Whitelist, text: string): Interval[] {
+  const spans = whitelist.intervals(fromText(text)).sort((a, b) => a[0] - b[0]);
+  const merged: Interval[] = [];
+  for (const span of spans) {
+    const last = merged[merged.length - 1];
+    if (last && span[0] <= last[1]) last[1] = Math.max(last[1], span[1]);
+    else merged.push([span[0], span[1]]);
+  }
+  return merged;
+}
+
+/** Same text with protected spans blanked, so offsets stay valid. */
+export function blankProtected(text: string, spans: Interval[]): string {
+  let out = '';
+  let cursor = 0;
+  for (const [start, end] of spans) {
+    out += text.slice(cursor, start) + ' '.repeat(end - start);
+    cursor = end;
+  }
+  return out + text.slice(cursor);
 }
 
 function compileBuiltin(entry: WhitelistEntry): CompiledEntry {

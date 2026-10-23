@@ -7,6 +7,7 @@ import { replaceWords, replaceSpans } from './replacement';
 import { legacyIsProfane, legacyScan, legacyContextHits, LegacyScanContext } from './legacyScan';
 import { Scanner, ScanHit } from './scanner';
 import { resolveObfuscation, obfuscationEnabled } from './obfuscation';
+import { Whitelist, protectedSpans, blankProtected } from './whitelist';
 
 export type { FilterConfig };
 
@@ -55,6 +56,7 @@ class Filter {
   private obfuscationOption: FilterConfig['obfuscation'];
   private whitelistWords: string[];
   private scanner?: Scanner;
+  private legacyWhitelist?: Whitelist;
 
   /**
    * Creates a new Filter instance with the specified configuration.
@@ -153,6 +155,9 @@ class Filter {
 
     this.words = new Map(words.map((word) => [word.toLowerCase(), 1]));
     this.scanner = this.createScanner();
+    // Fuzzy matching has no scanner; only the user's own safe words apply there.
+    this.legacyWhitelist =
+      !this.scanner && this.whitelistWords.length > 0 ? new Whitelist(this.whitelistWords, false) : undefined;
   }
 
   /**
@@ -299,14 +304,34 @@ class Filter {
    * Masks by scan hit offsets, so whitelisted spans stay intact. Without hits
    * (legacy scan, fuzzy matching) every occurrence of each word is masked.
    */
-  private redact(text: string, profaneWords: string[], hits?: ScanHit[]): string {
+  private redact(
+    text: string,
+    profaneWords: string[],
+    hits?: ScanHit[],
+    safeSpans: Array<[number, number]> = [],
+  ): string {
     if (!this.replaceWith) return text;
     if (hits) {
       const spans = hits.map((h): [number, number] => [h.start, h.end]);
       return replaceSpans(text, spans, this.replaceWith);
     }
     if (profaneWords.length === 0) return text;
-    return replaceWords(text, profaneWords, this.replaceWith, this.wordBoundaries);
+    // Safe spans of the legacy path are left out of the word replacement.
+    let out = '';
+    let cursor = 0;
+    for (const [start, end] of safeSpans) {
+      out += replaceWords(text.slice(cursor, start), profaneWords, this.replaceWith, this.wordBoundaries);
+      out += text.slice(start, end);
+      cursor = end;
+    }
+    return out + replaceWords(text.slice(cursor), profaneWords, this.replaceWith, this.wordBoundaries);
+  }
+
+  /** Safe spans of the text on the legacy path, and the text with them blanked. */
+  private legacySafe(text: string): { spans: Array<[number, number]>; text: string } {
+    if (!this.legacyWhitelist) return { spans: [], text };
+    const spans = protectedSpans(this.legacyWhitelist, text);
+    return { spans, text: spans.length > 0 ? blankProtected(text, spans) : text };
   }
 
   private legacyContext(): LegacyScanContext {
@@ -336,7 +361,7 @@ class Filter {
    */
   isProfane(value: string): boolean {
     if (this.scanner) return this.scanner.isProfane(value);
-    return legacyIsProfane(this.legacyContext(), value);
+    return legacyIsProfane(this.legacyContext(), this.legacySafe(value).text);
   }
 
   matches(word: string): boolean {
@@ -379,13 +404,14 @@ class Filter {
     // Backward compatibility: if not context-aware, run old logic
     if (!this.enableContextAware) {
       const hits = this.scanner ? this.scanner.scan(text) : undefined;
+      const safe = this.legacySafe(text);
       const { profaneWords, severityMap } = hits
         ? summarizeHits(hits)
-        : legacyScan(this.legacyContext(), text);
+        : legacyScan(this.legacyContext(), safe.text);
       const result: CheckProfanityResult = {
         containsProfanity: profaneWords.length > 0,
         profaneWords: Array.from(new Set(profaneWords)),
-        processedText: this.replaceWith ? this.redact(text, profaneWords, hits) : undefined,
+        processedText: this.replaceWith ? this.redact(text, profaneWords, hits, safe.spans) : undefined,
         severityMap:
           this.severityLevels && Object.keys(severityMap).length > 0
             ? severityMap
@@ -401,6 +427,8 @@ class Filter {
     const severityMap: Record<string, SeverityLevel> = {};
     const matches: Match[] = [];
 
+    const safe = this.legacySafe(text);
+    const legacySafeText = safe.text;
     // Same views as the plain path; the original-view hit and a derived-view hit
     // of one span are reported once.
     const scanHits = this.scanner ? uniqueSpans(this.scanner.scan(text)) : undefined;
@@ -411,7 +439,7 @@ class Filter {
           severity: h.severity,
           scan: h,
         }))
-      : legacyContextHits(this.legacyContext(), text).map((h) => ({ ...h, scan: undefined }));
+      : legacyContextHits(this.legacyContext(), legacySafeText).map((h) => ({ ...h, scan: undefined }));
     const keptHits: ScanHit[] = [];
     for (const hit of contextHits) {
       const matchObj: Match = { word: hit.word, index: hit.index, severity: hit.severity };
@@ -436,7 +464,7 @@ class Filter {
     if (profaneWords.length > 0) {
       this.debugLog('Detected:', profaneWords);
     }
-    const processedText = this.redact(text, profaneWords, scanHits ? keptHits : undefined);
+    const processedText = this.redact(text, profaneWords, scanHits ? keptHits : undefined, safe.spans);
     let contextScore: number | undefined;
     if (this.enableContextAware && matches.length > 0) {
       const totalScore = matches.reduce((sum, match) =>

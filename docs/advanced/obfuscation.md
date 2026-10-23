@@ -9,7 +9,7 @@
 | masking | one mask character per hidden letter | `f*ck`, `sh#t`, `b*****d`, `@sshole` |
 | stretch | repeated letters, with legitimate double letters kept | `aaaasshole` |
 | leetspeak | `\|_\|`, `\|<`, `/\`, and `\|`, `1`, `!` read as `l` | `f\|_\|ck`, `a$$ho\|e` |
-| whitelist | built-in safe words and names; overlapping hits are dropped | `cl@ss`, `Moby Dick`, `cum laude` |
+| whitelist | built-in safe words and names; hits inside the protected word are dropped | `cl@ss`, `Moby Dick`, `cum laude` |
 
 ## Options
 
@@ -42,8 +42,11 @@ Defaults can be overridden from the environment: `GLIN_HTML_DECODE_DEPTH`, `GLIN
 - A mask only resolves when a dictionary word of the same length fits it, so `****`, `p@ssword` and markdown `**bold**` stay clean.
 - Separator joins must start and end on a fragment boundary and include a single-letter fragment, so `end.fuck`, `e.g.`, `B.S.` and `well-known` produce nothing new.
 - Stretched tokens must contain the word's own letter runs, only longer, so `as` never becomes `ass`.
-- The whitelist drops a hit only when the hit overlaps a safe span. The dictionary itself is untouched.
-- `wordBoundaries: false` (fuzzy matching) keeps the earlier scan and ignores these options.
+- The whitelist drops a hit only when it lies fully inside the protected word of an entry (`cum` in `cum laude`, `Dick` in `Moby Dick`). Other profane words around it are still flagged, so `Fuck Dick` reports `fuck`. A capitalized word before `Dick` such as `You` or `Big` does not make it a name. The dictionary itself is untouched.
+- A spelled-out chain joins only at a word end: `a s s i g n m e n t` and `c.o.c.k.p.i.t` stay clean, `f.u.c.k.s.h.i.t` is still found.
+- `wordBoundaries: false` (also the default when `allowObfuscatedMatch: true`) keeps the earlier fuzzy scan. The `obfuscation` options and the built-in whitelist apply only with word boundaries on. The scan still honors `ignoreWords` and your own `whitelist` phrases (matched on word edges), but not the built-in list.
+- `replaceWith` masks by the offsets of the reported hits, so a whitelisted name in the same text stays readable.
+- `enableContextAware` scans the same views as the plain path; it only adds the context scoring of `ContextAnalyzer` (JS).
 
 ## Known gaps
 

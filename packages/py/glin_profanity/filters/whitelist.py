@@ -6,7 +6,7 @@ import re
 from typing import NamedTuple
 
 from .builtin_whitelist import BUILTIN_WHITELIST, WhitelistEntry
-from .pipeline.mapped import MappedText, to_original_span
+from .pipeline.mapped import MappedText, from_text, to_original_span
 from .word_matcher import edge_kind
 
 Interval = tuple[int, int]
@@ -90,3 +90,25 @@ class Whitelist:
                     continue
                 found.append(to_original_span(view, start, end))
         return found
+
+    def protected_spans(self, text: str) -> list[Interval]:
+        """Merged protected spans of a plain string, sorted by start."""
+        merged: list[list[int]] = []
+        for start, end in sorted(self.intervals(from_text(text))):
+            if merged and start <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], end)
+            else:
+                merged.append([start, end])
+        return [(start, end) for start, end in merged]
+
+
+def blank_protected(text: str, spans: list[Interval]) -> str:
+    """Same text with protected spans blanked, so offsets stay valid."""
+    out: list[str] = []
+    cursor = 0
+    for start, end in spans:
+        out.append(text[cursor:start])
+        out.append(" " * (end - start))
+        cursor = end
+    out.append(text[cursor:])
+    return "".join(out)

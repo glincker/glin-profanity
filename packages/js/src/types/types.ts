@@ -104,12 +104,18 @@ export interface FilterConfig extends ContextAwareConfig {
   languages?: Language[];
   allLanguages?: boolean;
   caseSensitive?: boolean;
+  /**
+   * Whole-word matching. Defaults to `!allowObfuscatedMatch`. The `obfuscation`
+   * options and the built-in whitelist apply only when this is on; with it off
+   * the legacy fuzzy scan runs, which honors `ignoreWords` and the user `whitelist`.
+   */
   wordBoundaries?: boolean;
   customWords?: string[];
   replaceWith?: string;
   severityLevels?: boolean;
   ignoreWords?: string[];
   logProfanity?: boolean;
+  /** Legacy fuzzy matching. Turns `wordBoundaries` off by default (see there). */
   allowObfuscatedMatch?: boolean;
   fuzzyToleranceLevel?: number;
 
@@ -142,7 +148,8 @@ export interface FilterConfig extends ContextAwareConfig {
 
   /**
    * Extra safe words or phrases. A dictionary hit lying fully inside one is ignored; other words around it are still checked.
-   * Matched case-insensitively on word boundaries.
+   * Matched case-insensitively on word edges (native-script and symbol edges work).
+   * Also applies with `wordBoundaries: false`.
    */
   whitelist?: string[];
 
