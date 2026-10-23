@@ -9,12 +9,19 @@ from .pipeline.mapped import MappedText, to_original_span
 
 Interval = tuple[int, int]
 
+# Whitespace stays Unicode-aware inside the ASCII-scoped patterns.
+_SPACE = r"(?u:\s)"
 
-def _compile(entries: list[WhitelistEntry], flags: int) -> re.Pattern[str] | None:
+
+def _compile(
+    entries: list[WhitelistEntry], ignore_case: bool
+) -> re.Pattern[str] | None:
     if not entries:
         return None
     body = "|".join(e.pattern for e in entries)
-    return re.compile(rf"\b(?:{body})\b", flags)
+    # ASCII-only folding and boundaries like JS; whitespace stays Unicode-aware.
+    scoped = f"(?ai:{body})" if ignore_case else f"(?:{body})"
+    return re.compile(rf"(?a:\b){scoped}(?a:\b)")
 
 
 def overlaps(a: Interval, b: Interval) -> bool:
@@ -25,15 +32,20 @@ class Whitelist:
     """Case-insensitive and case-sensitive entries are compiled into one regex each."""
 
     def __init__(self, user_entries: list[str], use_builtin: bool) -> None:
-        entries: list[WhitelistEntry] = list(BUILTIN_WHITELIST) if use_builtin else []
+        entries: list[WhitelistEntry] = []
+        if use_builtin:
+            entries = [
+                WhitelistEntry(e.pattern.replace(r"\s", _SPACE), e.case_sensitive)
+                for e in BUILTIN_WHITELIST
+            ]
         for entry in user_entries:
             parts = entry.split()
             if parts:
-                entries.append(WhitelistEntry(r"\s+".join(re.escape(p) for p in parts)))
-        self._insensitive = _compile(
-            [e for e in entries if not e.case_sensitive], re.IGNORECASE
-        )
-        self._sensitive = _compile([e for e in entries if e.case_sensitive], 0)
+                entries.append(
+                    WhitelistEntry(f"{_SPACE}+".join(re.escape(p) for p in parts))
+                )
+        self._insensitive = _compile([e for e in entries if not e.case_sensitive], True)
+        self._sensitive = _compile([e for e in entries if e.case_sensitive], False)
 
     @property
     def is_empty(self) -> bool:

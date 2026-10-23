@@ -13,12 +13,13 @@ from .pipeline.dictionary_index import DictionaryIndex
 from .pipeline.mapped import MappedText, to_original_span
 from .pipeline.views import LegacyViews, ViewConfig, ViewFactory
 from .whitelist import Interval, Whitelist, overlaps
-from .word_matcher import WordMatcher
+from .word_matcher import WordMatcher, word_pattern
 
 ViewKind = Literal["orig", "norm", "aggr", "enhanced"]
 ScanMode = Literal["full", "context"]
 
-_WORD_ONLY = re.compile(r"\w+")
+_ASCII_TOKEN = re.compile(r"[A-Za-z0-9_]+")
+_UNICODE_TOKEN = re.compile(r"\w+")
 
 
 @dataclass
@@ -73,25 +74,39 @@ class Scanner:
         self._whitelist = Whitelist(
             cfg.whitelist, cfg.view.obfuscation.builtin_whitelist
         )
-        self._pure = {w for w in self.active_words if _WORD_ONLY.fullmatch(w)}
+        # Words made only of ASCII word characters, or only of native-script letters,
+        # are found by token lookup; the rest (f*ck, g\u00f6t, "son of") use one regex.
+        self._ascii_words = {w for w in self.active_words if _ASCII_TOKEN.fullmatch(w)}
+        self._native_words = {
+            w
+            for w in self.active_words
+            if w.isalnum() and not any(c.isascii() for c in w)
+        }
+        self._pure = self._ascii_words | self._native_words
         self._rest = [w for w in self.active_words if w not in self._pure]
         self._rest_set = set(self._rest)
         self._rest_any = (
             re.compile(
-                r"\b(?:" + "|".join(re.escape(w) for w in self._rest) + r")\b",
-                0 if cfg.case_sensitive else re.IGNORECASE,
+                "|".join(word_pattern(w, not cfg.case_sensitive) for w in self._rest)
             )
             if self._rest
             else None
         )
 
+    def _tokens_present(self, lowered: str) -> set[str]:
+        """Dictionary words that occur as whole tokens in the (lowercased) text."""
+        found = set(_ASCII_TOKEN.findall(lowered)) & self._ascii_words
+        if self._native_words:
+            found |= set(_UNICODE_TOKEN.findall(lowered)) & self._native_words
+        return found
+
     def _has_candidate(self, text: str) -> bool:
         if not self.active_words:
             return False
         hay = text if self._cfg.case_sensitive else text.lower()
-        if self._pure and not self._pure.isdisjoint(_WORD_ONLY.findall(hay)):
+        if self._pure and self._tokens_present(hay):
             return True
-        return self._rest_any is not None and self._rest_any.search(text) is not None
+        return self._rest_any is not None and self._rest_any.search(hay) is not None
 
     def is_profane(self, text: str) -> bool:
         """Clean text exits after one candidate test per view.
@@ -139,7 +154,7 @@ class Scanner:
             lowered = view.text.lower()
             lower = lowered if len(lowered) == len(view.text) else view.text
             if self._has_candidate(lower):
-                present = set(_WORD_ONLY.findall(lower)) & self._pure
+                present = self._tokens_present(lower)
                 live.append(_LiveView(kind, view, lower, present))
 
         wanted: set[str] = set(self._rest)
