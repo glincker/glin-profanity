@@ -13,8 +13,12 @@ _ASCII_BOUNDARY = r"(?a:\b)"
 # Katakana: may touch hiragana or Han, but not more katakana ("グロ" vs "グローバル").
 _KATAKANA = "\u30a1-\u30fa\u30fc-\u30ff\u31f0-\u31ff\uff66-\uff9f"
 _HAN_RANGES = (
-    (0x3005, 0x3005), (0x3100, 0x312F), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
-    (0xF900, 0xFAFF), (0x20000, 0x2FA1F),
+    (0x3005, 0x3005),
+    (0x3100, 0x312F),
+    (0x3400, 0x4DBF),
+    (0x4E00, 0x9FFF),
+    (0xF900, 0xFAFF),
+    (0x20000, 0x2FA1F),
 )
 
 
