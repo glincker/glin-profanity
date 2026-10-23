@@ -1,10 +1,12 @@
 name: Dependabot auto-merge
 
-# Enables native auto-merge on safe Dependabot PRs. GitHub only merges once
-# required status checks pass, so branch protection is the real gate.
+# Approves and enables native auto-merge on safe Dependabot PRs. GitHub only
+# merges once required status checks pass, so the ruleset is the real gate.
 #
-# Auto-merged: patch, minor, any dev-only dependency (incl. majors) and
-# GitHub Actions bumps. Production majors get a needs-review label instead.
+# Auto-merged: patch, minor, any dev-only dependency and GitHub Actions bumps.
+# Held for a human: production majors, and majors of release tooling or the
+# compiler (semantic-release, commitlint, husky, lerna, typescript), because
+# CI does not exercise the release pipeline.
 
 on:
   pull_request:
@@ -16,7 +18,7 @@ permissions:
 
 jobs:
   auto-merge:
-    name: Classify and enable auto-merge
+    name: Classify, approve and enable auto-merge
     runs-on: ubuntu-latest
     if: github.event.pull_request.user.login == 'dependabot[bot]' && !github.event.pull_request.draft
     steps:
@@ -26,29 +28,44 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge on safe updates
+      - name: Hold risky majors
+        id: guard
+        env:
+          DEPS: ${{ steps.meta.outputs.dependency-names }}
+          UPDATE: ${{ steps.meta.outputs.update-type }}
+          DEP_TYPE: ${{ steps.meta.outputs.dependency-type }}
+        run: |
+          hold=false
+          if [ "$UPDATE" = "version-update:semver-major" ]; then
+            if [ "$DEP_TYPE" = "direct:production" ]; then hold=true; fi
+            if printf '%s' "$DEPS" | grep -Eq '(^|[ ,])(semantic-release|@semantic-release/[^ ,]+|@commitlint/[^ ,]+|commitlint|husky|lerna|typescript)([ ,]|$)'; then hold=true; fi
+          fi
+          echo "hold=$hold" >> "$GITHUB_OUTPUT"
+
+      - name: Approve and enable auto-merge on safe updates
         if: |
-          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
-          steps.meta.outputs.update-type == 'version-update:semver-minor' ||
-          steps.meta.outputs.dependency-type == 'direct:development' ||
-          steps.meta.outputs.package-ecosystem == 'github_actions' ||
-          steps.meta.outputs.package-ecosystem == 'github-actions'
-        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+          steps.guard.outputs.hold != 'true' && (
+            steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+            steps.meta.outputs.update-type == 'version-update:semver-minor' ||
+            steps.meta.outputs.dependency-type == 'direct:development' ||
+            steps.meta.outputs.package-ecosystem == 'github_actions' ||
+            steps.meta.outputs.package-ecosystem == 'github-actions')
+        run: |
+          gh pr review --approve "$PR_URL" || echo "Approval not permitted, leaving it to a human"
+          gh pr merge --auto --squash --delete-branch "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Flag production majors for manual review
-        if: |
-          steps.meta.outputs.update-type == 'version-update:semver-major' &&
-          steps.meta.outputs.dependency-type == 'direct:production'
+      - name: Flag held majors for manual review
+        if: steps.guard.outputs.hold == 'true'
         run: |
           gh label create "needs-review" \
             --color "fbca04" \
-            --description "Dependabot production major bump; needs human review" \
+            --description "Dependabot major bump held for human review" \
             --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
           gh pr edit "$PR_URL" --add-label "needs-review"
-          gh pr comment "$PR_URL" --body "Major bump on a production dependency. Not auto-merging, the release notes are worth a read first."
+          gh pr comment "$PR_URL" --body "Major bump on a production dependency, release tooling or the compiler. Not auto-merging, the release notes are worth a read first."
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
