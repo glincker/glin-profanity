@@ -89,7 +89,7 @@
     "@types/node": "^25.6.0",
     "jest": "^30.0.0",
     "ts-jest": "^29.4.0",
-    "tsup": "^8.2.3",
+    "tsup": "^9.0.0",
     "typescript": "^5.8.3"
   },
   "repository": {
