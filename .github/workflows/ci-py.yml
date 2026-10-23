@@ -105,7 +105,7 @@ jobs:
         uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
-          file: ${{ env.PACKAGE_DIR }}/coverage.xml
+          files: ${{ env.PACKAGE_DIR }}/coverage.xml
           flags: python
           name: glin-profanity-py-coverage
           fail_ci_if_error: false
