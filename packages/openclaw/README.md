@@ -36,7 +36,7 @@ Your AI agent uses GPT, Claude, or Gemini. Why pay for profanity checking?
 
 | Feature | Description |
 |---------|-------------|
-| **24 Languages** | English, Spanish, French, German, Portuguese, Italian, Dutch, Russian, Chinese, Japanese, Korean, Arabic, Hindi, Turkish, Polish, Vietnamese, Thai, Swedish, Norwegian, Danish, Finnish, Czech, Hungarian, Greek |
+| **24 Languages** | English, Spanish, French, German, Portuguese, Italian, Dutch, Russian, Chinese, Japanese, Korean, Arabic, Hindi, Turkish, Polish, Thai, Swedish, Norwegian, Danish, Finnish, Czech, Hungarian, Persian, Esperanto |
 | **Evasion Detection** | Catches leetspeak (`f4ck`, `sh1t`), Unicode tricks (`fսck`), character spacing (`f u c k`), symbols (`f*ck`) |
 | **Multiple Integrations** | Skills, Hooks, Plugin API, MCP, Direct API |
 | **Platform Support** | WhatsApp, Telegram, Discord, Slack, iMessage, Teams, Matrix, Signal |

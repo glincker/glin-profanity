@@ -2129,7 +2129,7 @@ export function registerAllResources(server: McpServer): void {
               directMatch: {
                 description: 'Dictionary lookup',
                 catches: ['fuck', 'shit'],
-                performance: 'Fastest',
+                performance: 'Single dictionary lookup, cheapest layer',
               },
               leetspeakDetection: {
                 description: 'Character substitutions',
@@ -2373,8 +2373,8 @@ interface FilterConfig {
   preserveLength?: boolean;                  // Default: true
   
   // Performance
-  cacheResults?: boolean;                    // Default: true
-  cacheSize?: number;                        // Default: 1000
+  cacheResults?: boolean;                    // Default: false
+  maxCacheSize?: number;                        // Default: 1000
   
   // Advanced
   customDictionary?: Map<string, number>;
@@ -3361,7 +3361,7 @@ const filter = new Filter({
   languages: process.env.GLIN_PROFANITY_LANGUAGES?.split(','),
   detectLeetspeak: process.env.GLIN_PROFANITY_LEETSPEAK === 'true',
   cacheResults: true,
-  cacheSize: parseInt(process.env.GLIN_PROFANITY_CACHE_SIZE || '5000')
+  maxCacheSize: parseInt(process.env.GLIN_PROFANITY_CACHE_SIZE || '5000')
 });
 \`\`\`
 
@@ -3563,7 +3563,7 @@ const result = await analyzer.analyze(text);
 \`\`\`typescript
 const filter = new Filter({
   cacheResults: true,
-  cacheSize: 5000
+  maxCacheSize: 5000
 });
 \`\`\`
 
