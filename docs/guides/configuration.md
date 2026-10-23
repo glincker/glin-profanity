@@ -151,14 +151,14 @@ filter.isProfane('@$$');     // true (aggressive mode)
 
 ### Unicode Normalization
 
-Detect homoglyphs like `fսck` (Armenian), `shіt` (Cyrillic).
+Detect homoglyphs like `fυck` (Greek), `shіt` (Cyrillic).
 
 ```javascript
 const filter = new Filter({
   normalizeUnicode: true
 });
 
-filter.isProfane('fսck');   // true (Armenian 'ս' → 'u')
+filter.isProfane('fυck');   // true (Greek 'υ' → 'u')
 filter.isProfane('shіt');   // true (Cyrillic 'і' → 'i')
 filter.isProfane('ƒuck');   // true (Latin 'ƒ' → 'f')
 ```
@@ -167,7 +167,7 @@ filter.isProfane('ƒuck');   // true (Latin 'ƒ' → 'f')
 - Latin Extended (ƒ, ſ, ʃ)
 - Cyrillic (а, е, і, о, р, с, у, х)
 - Greek (α, ε, ο, ρ)
-- Armenian (ս)
+- Armenian lookalikes are only partly covered (for example 'ս' is not mapped yet)
 - And 200+ more
 
 ### Case Sensitivity

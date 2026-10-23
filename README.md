@@ -235,7 +235,7 @@ filter.isProfane('ph.u" "ck'); // true (aggressive mode)
 ```javascript
 const filter = new Filter({ normalizeUnicode: true });
 
-filter.isProfane('fսck');   // true (Armenian 'ս' → 'u')
+filter.isProfane('fυck');   // true (Greek 'υ' → 'u')
 filter.isProfane('shіt');   // true (Cyrillic 'і' → 'i')
 filter.isProfane('ƒuck');   // true (Latin 'ƒ' → 'f')
 ```

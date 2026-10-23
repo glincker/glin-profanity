@@ -9,7 +9,7 @@ Common questions about glin-profanity answered.
 glin-profanity goes beyond simple word matching:
 
 1. **Leetspeak Detection**: Catches `f4ck`, `5h1t`, `@$$`
-2. **Unicode Normalization**: Detects`fսck` (Armenian), `shіt` (Cyrillic)
+2. **Unicode Normalization**: Detects `fυck` (Greek), `shіt` (Cyrillic)
 3. **ML-Powered**: Optional TensorFlow.js toxicity detection
 4. **24 Languages**: Most comprehensive multi-language support
 5. **Context-Aware**: Understands context, not just keywords

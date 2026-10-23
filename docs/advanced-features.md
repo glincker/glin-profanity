@@ -45,14 +45,14 @@ const filter = new Filter({
 });
 
 // Detects Cyrillic/Greek lookalikes
-filter.isProfane('fսck');  // true (Armenian 'ս')
+filter.isProfane('fυck');  // true (Greek 'υ')
 filter.isProfane('shіt');  // true (Cyrillic 'і')
 ```
 
 ### Normalization Process
 
 ```
-Input: "fսck" (with Armenian 'ս')
+Input: "fυck" (with Greek 'υ')
   ↓ Unicode Normalization
 Normalized: "fuck"
   ↓ Dictionary Lookup

@@ -526,7 +526,7 @@ describe('Profanity Filter', () => {
     });
 
     it('should detect Unicode homoglyphs', () => {
-      expect(filter.isProfane('fսck')).toBe(true);  // Armenian u
+      expect(filter.isProfane('fυck')).toBe(true);  // Greek upsilon
       expect(filter.isProfane('shіt')).toBe(true);  // Cyrillic i
     });
 
