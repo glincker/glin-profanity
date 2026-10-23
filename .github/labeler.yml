@@ -1,0 +1,44 @@
+# Path to label map, consumed by workflows/labeler.yml (actions/labeler).
+
+js:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "packages/js/**"
+          - "src/**"
+
+python:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "packages/py/**"
+
+mcp:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "packages/mcp/**"
+
+openclaw:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "packages/openclaw/**"
+
+dictionaries:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "shared/dictionaries/**"
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.md"
+          - "docs/**"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+
+benchmarks:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "benchmarks/**"
+          - "packages/*/benchmarks/**"
