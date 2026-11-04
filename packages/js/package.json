@@ -311,7 +311,7 @@
     "jest-environment-jsdom": "^30.5.2",
     "react": "^18.3.1",
     "react-dom": "^19.3.1",
-    "semantic-release": "^24.2.7",
+    "semantic-release": "^25.0.9",
     "ts-jest": "^29.4.0",
     "tsup": "^9.0.0",
     "tsx": "^4.23.15",
