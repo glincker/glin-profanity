@@ -78,7 +78,7 @@
     "@babel/preset-react": "^8.0.1",
     "@babel/preset-typescript": "^7.24.7",
     "@commitlint/cli": "^17.7.1",
-    "@commitlint/config-conventional": "^17.7.0",
+    "@commitlint/config-conventional": "^21.2.4",
     "@tensorflow-models/toxicity": "^1.2.2",
     "@tensorflow/tfjs": "^4.22.0",
     "@types/node": "^25.6.0",
